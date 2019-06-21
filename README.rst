@@ -13,7 +13,7 @@ To clone the repository and its dependent submodules, do ::
 
 To build one of the `PeleLM` cases, for example ::
 
-    cd PeleProduction/PeleLMruns
+    cd PeleProduction/PeleLMruns/ClosedChamber
     make -j 12
 
 Note that the example will set the variables pointing to `PeleLM`, `IAMR`, `PelePhysics` and `AMReX` (to point to the respective folders in the Submodules area here) only if these variables have not been set in the user's environment.
