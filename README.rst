@@ -1,7 +1,7 @@
 PeleProduction - README
 =======================
 
-`PeleProduction` is a collection of run folders for various Pele codes and processing. It includes git submodules for the dependent codea.
+`PeleProduction` is a collection of run folders for various Pele codes and processing. It includes git submodules for the dependent codes.
 
 
 Getting started
