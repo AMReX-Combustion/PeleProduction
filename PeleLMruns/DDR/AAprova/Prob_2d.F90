@@ -14,7 +14,7 @@ module prob_2D_module
 
   private
   
-  public :: amrex_probinit, setupbc, init_data, getZone
+  public :: amrex_probinit, setupbc, init_data
 
 contains
 
@@ -152,7 +152,7 @@ contains
     REAL_T Patm, pmf_vals(maxspec+3), a
     REAL_T Xt(maxspec), Yt(maxspec), loc
     REAL_T rho	! added
-    integer zone, n, getZone, fuelZone, airZone, oxZone, volZone, peZone, ofZone, region, len
+    integer zone, n, fuelZone, airZone, oxZone, volZone, peZone, ofZone, region, len
     integer b(dim)
     integer num_zones_defined
     character*(maxspnml) name
@@ -329,7 +329,7 @@ contains
     REAL_T   press(DIMV(press))
     integer tmpi, nPMF
 
-    integer i, j, n, airZone, fuelZone, getZone, zone, len
+    integer i, j, n, airZone, fuelZone, zone, len
     REAL_T x, y, r, Yl(maxspec), Xl(maxspec), Patm
     REAL_T pmf_vals(maxspec+3), y1, y2, dx
     REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,rho,T,h
@@ -386,28 +386,4 @@ contains
     enddo
   end subroutine init_data
 
-  integer function getZone(x, y)
-    
-    use mod_Fvar_def, only : domnhi, domnlo, dim
-    use probdata_module, only : BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
-         fuel_ox_split, ox_air_split, pipeTh
-
-    implicit none
-    REAL_T x, y
-    getZone = BL_VOLUME
-    if (y.le.domnlo(2)) then
-       if (ABS(x).le.fuel_ox_split) then
-          getZone = BL_FUELPIPE
-       else if (ABS(x).le.fuel_ox_split+pipeTh) then
-          getZone = BL_PIPEEND
-       else if (ABS(x).le.ox_air_split) then
-          getZone = BL_OXIDIZER
-       else
-          getZone = BL_AIR
-       endif
-    else if (y.ge.domnhi(2)) then
-       getZone = BL_OUTFLOW
-    endif
-  end function getZone
-      
 end module prob_2D_module

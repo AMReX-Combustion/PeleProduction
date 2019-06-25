@@ -10,10 +10,34 @@ module user_defined_fcts_2d_module
   
   private
   
-  public :: bcfunction, zero_visc
+  public :: getZone, bcfunction, zero_visc
 
 contains
 
+  integer function getZone(x, y)
+    
+    use mod_Fvar_def, only : domnhi, domnlo, dim
+    use probdata_module, only : BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
+         fuel_ox_split, ox_air_split, pipeTh
+
+    implicit none
+    REAL_T x, y
+    getZone = BL_VOLUME
+    if (y.le.domnlo(2)) then
+       if (ABS(x).le.fuel_ox_split) then
+          getZone = BL_FUELPIPE
+       else if (ABS(x).le.fuel_ox_split+pipeTh) then
+          getZone = BL_PIPEEND
+       else if (ABS(x).le.ox_air_split) then
+          getZone = BL_OXIDIZER
+       else
+          getZone = BL_AIR
+       endif
+    else if (y.ge.domnhi(2)) then
+       getZone = BL_OUTFLOW
+    endif
+  end function getZone
+      
   subroutine bcfunction(x,y,coord,lohi,time,u,v,rho,Yl,T,h,dx,getuv) bind(c, name='bcfunction')
 
     use network,   only: Nspec
@@ -24,7 +48,7 @@ contains
     use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
          fuel_ox_split, blobw, bloby, pipeBL, pipeTh
-    use prob_2D_module, only : getZone
+    !use prob_2D_module, only : getZone
       
     implicit none
 
@@ -150,7 +174,7 @@ contains
 
     use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, LastSpec, dim
     use probdata_module, only : BL_PIPEEND
-    use prob_2D_module, only : getZone
+    !use prob_2D_module, only : getZone
       
     implicit none
     integer DIMDEC(diff)
