@@ -41,7 +41,7 @@ contains
     REAL_T res(0:HtoTiterMAX-1)
     integer Niter
     integer zoneL, zoneR, zoneT
-    character*(L_snpec_name) name
+    character*(L_spec_name) name
 
     data  b / 1, 1 /
     
