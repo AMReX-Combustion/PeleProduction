@@ -17,7 +17,7 @@ VERBOSE           = FALSE
 #Chemistry_Model = CHEMH
 #fEXE_sources += H-flame_0500.f
 
-Chemistry_Model = FFCM1
+Chemistry_Model = FFCM1_Red
 fEXE_sources += CH4-1_O2-2_N2-2p5_H2-5p833.f
 
 Blocs   := .
