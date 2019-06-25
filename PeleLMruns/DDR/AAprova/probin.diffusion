@@ -1,6 +1,4 @@
  &fortin
-  probtype = 'diffusion_jet'
-
   fuel_ox_split = .0009
   ox_air_split =  0.01
   pipeTh = .00
@@ -18,26 +16,7 @@
   T_fu = 510.0
   T_ox = 510.0
   T_air = 295.0
-
-  max_vort_lev = 0
-  vorterr = 5.e4
-
-  max_nozzle_lev = 2
-  refine_nozzle_x = 0
-  refine_nozzle_w = .0015
-  refine_nozzle_y = .0015
-
-  flametracval = 3.e-3
-  max_trac_lev = 2
-
-  temperr = 1500
-  max_temp_lev = 2
  /
  &heattransin
   pamb =  101325.
-  dpdt_factor = 1.0
- /
-  &flctin
- /
-  &control
  /

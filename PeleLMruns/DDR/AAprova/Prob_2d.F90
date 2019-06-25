@@ -140,7 +140,7 @@ contains
   subroutine setupbc() bind(c, name='setupbc')
       
     use network,   only: nspec
-    use PeleLM_F, only: pphys_getP1atm_MKS
+    use PeleLM_F, only: pphys_getP1atm_MKS, pphys_get_spec_name2
     use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : pamb, domnlo, maxspec, maxspnml, dim
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, rho_bc, h_bc
@@ -161,7 +161,7 @@ contains
     Patm = pamb / pphys_getP1atm_MKS()
 
     do n=1,Nspec
-       call get_spec_name(name,n)
+       call pphys_get_spec_name2(name,n)
        if (name .eq. 'N2' ) iN2 = n
        if (name .eq. 'O2' ) iO2 = n
        if (name .eq. 'CO2' ) iCO2 = n

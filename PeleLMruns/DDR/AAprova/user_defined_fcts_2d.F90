@@ -18,6 +18,8 @@ contains
 
     use network,   only: Nspec
     use chemistry_module, only : L_spec_name
+    use PeleLM_F,  only: pphys_getP1atm_MKS
+    use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : maxspec, pamb
     use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
@@ -32,7 +34,7 @@ contains
     integer b(2)
 
     integer n, zone
-    REAL_T eta, xmid, Patm, FORT_P1ATMMKS
+    REAL_T eta, xmid, Patm, rhoV(1,1), TV(1,1), hV(1,1)
          
     REAL_T Wf, Wa, Wm, mf, Yf
 
@@ -77,17 +79,20 @@ contains
        end do
        T = T*eta + T_bc(zoneT)*(1.d0-eta)
 
-       Patm = pamb / FORT_P1ATMMKS()
+       Patm = pamb / pphys_getP1atm_MKS()
 
+       TV(b(1),b(2)) = T
        call pphys_RHOfromPTY(b, b, &
-                             rho, DIMARG(b), DIMARG(b),&
-                             T,   DIMARG(b), DIMARG(b),&
+                             rhoV, DIMARG(b), DIMARG(b),&
+                             TV,   DIMARG(b), DIMARG(b),&
                              Yl,  DIMARG(b), DIMARG(b), Patm)
-          
+       rho = rhoV(b(1),b(2))
+       
        call pphys_HMIXfromTY(b, b, &
-                             h,   DIMARG(b), DIMARG(b),&
-                             T,   DIMARG(b), DIMARG(b),&
+                             hV,   DIMARG(b), DIMARG(b),&
+                             TV,   DIMARG(b), DIMARG(b),&
                              Yl,  DIMARG(b), DIMARG(b))
+       h = hV(b(1),b(2))
           
        if (getuv .eqv. .TRUE.) then
           u = zero
