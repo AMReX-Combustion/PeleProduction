@@ -17,6 +17,7 @@ contains
   subroutine bcfunction(RegionID,x,y,time,u,v,rho,Yl,T,h,dx,getuv) bind(c, name='bcfunction')
 
     use network,   only: Nspec
+    use chemistry_module, only : L_spec_name
     use mod_Fvar_def, only : maxspec, pamb
     use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
@@ -40,7 +41,7 @@ contains
     REAL_T res(0:HtoTiterMAX-1)
     integer Niter
     integer zoneL, zoneR, zoneT
-    character*(maxspnml) name
+    character*(L_snpec_name) name
 
     data  b / 1, 1 /
     
