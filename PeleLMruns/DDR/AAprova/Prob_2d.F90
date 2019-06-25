@@ -314,6 +314,7 @@ contains
     use probdata_module, only : BL_XLO, blobr, blobT, blobw, blobx, bloby
     use probdata_module, only : bcinit, iN2, iO2, iCO2, iCH4, iH2O, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME
+    use user_defined_fcts_2d_module, only : bcfunction
 
     implicit none
 
@@ -332,7 +333,6 @@ contains
     REAL_T x, y, r, Yl(maxspec), Xl(maxspec), Patm
     REAL_T pmf_vals(maxspec+3), y1, y2, dx
     REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,rho,T,h
-    REAL_T phiV
 
     if (iN2.lt.1 .or. iN2.gt.Nspec) then
        call bl_pd_abort('N2 id not sest prior to calling INITDATA')
@@ -343,7 +343,7 @@ contains
        do i = lo(1), hi(1)
           x = (float(i)+.5)*delta(1)+domnlo(1)
 
-          call bcfunction(x,y,1,-1,time,u,v,rho,Yl,T,phiV,h,delta,.true.)
+          call bcfunction(x,y,1,-1,time,u,v,rho,Yl,T,h,delta,.true.)
 
           do n=1,Nspec
              scal(i,j,FirstSpec-1+n) = Yl(n)
