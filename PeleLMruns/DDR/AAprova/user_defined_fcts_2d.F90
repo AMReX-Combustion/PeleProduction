@@ -14,7 +14,7 @@ module user_defined_fcts_2d_module
 
 contains
 
-  subroutine bcfunction(RegionID,x,y,time,u,v,rho,Yl,T,h,dx,getuv) bind(c, name='bcfunction')
+  subroutine bcfunction(x,y,coord,lohi,time,u,v,rho,Yl,T,h,dx,getuv) bind(c, name='bcfunction')
 
     use network,   only: Nspec
     use chemistry_module, only : L_spec_name
@@ -26,7 +26,7 @@ contains
       
     implicit none
 
-    integer RegionID
+    integer coord, lohi
     REAL_T x, y, time, u, v, rho, Yl(0:*), T, h, dx(2), r
     logical getuv
     integer b(2)

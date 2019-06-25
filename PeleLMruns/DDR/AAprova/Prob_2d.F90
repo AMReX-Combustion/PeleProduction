@@ -343,7 +343,7 @@ contains
        do i = lo(1), hi(1)
           x = (float(i)+.5)*delta(1)+domnlo(1)
 
-          call bcfunction(BL_XLO,x,y,time,u,v,rho,Yl,T,phiV,h,delta,.true.)
+          call bcfunction(x,y,1,-1,time,u,v,rho,Yl,T,phiV,h,delta,.true.)
 
           do n=1,Nspec
              scal(i,j,FirstSpec-1+n) = Yl(n)
