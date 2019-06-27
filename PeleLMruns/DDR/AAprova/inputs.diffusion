@@ -61,7 +61,7 @@ amr.refine_grid_layout = 1
 geometry.prob_lo    = 0 0
 geometry.prob_hi    = 0.01 0.015
 amr.n_cell          = 64 96 #david
-amr.blocking_factor = 2 #david
+amr.blocking_factor = 16
 
 amr.plot_files_output = 1
 amr.plot_file       = plt
@@ -237,6 +237,3 @@ fab.format = NATIVE
 #amr.subcycling_mode = Manual
 #amr.subcycling_iterations = 1 2 2
 
-ns.hack_nochem=1
-ns.init_iter=0
-ns.do_init_proj=0
