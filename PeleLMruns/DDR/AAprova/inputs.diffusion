@@ -74,7 +74,7 @@ amr.check_int       = 50
 ns.cfl              = 0.2
 
 amr.v=1
-amr.max_level       = 0 #change
+amr.max_level       = 1 #change
 amr.ref_ratio       = 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid #change
 amr.n_error_buf     = 2 2  # number of buffer cells in error est
@@ -87,14 +87,17 @@ amr.max_grid_size = 32
 amr.probin_file = probin.diffusion
 
 # Refinement according to a species tracer
-amr.refinement_indicators = flame_tracer magvort
+amr.refinement_indicators = flame_tracer magvort nozzle
 amr.flame_tracer.max_level = 2
 amr.flame_tracer.value_greater = 3.e-3
 amr.flame_tracer.field_name = Y(OH)
 #amr.flame_tracer.start_time = 1e-5
 
+amr.nozzle.max_level = 3
+amr.nozzle.in_box_lo = 0 0
+amr.nozzle.in_box_hi = .0015 .0015
+
 # Refinement according to the vorticity, no field_name needed
-amr.refinement_indicators = magvort
 amr.magvort.max_level = 3
 amr.magvort.vorticity_greater = 300
 
@@ -233,3 +236,7 @@ fab.format = NATIVE
 
 #amr.subcycling_mode = Manual
 #amr.subcycling_iterations = 1 2 2
+
+ns.hack_nochem=1
+ns.init_iter=0
+ns.do_init_proj=0
