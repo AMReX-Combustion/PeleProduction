@@ -14,6 +14,10 @@ USE_OMP           = FALSE
 USE_MPI           = TRUE
 VERBOSE           = FALSE
 
+Eos_dir           = Fuego
+Reactions_dir     = Fuego
+Transport_dir     = EGLib
+
 #Chemistry_Model = CHEMH
 #fEXE_sources += H-flame_0500.f
 
@@ -23,9 +27,9 @@ fEXE_sources += CH4-1_O2-2_N2-2p5_H2-5p833.f
 Blocs   := .
 
 CEXE_sources +=
-F90EXE_sources += Prob_F.F90 Prob_$(DIM)d.F90
+F90EXE_sources += Prob_$(DIM)d.F90 probdata.F90
 CEXE_headers += 
-FEXE_headers += probdata.H MyProb_F.H
+FEXE_headers +=
 
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
 
