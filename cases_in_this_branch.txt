@@ -1,7 +1,5 @@
 The only cases guaranteed to work in this branch (that is, ones for which the
-Submodule git repos are consistent with the run setup, are:
+Submodule git repos are consistent with the run setup), are:
 
- 1. PeleLMruns/ClosedChamber 
- 2. PeleLMruns/FlowGAN - not working yet
- 3. PeleLMruns/DiffFlame - not working yet
+ 1. PeleCruns/PMF
  
