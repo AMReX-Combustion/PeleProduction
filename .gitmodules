@@ -1,16 +1,16 @@
 [submodule "Submodules/PeleLM"]
 	path = Submodules/PeleLM
-	url = https://github.com:AMReX-Combustion/PeleLM.git
+	url = https://github.com/AMReX-Combustion/PeleLM.git
         branch = master
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
-	url = http://github.com:AMReX-Combustion/PelePhysics.git
+	url = http://github.com/AMReX-Combustion/PelePhysics.git
         branch = master
 [submodule "Submodules/amrex"]
 	path = Submodules/amrex
-	url = http://github.com:AMReX-Codes/amrex.git
+	url = http://github.com/AMReX-Codes/amrex.git
         branch = development
 [submodule "Submodules/IAMR"]
 	path = Submodules/IAMR
-	url = http://github.com:AMReX-Codes/IAMR.git
+	url = http://github.com/AMReX-Codes/IAMR.git
         branch = master
