@@ -14,8 +14,3 @@
 	path = Submodules/IAMR
 	url = https://github.com/AMReX-Codes/IAMR.git
         branch = master
-[submodule "Submodules/PeleC"]
-	path = Submodules/PeleC
-	url = https://github.com/AMReX-Combustion/PeleC.git
-        branch = master
-
