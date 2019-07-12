@@ -45,10 +45,12 @@ contains
       use mod_Fvar_def, only : dim
       use mod_Fvar_def, only : V_in
       use probdata_module, only : T_in, V_co, phi_in, T_co, &
-                                   splitx, xfrontw, fuel_N2_vol_percent, &
-                                   blobr, bloby, blobx, Tfrontw, blobT  
+                                  splitx, xfrontw, fuel_N2_vol_percent, &
+                                  blobr, bloby, blobx, Tfrontw, blobT, turb_scale
 
-
+      use extern_probin_module, only : do_flct, flct_in
+      use turbinflow_module
+      
       implicit none
 
       integer init, namlen
@@ -60,7 +62,7 @@ contains
 
       namelist /fortin/ V_in, T_in, V_co, phi_in, T_co, &
                         splitx, xfrontw, fuel_N2_vol_percent, &
-                        blobr, bloby, blobx, Tfrontw, blobT
+                        blobr, bloby, blobx, Tfrontw, blobT, turb_scale
       namelist /heattransin/ pamb, dpdt_factor
 
 
@@ -96,7 +98,7 @@ contains
 
 !     Set defaults
       pamb = pphys_getP1atm_MKS()
-      dpdt_factor = 0.3d0
+      dpdt_factor = 1.d0
       closed_chamber = 0
 
       read(untin,fortin)
@@ -108,6 +110,9 @@ contains
 !     Set up boundary functions
       call setupbc()
 
+      if (do_flct.eq.1) then
+         call init_turbinflow(flct_in, .false.)
+      endif
 
       if (isioproc.eq.1) then
          write(6,fortin)
@@ -124,9 +129,9 @@ contains
     use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : pamb, domnlo, domnhi, maxspec, maxspnml, V_in
-    use mod_Fvar_def, only : fuelID, oxidID
+    use mod_Fvar_def, only : fuelID, oxidID, bathID
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, w_bc, rho_bc, h_bc
-    use probdata_module, only : bcinit, Phi_in, T_in, V_co, T_co, fuel_N2_vol_percent
+    use probdata_module, only : bcinit, T_in, V_co, T_co, fuel_N2_vol_percent
     use user_defined_fcts_3d_module, only : getZone
 
     implicit none
@@ -137,8 +142,6 @@ contains
     integer b(3)
     integer zone, n, fuelZone, airZone
     integer num_zones_defined
-    integer iN2, iO2,iCH3OCH3
-    character*(maxspnml) name
     data  b / 1, 1, 1 /
       
     Patm = pamb / pphys_getP1atm_MKS()
@@ -154,8 +157,8 @@ contains
     do n = 1,nspec
       Xt(n) = 0.d0
     end do 
-    Xt(iN2) = fuel_N2_vol_percent*1.d-2
-    Xt(fuelID) = 1.d0 - Xt(iN2)            
+    Xt(bathID) = fuel_N2_vol_percent*1.d-2
+    Xt(fuelID) = 1.d0 - Xt(bathID)            
 
     CALL CKXTY (Xt, Yt)
 
@@ -172,7 +175,7 @@ contains
       Xt(n) = zero
     enddo
     Xt(oxidID) = 0.21d0
-    Xt(iN2)    = 1.d0 - Xt(oxidID)
+    Xt(bathID) = 1.d0 - Xt(oxidID)
 
     CALL CKXTY (Xt, Yt)         
     do n=1,Nspec
@@ -239,9 +242,8 @@ contains
       use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
       use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac, dim
       use mod_Fvar_def, only : domnlo, domnhi, maxspec, maxspnml
-      use probdata_module, only : blobr, blobT, blobx, bloby, &
-                                  splitx, tfrontw, xfrontw, &
-                                  Y_bc, u_bc, v_bc, T_bc, IDX_COFLOW, &
+      use probdata_module, only : blobr, tfrontw, &
+                                  Y_bc, IDX_COFLOW, &
                                   T_co
       use user_defined_fcts_3d_module, only : getZone, bcfunction
 
@@ -258,8 +260,8 @@ contains
       REAL_T   press(DIMV(press))
 
       integer i, j, k, n, airZone, fuelZone
-      REAL_T x, y, z, ztemp, r, Patm, sigma, eta
-      REAL_T pert, u,v,w,rho,T,h, Yl(maxspec), Xl(maxspec)
+      REAL_T x, y, z, ztemp, Patm, eta
+      REAL_T pert, u,v,w,rho,T,h, Yl(maxspec)
 
       fuelZone = getZone(domnlo(1), domnlo(2), domnlo(3))
       airZone  = getZone(domnhi(1), domnhi(2), domnhi(3))

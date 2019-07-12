@@ -16,4 +16,9 @@
   pamb = 4053000.
   dpdt_factor = 1.0
  /
-
+ &extern
+   do_flct = 1
+   flct_dir = 2
+   flct_vel = 1.0
+   flct_in = 'Turb.test2'
+ /
