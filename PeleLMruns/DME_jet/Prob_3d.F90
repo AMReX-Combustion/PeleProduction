@@ -131,7 +131,7 @@ contains
     use mod_Fvar_def, only : pamb, domnlo, domnhi, maxspec, maxspnml, V_in
     use mod_Fvar_def, only : fuelID, oxidID, bathID
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, w_bc, rho_bc, h_bc
-    use probdata_module, only : bcinit, T_in, V_co, T_co, fuel_N2_vol_percent
+    use probdata_module, only : bcinit, T_in, V_co, T_co, fuel_N2_vol_percent, Nzones
     use user_defined_fcts_3d_module, only : getZone
 
     implicit none
@@ -140,7 +140,7 @@ contains
     REAL_T Xt(maxspec), Yt(maxspec)
 
     integer b(3)
-    integer zone, n, fuelZone, airZone
+    integer zone, n, fuelZone, airZone, volZone
     integer num_zones_defined
     data  b / 1, 1, 1 /
       
@@ -150,7 +150,7 @@ contains
 
 !     A diffusion flame
     fuelZone = getZone(domnlo(1), 0.5*(domnlo(2)+domnhi(2)), domnlo(3))
-    airZone  = getZone(domnhi(1), domnhi(2), domnhi(3))
+    airZone  = getZone(domnlo(1), domnlo(2), domnlo(3))
     num_zones_defined = 2
 
 !     Fuel
@@ -187,17 +187,17 @@ contains
     v_bc(airZone) = 0.d0
     w_bc(airZone) = V_co
 
-    do zone=1,num_zones_defined
-!     Set density and hmix consistent with data
-
-    call pphys_RHOfromPTY(b, b, &
-                          rho_bc(zone), DIMARG(b), DIMARG(b), &
-                          T_bc(zone),   DIMARG(b), DIMARG(b), &
-                          Y_bc(0,zone), DIMARG(b), DIMARG(b), Patm)
-    call pphys_HMIXfromTY(b, b, &
-                          h_bc(zone),   DIMARG(b), DIMARG(b), &
-                          T_bc(zone),   DIMARG(b), DIMARG(b), &
-                          Y_bc(0,zone), DIMARG(b), DIMARG(b))
+    do zone = 1,Nzones
+       if (zone.eq.fuelZone .or. zone.eq.airZone) then
+          call pphys_RHOfromPTY(b, b, &
+                                rho_bc(zone), DIMARG(b), DIMARG(b), &
+                                T_bc(zone),   DIMARG(b), DIMARG(b), &
+                                Y_bc(0,zone), DIMARG(b), DIMARG(b), Patm)
+          call pphys_HMIXfromTY(b, b, &
+                                h_bc(zone),   DIMARG(b), DIMARG(b), &
+                                T_bc(zone),   DIMARG(b), DIMARG(b), &
+                                Y_bc(0,zone), DIMARG(b), DIMARG(b))
+       endif
     enddo
     bcinit = .true.
 

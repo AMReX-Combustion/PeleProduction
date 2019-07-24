@@ -18,21 +18,22 @@ contains
       
       integer function getZone(x, y, z)
       
-      use probdata_module, only : splitx, IDX_AMBIENT, IDX_FUELPIPE, IDX_VOLUME, IDX_COFLOW
+      use probdata_module, only : splitx, IDX_FUELPIPE, IDX_COFLOW, IDX_VOLUME
       use mod_Fvar_def, only : domnlo
       
       implicit none
 
       REAL_T x, y, z
 
-      getZone = IDX_VOLUME
-         
       if (z.gt.domnlo(3)) then
-        getZone = IDX_COFLOW
+         getZone = IDX_VOLUME
       else
-        getZone = IDX_FUELPIPE
+         if (ABS(y).gt.splitx) then
+            getZone = IDX_COFLOW
+         else
+            getZone = IDX_FUELPIPE
+         endif
       endif
-         
       end function getZone
       
 
