@@ -30,7 +30,7 @@ amr.n_cell          = 24 40 40
 amr.n_cell          = 48 80 80
 
 amr.v=1
-amr.max_level        = 1
+amr.max_level        = 2
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.n_error_buf     = 4 4 4 4 # number of buffer cells in error est
@@ -143,7 +143,7 @@ proj.sync_tol       = 1.0e-8  # tolerence for projections
 proj.rho_wgt_vel_proj = 0      # 0 => const den proj, 1 => rho weighted
 #proj.rho_wgt_vel_proj = 1      # 0 => const den proj, 1 => rho weighted
 proj.proj_2 = 1
-proj.Pcode          = 0
+proj.Pcode          = 4
 proj.filter_factor  = 0.0
 proj.do_outflow_bcs = 0
 proj.divu_minus_s_factor = .5
@@ -194,4 +194,6 @@ fab.format = NATIVE
 
 #ns.init_iter      = 0
 #ns.num_divu_iters = 0
-max_step          = 10
+#max_step          = 0
+amrex.fpe_trap_invalid = 1
+
