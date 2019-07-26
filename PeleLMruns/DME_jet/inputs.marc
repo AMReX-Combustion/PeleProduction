@@ -27,7 +27,7 @@ stop_time = 4.0
 
 #-------------------------AMR INPUTS----------------------------
 amr.n_cell          = 24 40 40
-amr.n_cell          = 48 80 80
+#amr.n_cell          = 48 80 80
 
 amr.v=1
 amr.max_level        = 2
@@ -37,7 +37,9 @@ amr.n_error_buf     = 4 4 4 4 # number of buffer cells in error est
 amr.grid_eff        = 0.7     # what constitutes an efficient grid
 amr.grid_log        = grdlog  # name of grid logging file
 amr.blocking_factor = 8
-amr.max_grid_size   = 32
+amr.max_grid_size   = 8
+#amr.max_grid_size   = 32
+#amr.max_grid_size   = 256
 
 amr.plot_files_output = 1
 amr.plot_file       = plt
@@ -61,7 +63,7 @@ amr.flame_tracer.field_name = Y(H)
 # amr.magvort.max_level = 4
 # amr.magvort.vorticity_greater = 5e4
 
-amr.gradT.max_level = 2
+amr.gradT.max_level = 1
 amr.gradT.adjacent_difference_greater = 80
 amr.gradT.field_name = temp
 
@@ -122,8 +124,6 @@ ns.zeroBndryVisc=1
 ns.num_divu_iters = 3
 ns.do_group_bndry_fills = 1
 
-ns.hack_nochem=1
-
 # ------------------  INPUTS TO GODUNOV CLASS ----------------------
 godunov.slope_order = 4
 
@@ -143,7 +143,7 @@ proj.sync_tol       = 1.0e-8  # tolerence for projections
 proj.rho_wgt_vel_proj = 0      # 0 => const den proj, 1 => rho weighted
 #proj.rho_wgt_vel_proj = 1      # 0 => const den proj, 1 => rho weighted
 proj.proj_2 = 1
-proj.Pcode          = 4
+proj.Pcode          = 0
 proj.filter_factor  = 0.0
 proj.do_outflow_bcs = 0
 proj.divu_minus_s_factor = .5
@@ -195,5 +195,8 @@ fab.format = NATIVE
 #ns.init_iter      = 0
 #ns.num_divu_iters = 0
 #max_step          = 0
-amrex.fpe_trap_invalid = 1
-
+#amrex.fpe_trap_invalid = 1
+ns.hack_nochem=1
+ns.sdc_iterMAX = 1
+#proj.Pcode = 4
+#proj.v = 1
