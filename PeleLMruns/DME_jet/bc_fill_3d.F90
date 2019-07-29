@@ -212,6 +212,7 @@ contains
     use turbinflow_module
     use extern_probin_module, only : do_flct
     use probdata_module, only : splitx, xfrontw, turb_scale
+    use mod_Fvar_def, only : V_in
 
     implicit none
 
@@ -287,7 +288,7 @@ contains
        do j = vel_l2,vel_h2
           yy(j) = (float(j)+.5)*delta(2)+domnlo(2)            
        enddo
-       zz = time*w
+       zz = time*V_in
        vfluc = 0.d0
        call get_turbstate(vel_l1,vel_l2,vel_h1,vel_h2,xx,yy,zz,vfluc)
        do k = vel_l3, domlo(3)-1
