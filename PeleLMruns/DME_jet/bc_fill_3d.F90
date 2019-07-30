@@ -223,7 +223,6 @@ contains
     REAL_T  xx(vel_l1:vel_h1), yy(vel_l2:vel_h2), zz, vfluc(vel_l1:vel_h1,vel_l2:vel_h2,turb_ncomp)
 
     integer i, j, k
-    integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
     REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h, eta1
 
@@ -236,13 +235,6 @@ contains
     hi(2) = ARG_H2(vel)
     hi(3) = ARG_H3(vel)
 
-    ilo = max(lo(1),domlo(1))
-    jlo = max(lo(2),domlo(2))
-    klo = max(lo(3),domlo(3))
-    ihi = min(hi(1),domhi(1))
-    jhi = min(hi(2),domhi(2))
-    khi = min(hi(3),domhi(3)) 
-
     call filcc (vel(ARG_L1(vel),ARG_L2(vel),ARG_L3(vel),1), &
                 DIMS(vel),domlo,domhi,delta,xlo,bc(1,1,1))
     call filcc (vel(ARG_L1(vel),ARG_L2(vel),ARG_L3(vel),2), &
@@ -250,7 +242,11 @@ contains
     call filcc (vel(ARG_L1(vel),ARG_L2(vel),ARG_L3(vel),3), &
                 DIMS(vel),domlo,domhi,delta,xlo,bc(1,1,3))
 
-    if (lo(3).lt.domlo(3)) then
+    if ((lo(3).lt.domlo(3)) &
+         .and. ( (bc(3,1,1).eq.EXT_DIR) &
+         .or.    (bc(3,1,2).eq.EXT_DIR) &
+         .or.    (bc(3,1,3).eq.EXT_DIR) ) ) then
+
        do k = lo(3), domlo(3)-1
           z = (float(k)+.5)*delta(3)+domnlo(3)
           do j = lo(2),hi(2)
@@ -258,47 +254,35 @@ contains
              do i = lo(1), hi(1)
                 x = (float(i)+.5)*delta(1)+domnlo(1)
 
-                if ((bc(3,1,1).eq.EXT_DIR) &
-                     .or. (bc(3,1,2).eq.EXT_DIR) &
-                     .or. (bc(3,1,3).eq.EXT_DIR)) then 
-                   call bcfunction(x,y,z,3,1,time,u,v,w,rho,Yl,T,h,delta,.true.)
-                endif
+                call bcfunction(x,y,z,3,1,time,u,v,w,rho,Yl,T,h,delta,.true.)
 
-                if (bc(3,1,1).eq.EXT_DIR) then
-                   vel(i,j,k,1) = u
-                endif
+                if (bc(3,1,1).eq.EXT_DIR) vel(i,j,k,1) = u
+                if (bc(3,1,2).eq.EXT_DIR) vel(i,j,k,2) = v
+                if (bc(3,1,3).eq.EXT_DIR) vel(i,j,k,3) = w
 
-                if (bc(3,1,2).eq.EXT_DIR) then
-                   vel(i,j,k,2) = v
-                endif
-
-                if (bc(3,1,3).eq.EXT_DIR) then
-                   vel(i,j,k,3) = w
-                endif
              enddo
           enddo
        enddo
-    endif
     
-    ! Add fluctuations
-    if (do_flct.eq.1  .and.  lo(3).lt.domlo(3)) then
-       do i = vel_l1,vel_h1
-          xx(i) = (float(i)+.5)*delta(1)+domnlo(1)            
-       enddo
-       do j = vel_l2,vel_h2
-          yy(j) = (float(j)+.5)*delta(2)+domnlo(2)            
-       enddo
-       zz = time*V_in
-       vfluc = 0.d0
-       call get_turbstate(vel_l1,vel_l2,vel_h1,vel_h2,xx,yy,zz,vfluc)
-       do k = vel_l3, domlo(3)-1
-          do j = vel_l2,vel_h2
-             eta1 = 0.5d0*(1.d0 - TANH(2.d0*(ABS(yy(j))-splitx)/xfrontw))
-             vel(:,j,k,1) = vel(:,j,k,1) + eta1*vfluc(:,j,1)*turb_scale
-             vel(:,j,k,2) = vel(:,j,k,2) + eta1*vfluc(:,j,2)*turb_scale
-             vel(:,j,k,3) = vel(:,j,k,3) + eta1*vfluc(:,j,3)*turb_scale
+       if (do_flct.eq.1) then
+          do i = vel_l1,vel_h1
+             xx(i) = (float(i)+.5)*delta(1)+domnlo(1)            
           enddo
-       enddo
+          do j = vel_l2,vel_h2
+             yy(j) = (float(j)+.5)*delta(2)+domnlo(2)            
+          enddo
+          zz = time*V_in
+          vfluc = 0.d0
+          call get_turbstate(vel_l1,vel_l2,vel_h1,vel_h2,xx,yy,zz,vfluc)
+          do k = vel_l3, domlo(3)-1
+             do j = vel_l2,vel_h2
+                eta1 = 0.5d0*(1.d0 - TANH(2.d0*(ABS(yy(j))-splitx)/xfrontw))
+                if (bc(3,1,1).eq.EXT_DIR) vel(:,j,k,1) = vel(:,j,k,1) + eta1*vfluc(:,j,1)*turb_scale
+                if (bc(3,1,2).eq.EXT_DIR) vel(:,j,k,2) = vel(:,j,k,2) + eta1*vfluc(:,j,2)*turb_scale
+                if (bc(3,1,3).eq.EXT_DIR) vel(:,j,k,3) = vel(:,j,k,3) + eta1*vfluc(:,j,3)*turb_scale
+             enddo
+          enddo
+       endif
     endif
 
   end subroutine vel_fill
