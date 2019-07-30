@@ -1,17 +1,17 @@
  &fortin
   fuel_ox_split = .0009
   ox_air_split =  0.01
-  pipeTh = .00
-  pipeBL = .00
+  pipeTh = .0002
+  pipeBL = .0002
 
   blobx = .001
   bloby = .00127
   blobr = .001
-  blobw = .00015
+  blobw = .000001
   blobT = 1900
 
   V_fu = 0.3990
-  V_ox = 0.42
+  V_ox = 0.462
   V_air = 0
   T_fu = 510.0
   T_ox = 510.0

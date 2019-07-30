@@ -125,8 +125,10 @@ contains
              zoneL = BL_PIPEEND
              zoneR = BL_FUELPIPE
              r = fuel_ox_split - ABS(x)
-             eta = 0.5d0*(1.d0 - TANH(2.d0*r/pipeBL))
-             v = v_bc(zoneL)*eta + v_bc(zoneR)*(1.d0-eta)
+	     eta = (1.d0 - TANH(2.d0*r/pipeBL))
+	     v = v_bc(zoneR)*2.d0*(1-((ABS(x))**(2)/(fuel_ox_split**(2))))
+!             eta = 0.5d0*(1.d0 - TANH(2.d0*r/pipeBL))
+!             v = v_bc(zoneL)*eta + v_bc(zoneR)*(1.d0-eta)
              if (eta.lt.0.d0 .or. eta.gt.1.d0) then
                 call bl_pd_abort()
              endif
@@ -134,7 +136,8 @@ contains
              zoneL = BL_PIPEEND
              zoneR = BL_OXIDIZER
              r = ABS(x) - (fuel_ox_split+pipeTh)
-             eta = 0.5d0*(1.d0 - TANH(2.d0*r/pipeBL))
+             eta = (1.d0 - TANH(2.d0*r/pipeBL))
+!             eta = 0.5d0*(1.d0 - TANH(2.d0*r/pipeBL))
              v = v_bc(zoneL)*eta + v_bc(zoneR)*(1.d0-eta)
              if (eta.lt.0.d0 .or. eta.gt.1.d0) then
                 call bl_pd_abort()

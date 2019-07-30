@@ -38,7 +38,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c, name='amrex_probinit')
 
     use PeleLM_F,  only: pphys_getP1atm_MKS
-    use mod_Fvar_def, only : pamb, dpdt_factor, closed_chamber
+    use mod_Fvar_def, only : pamb
     use mod_Fvar_def, only : fuelID, domnhi, domnlo, dim
     use probdata_module, only : rho_bc, Y_bc
     use probdata_module, only : T_fu, T_ox, T_air, pipeTh, pipeBL,&

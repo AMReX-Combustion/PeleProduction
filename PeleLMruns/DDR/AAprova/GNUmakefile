@@ -6,7 +6,7 @@ AMREX_HOME ?= ../../../Submodules/amrex
 DIM             = 2
 COMP            = gnu
 DEBUG           = FALSE
-USE_MPI         = FALSE
+USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
@@ -15,7 +15,6 @@ Reactions_dir   := Fuego
 Transport_dir   := Simple
 Eos_dir         := Fuego
 Chemistry_Model := grimech30
-fEXE_sources += gri30_070.f
 
 Blocs   := .
 
