@@ -1,0 +1,7 @@
+For the version committed as PeleProduction 86783a5 I found things are reasonable
+if you run in three stages ith the following args
+ 1. inputs.diffusion amr.max_level=0 max_step=50
+ 2. inputs.diffusion amr.max_level=1 max_step=55 amr.restart=chk00050
+ 3. inputs.diffusion amr.max_level=2 max_step=500 amr.restart=chk00055 amr.regrid_on_restart=1
+
+-MD, 7/30/2019
