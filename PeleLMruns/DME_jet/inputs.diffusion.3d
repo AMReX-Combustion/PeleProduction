@@ -165,5 +165,5 @@ cg.unstable_criterion = 100
 #ns.num_divu_iters = 0
 #max_step          = 0
 amrex.fpe_trap_invalid = 1
-ns.hack_nochem=1
+#ns.hack_nochem=1
 
