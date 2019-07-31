@@ -1,7 +1,7 @@
-TOP = ../../..
-AMREX_HOME ?= ${TOP}/amrex
-IAMR_HOME ?= ${TOP}/IAMR
-PELELM_HOME ?= ${TOP}/PeleLM
+PELELM_HOME ?= ../../Submodules/PeleLM
+PELE_PHYSICS_HOME ?= ../../Submodules/PelePhysics
+IAMR_HOME ?= ../../Submodules/IAMR
+AMREX_HOME ?= ../../Submodules/amrex
 
 #
 # User-settable variables.
@@ -9,7 +9,7 @@ PELELM_HOME ?= ${TOP}/PeleLM
 PRECISION         = DOUBLE
 DEBUG	          = FALSE
 DIM    	          = 3
-COMP              = gnu
+COMP              = intel
 USE_OMP           = FALSE
 USE_MPI           = TRUE
 VERBOSE           = FALSE
@@ -18,7 +18,7 @@ NESAP_BENCHMARK   = TRUE
 Chemistry_Model = CHEMH
 
 ifeq ($(NESAP_BENCHMARK), TRUE)
-  Chemistry_Model = FFCM1
+  Chemistry_Model = FFCM1_Red
   COMP = intel
   DIM = 3
   PRECISION = DOUBLE
