@@ -15,12 +15,8 @@ ns.num_divu_iters = 3
 ns.consumptionName = NC12H26
 ht.plot_heat_release=1
 ht.plot_scalar_dissipation=1
-ht.plot_rhoY=0
-ht.plot_molefrac=0
-ht.plot_massfrac=1
-ht.plot_ydot=0
 ht.RRspec=OH HO2 H2O H2O2 CH2O CO CO2 C2H2 C12H25O2
-amr.derive_plot_vars=mag_vort 
+amr.derive_plot_vars=mag_vort mass_fractions
 
 geometry.coord_sys = 0  # 0 => cart, 1 => RZ
 
@@ -50,6 +46,7 @@ amr.refine_grid_layout = 1
 geometry.prob_lo    = -.0032 -.0032 0.0
 geometry.prob_hi    =  .0032  .0032 0.0064
 amr.n_cell          = 320 320 320
+amr.n_cell          = 80 80 80
 amr.blocking_factor = 8
 amr.blocking_factor = 16
 max_step            = 20000
@@ -122,15 +119,12 @@ ns.dpdt_option = 0
 
 # ----------------  PROBLEM DEPENDENT INPUTS
 
-ns.lo_bc          = 2 2 1
-ns.hi_bc          = 2 2 2
-geometry.is_periodic = 0 0 0
-
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-
+# Interior, Inflow, Outflow, Symmetry,
+# SlipWallAdiab, NoSlipWallAdiab, SlipWallIsotherm, NoSlipWallIsotherm
+peleLM.lo_bc = Outflow  Outflow  Inflow
+peleLM.hi_bc = Outflow  Outflow  Outflow
+geometry.is_periodic = 0 0 0
 
 # ------------------  INPUTS TO GODUNOV CLASS ----------------------
 godunov.slope_order = 4
@@ -161,12 +155,10 @@ mac.mac_sync_tol   = 1.0e-8   # tolerence for mac SYNC projection
 mac.mac_abs_tol    = 1.0e-14
 mac.use_cg_solve   = 0
 mac.do_outflow_bcs = 0
-#
-# Select form of FAB output: default is NATIVE
-#
-#   ASCII  (this is very slow)
-#   NATIVE (native binary form on machine -- the default)
-#   IEEE32 (useful if you want 32bit files when running in double precision)
-#   8BIT   (eight-bit run-length-encoded)
-#
-fab.format = NATIVE
+
+ns.num_divu_iters = 0
+ns.init_iters = 0
+ns.hack_nochem = 1
+ns.do_init_proj = 0
+max_step = 0
+amr.max_level = 0

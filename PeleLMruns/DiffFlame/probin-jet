@@ -1,6 +1,4 @@
  &fortin
-  probtype = 'diffusion_jet'
-
   V_in = 40.0
   T_in = 440.0
   T_in = 363.0
@@ -41,8 +39,6 @@
  &heattransin
   pamb =  101325.
   pamb = 6079500.
-  dpdt_factor = 0.3
-  dpdt_factor = 1.0
  /
   &flctin
    flct_file = "Turb_s3d_1E4"

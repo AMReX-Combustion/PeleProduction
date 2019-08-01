@@ -36,7 +36,7 @@ contains
   subroutine bcfunction(x,y,z,dir,norm,time,u,v,w,rho,Yl,T,h,dx,getuv) &
        bind(C, name="bcfunction")
 
-    use network,   only: nspec
+    use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : pamb, dim, domnlo, domnhi
@@ -71,13 +71,13 @@ contains
     end if
 
     eta = 0.5d0*(1.d0 - TANH(2.d0*(sqrt(x**2+y**2)-blobr)/Tfrontw))
-    do n = 0, Nspec-1
+    do n = 0, nspecies-1
        Yl(n) = Y_bc(n,BL_FUELPIPE)*eta + (1.d0-eta)*Y_bc(n,BL_COFLOW)
     end do
 #if 0
     T = T_bc(BL_FUELPIPE)*eta + (1.d0-eta)*T_bc(BL_COFLOW)
 #else
-    ! do n=1,Nspec
+    ! do n=1,nspecies
     !    call get_spec_name(name,n)
     !    if (name .eq. 'N2' ) iN2 = n
     !    if (name .eq. 'O2' ) iO2 = n
@@ -94,7 +94,7 @@ contains
     h_ox = h_ox*1.d-4 ! cgs to MKS
 
     ! write(6,*)" temps", T_bc(BL_FUELPIPE),T_bc(BL_COFLOW)
-    ! write(6,*)" Yl ", Yl(0:Nspec-1)
+    ! write(6,*)" Yl ", Yl(0:nspecies-1)
     ! write(6,*)" h_fu",h_fu
 
     hmix = Yl(iNC12H26-1)*h_fu(iNC12H26-1) &

@@ -342,7 +342,7 @@ contains
   
   subroutine all_chem_fill(rhoY,DIMS(rhoY),domlo,domhi,delta,xlo,time,bc) bind(C, name="all_chem_fill")
 
-    use network,  only: nspec
+    use network,  only: nspecies
     use mod_Fvar_def, only : domnlo, maxspec, dim
     use user_defined_fcts_3d_module, only : bcfunction
 
@@ -351,7 +351,7 @@ contains
     integer DIMDEC(rhoY), bc(dim,2)
     integer domlo(dim), domhi(dim)
     REAL_T  delta(dim), xlo(dim), time
-    REAL_T  rhoY(DIMV(rhoY),Nspec)
+    REAL_T  rhoY(DIMV(rhoY),nspecies)
 
     integer i, j, k, n
     integer ilo, ihi, jlo, jhi, klo, khi
@@ -374,7 +374,7 @@ contains
     jhi = min(hi(2),domhi(2))
     khi = min(hi(3),domhi(3))
       
-    do n = 1,Nspec
+    do n = 1,nspecies
        call filcc (rhoY(lo(1),lo(2),lo(3),n), &
                    DIMS(rhoY),domlo,domhi,delta,xlo,bc)
     end do
@@ -387,7 +387,7 @@ contains
              do i = lo(1), hi(1)
                 x = (float(i)+.5)*delta(1)+domnlo(1)
                 call bcfunction(x,y,z,3,1,time,u,v,w,rho,Yl,T,h,delta,.false.)
-                do n = 1,Nspec
+                do n = 1,nspecies
                    rhoY(i,j,k,n) = rho*Yl(n)
                 end do
              enddo

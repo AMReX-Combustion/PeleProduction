@@ -21,188 +21,205 @@ contains
 
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
-      use PeleLM_F,  only: pphys_getP1atm_MKS
-      use mod_Fvar_def, only : time_points, vel_points, cntl_points, &
-                               ac_hist_file, cfix, changemax_control, coft_old, &
-                               controlvelmax, corr, dv_control, navg_pnts, &
-                               scale_control, sest, tau_control, tbase_control, &
-                               V_in, v_in_old, zbase_control
+    use network, only : nspecies, spec_names
+    use PeleLM_F,  only : pphys_getP1atm_MKS
+    use mod_Fvar_def, only : time_points, vel_points, cntl_points, &
+                             ac_hist_file, cfix, changemax_control, coft_old, &
+                             controlvelmax, corr, dv_control, navg_pnts, &
+                             scale_control, sest, tau_control, tbase_control, &
+                             V_in, v_in_old, zbase_control
 
-      use probdata_module, only : T_in, V_co, phi_in, T_co, &
-                                  splitx, xfrontw, fuel_N2_vol_percent, &
-                                  blobr, bloby, blobx, blobz, blobT, Tfrontw, turb_scale, &
-                                  domnlo, domnhi, adverr, diff_thresh, flametracval, H2_frac, &
-                                  hrr_thresh, max_diff_lev, max_hrr_lev, max_mix_lev, max_temp_lev, &
-                                  max_trac_lev, max_vort_lev, mix_thresh, OH_thresh, pertmag, &
-                                  pseudo_gravity, refine_nozzle, RO2_thresh, splity, standoff, &
-                                  stTh, T_switch, temperr, tempgrad, traceSpecVal, V_jet, &
-                                  vorterr, yfrontw, zmax_diff, zmax_mix
+    use probdata_module, only : T_in, V_co, phi_in, T_co, &
+                                splitx, xfrontw, fuel_N2_vol_percent, &
+                                blobr, bloby, blobx, blobz, blobT, Tfrontw, turb_scale, &
+                                domnlo, domnhi, adverr, diff_thresh, flametracval, H2_frac, &
+                                hrr_thresh, max_diff_lev, max_hrr_lev, max_mix_lev, max_temp_lev, &
+                                max_trac_lev, max_vort_lev, mix_thresh, OH_thresh, pertmag, &
+                                pseudo_gravity, refine_nozzle, RO2_thresh, splity, standoff, &
+                                stTh, T_switch, temperr, tempgrad, traceSpecVal, V_jet, &
+                                vorterr, yfrontw, zmax_diff, zmax_mix, &
+                                iH2, iO2, iN2, iCH4, iNC12H26
 
-      implicit none
+    implicit none
 
-      integer init, namlen
-      integer name(namlen)
-      integer untin
-      REAL_T problo(amrex_spacedim), probhi(amrex_spacedim)
+    integer init, namlen
+    integer name(namlen)
+    integer untin
+    REAL_T problo(amrex_spacedim), probhi(amrex_spacedim)
 
-      integer i
-      REAL_T h_control, pamb
+    integer i
+    REAL_T h_control, pamb
 
-      namelist /fortin/ vorterr, temperr, adverr, tempgrad, &
-                        hrr_thresh, OH_thresh, RO2_thresh, &
-                        flametracval, mix_thresh, zmax_mix,&
-      		        max_temp_lev, max_vort_lev, max_trac_lev, &
-                        max_hrr_lev, max_mix_lev, &
-                        traceSpecVal,phi_in,T_in, T_co, &
-                        turb_scale, V_in, V_co, H2_frac,T_switch, &
-                        standoff, pertmag, splitx, xfrontw, &
-                        splity, yfrontw, blobx, bloby, blobz, blobr, &
-                        blobT, Tfrontw, stTh, fuel_N2_vol_percent,V_jet,refine_nozzle, &
-                        max_diff_lev, zmax_diff, diff_thresh
-      namelist /heattransin/ pamb
+    namelist /fortin/ vorterr, temperr, adverr, tempgrad, &
+                      hrr_thresh, OH_thresh, RO2_thresh, &
+                      flametracval, mix_thresh, zmax_mix,&
+                      max_temp_lev, max_vort_lev, max_trac_lev, &
+                      max_hrr_lev, max_mix_lev, &
+                      traceSpecVal,phi_in,T_in, T_co, &
+                      turb_scale, V_in, V_co, H2_frac,T_switch, &
+                      standoff, pertmag, splitx, xfrontw, &
+                      splity, yfrontw, blobx, bloby, blobz, blobr, &
+                      blobT, Tfrontw, stTh, fuel_N2_vol_percent,V_jet,refine_nozzle, &
+                      max_diff_lev, zmax_diff, diff_thresh
+    namelist /heattransin/ pamb
 #if defined(BL_DO_FLCT)
-      namelist /flctin/ tstart_turb, forceInflow, numInflPlanesStore, forceLo, forceHi, &
-           strmwse_dir, nCompInflow, flct_file
+    namelist /flctin/ tstart_turb, forceInflow, numInflPlanesStore, forceLo, forceHi, &
+         strmwse_dir, nCompInflow, flct_file
 #endif
-      namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
-          zbase_control, pseudo_gravity, corr, controlVelMax, navg_pnts
+    namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
+         zbase_control, pseudo_gravity, corr, controlVelMax, navg_pnts
 
-      !
-      ! Build `probin' filename -- the name of file containing fortin namelist.
-      !
-      integer maxlen, isioproc
-      parameter (maxlen=256)
-      character probin*(maxlen)
+    !
+    ! Build `probin' filename -- the name of file containing fortin namelist.
+    !
+    integer maxlen, isioproc
+    parameter (maxlen=256)
+    character probin*(maxlen)
 
-      call bl_pd_is_ioproc(isioproc)
+    do i = 1,nspecies
+       if (spec_names(i) .eq. "H2") iH2 = i
+       if (spec_names(i) .eq. "O2") iO2 = i
+       if (spec_names(i) .eq. "CH4") iCH4 = i
+       if (spec_names(i) .eq. "N2") iN2 = i
+       if (spec_names(i) .eq. "NC12H26") iNC12H26 = i
+    enddo
+    if (iH2.le.0 .or. iH2.gt.nspecies .or. &
+         iO2.le.0 .or. iO2.gt.nspecies .or. &
+         iCH4.le.0 .or. iCH4.gt.nspecies .or. &
+         iN2.le.0 .or. iN2.gt.nspecies .or. &
+         iNC12H26.le.0 .or. iNC12H26.gt.nspecies) then
+       call bl_pd_abort('Could not find all special species in mech')
+    endif
 
-      if (init.ne.1) then
-         ! call bl_abort('probinit called with init ne 1')
-      end if
+    call bl_pd_is_ioproc(isioproc)
 
-      if (namlen .gt. maxlen) then
-         call bl_abort('probin file name too long')
-      end if
+    if (init.ne.1) then
+       call bl_pd_abort('probinit called with init ne 1')
+    end if
 
-      if (namlen .eq. 0) then
-         namlen = 6
-         probin(1:namlen) = 'probin'
-      else
-         do i = 1, namlen
-            probin(i:i) = char(name(i))
-         end do
-      endif
+    if (namlen .gt. maxlen) then
+       call bl_abort('probin file name too long')
+    end if
 
-      ! Load domain dimensions into common
-      do i=1,amrex_spacedim
-         domnlo(i) = problo(i)
-         domnhi(i) = probhi(i)
-      enddo
+    if (namlen .eq. 0) then
+       namlen = 6
+       probin(1:namlen) = 'probin'
+    else
+       do i = 1, namlen
+          probin(i:i) = char(name(i))
+       end do
+    endif
+    untin = 9
+    open(untin,file=probin(1:namlen),form='formatted',status='old')
+        
+    ! Load domain dimensions into common
+    do i=1,amrex_spacedim
+       domnlo(i) = problo(i)
+       domnhi(i) = probhi(i)
+    enddo
 
-      ! Set defaults
-      vorterr = 1.e20
-      temperr = zero
-      adverr = 1.e20
-      tempgrad  = 50.0d0
-      flametracval = 0.0001d0
-      max_temp_lev = 0
-      max_vort_lev = 0
-      max_trac_lev = 100
-      traceSpecVal = 1.d-10
-      if (max_vort_lev.lt.0) max_vort_lev=max_temp_lev
-      
-      pamb = pphys_getP1atm_MKS()
+    ! Set defaults
+    vorterr = 1.e20
+    temperr = zero
+    adverr = 1.e20
+    tempgrad  = 50.0d0
+    flametracval = 0.0001d0
+    max_temp_lev = 0
+    max_vort_lev = 0
+    max_trac_lev = 100
+    traceSpecVal = 1.d-10
+    if (max_vort_lev.lt.0) max_vort_lev=max_temp_lev
 
-      splitx = 0.5d0 * (domnhi(1) + domnlo(1))
-      xfrontw = 0.05d0 * (domnhi(1) - domnlo(1))
-      splity = 0.5d0 * (domnhi(2) + domnlo(2))
-      yfrontw = 0.05d0 * (domnhi(2) - domnlo(2))
-      blobx = 0.5d0 * (domnhi(1) + domnlo(1))
-      bloby = 0.5d0 * (domnhi(2) + domnlo(2))
-      blobT = T_in
-      Tfrontw = xfrontw
-      stTh = -1.d0
-      fuel_N2_vol_percent = 0.d0
+    pamb = pphys_getP1atm_MKS()
 
-#if defined(BL_DO_FLCT)
-      ! add_turb = .FALSE.
-      forceInflow = .FALSE.
-      numInflPlanesStore = -1
-      forceLo = .TRUE.
-      forceHi = .FALSE.
-      strmwse_dir = amrex_spacedim
-      flct_file = ''
-      turb_scale = 1.d0
-      nCompInFlow = amrex_spacedim
-#endif
-      zbase_control = 0.d0
-
-      ! Note: for setup with no coflow, set Ro=Rf+wallth
-      standoff = zero
-      pertmag = 0.d0
-
-      ! Initialize control variables
-      tau_control = one
-      sest = zero
-      corr = one
-      changeMax_control = .05
-      coft_old = -one
-      cfix = zero
-      ac_hist_file = 'AC_History'
-      dV_control = zero
-      tbase_control = zero
-      h_control = -one
-      pseudo_gravity = 0
-
-      ! Initialize control variables that depend on fortin variables
-      V_in_old = V_in
-
-      untin = 9
-      open(untin,file=probin(1:namlen),form='formatted',status='old')
-      if (isioproc .eq. 1) write(6,*)"reading fortin"
-      read(untin,fortin)
-      if (isioproc .eq. 1) write(6,*)"done reading fortin"
-      read(untin,heattransin)
-      close(unit=untin)
+    splitx = 0.5d0 * (domnhi(1) + domnlo(1))
+    xfrontw = 0.05d0 * (domnhi(1) - domnlo(1))
+    splity = 0.5d0 * (domnhi(2) + domnlo(2))
+    yfrontw = 0.05d0 * (domnhi(2) - domnlo(2))
+    blobx = 0.5d0 * (domnhi(1) + domnlo(1))
+    bloby = 0.5d0 * (domnhi(2) + domnlo(2))
+    blobT = T_in
+    Tfrontw = xfrontw
+    stTh = -1.d0
+    fuel_N2_vol_percent = 0.d0
 
 #if defined(BL_DO_FLCT)
-      if (isioproc .eq. 1) write(6,*)"reading flctin"
-      read(untin,flctin)
-      if (isioproc .eq. 1) write(6,*)"done reading flctin"
+    ! add_turb = .FALSE.
+    forceInflow = .FALSE.
+    numInflPlanesStore = -1
+    forceLo = .TRUE.
+    forceHi = .FALSE.
+    strmwse_dir = amrex_spacedim
+    flct_file = ''
+    turb_scale = 1.d0
+    nCompInFlow = amrex_spacedim
+#endif
+    zbase_control = 0.d0
+
+    ! Note: for setup with no coflow, set Ro=Rf+wallth
+    standoff = zero
+    pertmag = 0.d0
+
+    ! Initialize control variables
+    tau_control = one
+    sest = zero
+    corr = one
+    changeMax_control = .05
+    coft_old = -one
+    cfix = zero
+    ac_hist_file = 'AC_History'
+    dV_control = zero
+    tbase_control = zero
+    h_control = -one
+    pseudo_gravity = 0
+
+    ! Initialize control variables that depend on fortin variables
+    V_in_old = V_in
+
+    if (isioproc .eq. 1) write(6,*)"reading fortin"
+    read(untin,fortin)
+    if (isioproc .eq. 1) write(6,*)"done reading fortin"
+    read(untin,heattransin)
+
+#if defined(BL_DO_FLCT)
+    if (isioproc .eq. 1) write(6,*)"reading flctin"
+    read(untin,flctin)
+    if (isioproc .eq. 1) write(6,*)"done reading flctin"
 #endif
 
 #if defined(BL_DO_FLCT)
-      if (forceInflow .eqv. .FALSE.) then
-         forceLo = .FALSE.
-         forceHi = .FALSE.
-      endif
+    if (forceInflow .eqv. .FALSE.) then
+       forceLo = .FALSE.
+       forceHi = .FALSE.
+    endif
 #endif
 
-      if (isioproc .eq. 1) write(6,*)"reading control"
-      read(untin,control)
-      close(unit=untin)
-      if (isioproc .eq. 1) write(6,*)"done reading control"
+    if (isioproc .eq. 1) write(6,*)"reading control"
+    read(untin,control)
+    if (isioproc .eq. 1) write(6,*)"done reading control"
 
 
-      ! Set up boundary functions
-      if (isioproc .eq. 1) write(6,*)" setup bc"
-      call setupbc()
-      if (isioproc .eq. 1) write(6,*)" done setup bc"
+    ! Set up boundary functions
+    if (isioproc .eq. 1) write(6,*)" setup bc"
+    call setupbc()
+    if (isioproc .eq. 1) write(6,*)" done setup bc"
 
 #if defined(BL_DO_FLCT)
-      if (do_flct.eq.1) then
-         call init_turbinflow(flct_in, .false.)
-      endif
+    if (do_flct.eq.1) then
+       call init_turbinflow(flct_in, .false.)
+    endif
 #endif
 
-      if (isioproc.eq.1) then
-         write(6,fortin)
-         write(6,heattransin)
+    if (isioproc.eq.1) then
+       write(6,fortin)
+       write(6,heattransin)
 #if defined(BL_DO_FLCT)
-         write(6,flctin)
+       write(6,flctin)
 #endif
-         write(6,control)
-      end if
+       write(6,control)
+    end if
+
+    close(unit=untin)
 
   end subroutine amrex_probinit
   
@@ -210,7 +227,7 @@ contains
 
   subroutine set_Y_from_Phi(phi,Yt)
     
-    use network,   only: nspec
+    use network,   only: nspecies
     use mod_Fvar_def, only : maxspec
     use probdata_module, only : iN2, iO2, iCH4, iH2, H2_frac
     use fuego_chemistry, only : CKXTY
@@ -223,7 +240,7 @@ contains
     REAL_T Xt(maxspec)
     integer n, len
 
-    do n = 1,nspec
+    do n = 1,nspecies
        Xt(n) = 0.d0
     end do
     alpha = H2_frac
@@ -239,7 +256,7 @@ contains
   end subroutine set_Y_from_Phi
   
   subroutine setupbc() bind(C, name="setupbc")
-    use network,   only: nspec
+    use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : pamb, domnlo, domnhi, maxspec, maxspnml, V_in,&
@@ -266,7 +283,7 @@ contains
     if(fuel_N2_vol_percent .ge. 0.d0)then
 
        ! Fuel
-       do n = 1,nspec
+       do n = 1,nspecies
           Xt(n) = 0.d0
        end do
 
@@ -275,7 +292,7 @@ contains
 
        CALL CKXTY (Xt, Yt)
 
-       do n=1,nspec
+       do n=1,nspecies
           Y_bc(n-1,fuelZone) = Yt(n)
        end do
        T_bc(fuelZone) = T_in
@@ -284,14 +301,14 @@ contains
        w_bc(fuelZone) = V_in
           
        ! Air
-       do n=1,nspec
+       do n=1,nspecies
           Xt(n) = zero
        enddo
        Xt(oxidID) = 0.21d0
        Xt(iN2)    = 1.d0 - Xt(oxidID)
 
        CALL CKXTY (Xt, Yt)
-       do n=1,nspec
+       do n=1,nspecies
           Y_bc(n-1,airZone) = Yt(n)
        end do
           
@@ -302,7 +319,7 @@ contains
 
     else
        ! Fuel
-       do n = 1,nspec
+       do n = 1,nspecies
           Xt(n) = 0.d0
           Yt(n) = 0.d0
        end do
@@ -317,7 +334,7 @@ contains
        Yt(iO2) = .1125d0
        Yt(iN2) = 1.d0 -  Yt(iNC12H26) -  Yt(iO2)
 
-       do n=1,nspec
+       do n=1,nspecies
           Y_bc(n-1,fuelZone) = Yt(n)
        end do
        T_bc(fuelZone) = T_in
@@ -326,14 +343,14 @@ contains
        w_bc(fuelZone) = V_in
 
        ! Air
-       do n=1,nspec
+       do n=1,nspecies
           Xt(n) = zero
        enddo
        Xt(oxidID) = 0.15d0
        Xt(iN2)    = 1.d0 - Xt(oxidID)
 
        CALL CKXTY (Xt, Yt)         
-       do n=1,nspec
+       do n=1,nspecies
           Y_bc(n-1,airZone) = Yt(n)
        end do
          
@@ -345,31 +362,29 @@ contains
     endif
 
 #if 0
-       ! do stuff for mixture fraction calculation
-       ! read this from input later
-       YF=0
-       YO=0
-       YF(iNC12H26)=1.0
-       YO(oxidID) = Y_bc(oxidId-1,airZone)
-       YO(iN2) = 1-YO(oxidId)
-       Z_fu=0
-       Z_ox=0
-       do i=1,nspec
-          fact=0
-          do j = 1, Nelt
-             fact = fact+beta_mix(j)*coeff_mix(i,j)
-          enddo
-          Z_fu = Z_fu + fact*YF(i)
+    ! do stuff for mixture fraction calculation
+    ! read this from input later
+    YF=0
+    YO=0
+    YF(iNC12H26)=1.0
+    YO(oxidID) = Y_bc(oxidId-1,airZone)
+    YO(iN2) = 1-YO(oxidId)
+    Z_fu=0
+    Z_ox=0
+    do i=1,nspecies
+       fact=0
+       do j = 1, Nelt
+          fact = fact+beta_mix(j)*coeff_mix(i,j)
        enddo
-
-       do i=1,nspec
-          fact=0
-          do j = 1, Nelt
-             fact = fact+beta_mix(j)*coeff_mix(i,j)
-          enddo
-          Z_ox = Z_ox + fact*YO(i)
+       Z_fu = Z_fu + fact*YF(i)
+    enddo
+    do i=1,nspecies
+       fact=0
+       do j = 1, Nelt
+          fact = fact+beta_mix(j)*coeff_mix(i,j)
        enddo
-
+       Z_ox = Z_ox + fact*YO(i)
+    enddo
 #endif
 
     do zone=1,Nzones
@@ -386,9 +401,7 @@ contains
 
       endif
    enddo
-   ! print*, "density ", rho_bc(1), rho_bc(2)
-   ! print*, "enthalpy ", h_bc(1), h_bc(2), h_bc(2)*rho_bc(2)
-   ! print*, "Mass frac" , rho_bc(2)*Yt(iO2), rho_bc(2)*Yt(iN2)
+
    bcinit = .true.
 
  end subroutine setupbc
@@ -398,7 +411,7 @@ contains
                       delta,xlo,xhi) &
                       bind(C, name="init_data")
 
-   use network,   only: nspec
+   use network,   only: nspecies
    use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
    use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
@@ -426,40 +439,6 @@ contains
    REAL_T pmf_vals(maxspec+3), z1, z2, dx, Ly
    REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,w,rho,T,h
 
-#if 0
-
-   ! old init
-   fuelZone = getZone(domnlo(1), domnlo(2), domnlo(3))
-   airZone  = getZone(domnhi(1), domnhi(2), domnhi(3))
-
-   do k = lo(3), hi(3)
-      z = (float(k)+.5)*delta(3)+domnlo(3)
-      do j = lo(2), hi(2)
-         y = (float(j)+.5)*delta(2)+domnlo(2)
-         do i = lo(1), hi(1)
-            x = (float(i)+.5)*delta(1)+domnlo(1)
-
-            z = domnlo(3)
-            call bcfunction(BL_ZLO,x,y,z,time,u,v,w,rho,Yl,T,h,delta,.true.)
-            do n = 1,nspec
-               scal(i,j,k,FirstSpec+n-1) = Yl(n)
-            end do
-
-            scal(i,j,k,Trac) = 0.d0
-            scal(i,j,k,Temp) = T
-
-            vel(i,j,k,1) = u
-            vel(i,j,k,2) = v
-            vel(i,j,k,3) = w
-
-         enddo
-      enddo
-   enddo
-
-#else
-
-   ! new init 
-
    fuelZone = getZone(domnlo(1), domnlo(2), domnlo(3))
    airZone  = getZone(domnhi(1), domnhi(2), domnhi(3))
 
@@ -470,10 +449,7 @@ contains
          y = (float(j)+.5)*delta(2)+domnlo(2)
          do i = lo(1), hi(1)
             x = (float(i)+.5)*delta(1)+domnlo(1)
-
-            ! ztemp = domnlo(3)
-            ! call bcfunction(BL_ZLO,x,y,ztemp,time,u,v,w,rho,Yl,T,h,delta,.true.)
-            do n = 1,nspec
+            do n = 1,nspecies
                scal(i,j,k,FirstSpec+n-1) = Y_bc(n-1,BL_COFLOW)
             end do
             scal(i,j,k,Trac) = 0.d0
@@ -485,10 +461,8 @@ contains
       enddo
    enddo
 
-#endif
-
    Patm = pamb / pphys_getP1atm_MKS()
-   !      write(6,*)"Patm",Patm
+
    call pphys_RHOfromPTY(lo,hi, &
         scal(ARG_L1(state),ARG_L2(state),ARG_L3(state),Density),  DIMS(state), &
         scal(ARG_L1(state),ARG_L2(state),ARG_L3(state),Temp),     DIMS(state), &
@@ -503,7 +477,7 @@ contains
    do k = lo(3), hi(3)
       do j = lo(2), hi(2)
          do i = lo(1), hi(1)
-            do n = 0,nspec-1
+            do n = 0,nspecies-1
                scal(i,j,k,FirstSpec+n) = scal(i,j,k,FirstSpec+n)*scal(i,j,k,Density)
             enddo
             scal(i,j,k,RhoH) = scal(i,j,k,RhoH)*scal(i,j,k,Density)
