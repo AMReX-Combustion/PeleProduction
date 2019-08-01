@@ -9,6 +9,8 @@
 
 module prob_3D_module
 
+  use amrex_fort_module, only : rt=>amrex_real, dim=>amrex_spacedim
+  
   implicit none
 
   private
@@ -39,7 +41,7 @@ contains
 
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use mod_Fvar_def, only : pamb, dpdt_factor, closed_chamber
-    use mod_Fvar_def, only : fuelID, domnhi, domnlo, dim
+    use mod_Fvar_def, only : fuelID, domnhi, domnlo
     use probdata_module, only : standoff, pertmag, pert_scale, rho_bc, Y_bc, blobz
 
     implicit none
@@ -119,7 +121,7 @@ contains
 
   subroutine setupbc() bind(C, name="setupbc")
     
-    use network,   only: nspec
+    use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use fuego_chemistry, only: ckxty
@@ -128,8 +130,8 @@ contains
 
     implicit none
 
-    REAL_T Patm, pmf_vals(nspec+3), a
-    REAL_T Xt(nspec), loc
+    REAL_T Patm, pmf_vals(nspecies+3), a
+    REAL_T Xt(nspecies), loc
     integer n, len, b(3)
 
     b = 1
@@ -139,11 +141,11 @@ contains
     loc = (domnlo(2)-standoff)*100.d0
     call pmf(loc,loc,pmf_vals,n)
 
-    if (n.ne.nspec+3) then
-       call bl_pd_abort('INITDATA: n(pmf) .ne. Nspec+3')
+    if (n.ne.nspecies+3) then
+       call bl_pd_abort('INITDATA: n(pmf) .ne. nspecies+3')
     endif
 
-    do n = 1,Nspec
+    do n = 1,nspecies
        Xt(n) = pmf_vals(3+n)
     end do
 
@@ -201,11 +203,11 @@ contains
        vel,scal,DIMS(state),press,DIMS(press),&
        delta,xlo,xhi) bind(C, name="init_data")
     
-    use network,   only: nspec
+    use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use fuego_chemistry, only: ckxty
-    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac, dim
+    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
     use probdata_module, only : standoff, pert_scale, pertmag, domnlo, domnhi, blobz
 
     implicit none
@@ -221,8 +223,8 @@ contains
     integer tmpi, nPMF
 
     integer i, j, k, n
-    REAL_T x, y, z, r, Yl(nspec), Xl(nspec), Patm
-    REAL_T pmf_vals(nspec+3), z1, z2, dx, Ly
+    REAL_T x, y, z, r, Yl(nspecies), Xl(nspecies), Patm
+    REAL_T pmf_vals(nspecies+3), z1, z2, dx, Ly
     REAL_T pert,Lx,eta,u,v,w,rho,T,h
 
     do k = lo(3), hi(3)
@@ -248,18 +250,18 @@ contains
              z2 = (z - blobz - standoff + 0.5d0*delta(2) + pert )*100.d0 
 
              call pmf(z1,z2,pmf_vals,nPMF)               
-             if (nPMF.ne.Nspec+3) then
-                call bl_abort('INITDATA: n .ne. Nspec+3')
+             if (nPMF.ne.nspecies+3) then
+                call bl_abort('INITDATA: n .ne. nspecies+3')
              endif
 
              scal(i,j,k,Temp) = pmf_vals(1)
-             do n = 1,Nspec
+             do n = 1,nspecies
                 Xl(n) = pmf_vals(3+n)
              end do
 
              CALL ckxty (Xl, Yl)
 
-             do n = 1,Nspec
+             do n = 1,nspecies
                 scal(i,j,k,FirstSpec+n-1) = Yl(n)
              end do
 
@@ -289,7 +291,7 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             do n = 0,Nspec-1
+             do n = 0,nspecies-1
                 scal(i,j,k,FirstSpec+n) = scal(i,j,k,FirstSpec+n)*scal(i,j,k,Density)
              enddo
              scal(i,j,k,RhoH) = scal(i,j,k,RhoH)*scal(i,j,k,Density)
