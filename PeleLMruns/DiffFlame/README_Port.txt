@@ -3,8 +3,10 @@ DONE 2. maxspec->NUM_SPECIES
 DONE 3. Set iN2, iO2, etc
 4. convVel
 5. BL_DO_FLCT
-6. pseudo_gravity
-7.       use extern_probin_module, only : do_flct, flct_in
-DONE 8. dim
-9. Refinement criteria
-10. setupbc
+DONE 6. pseudo_gravity
+DONE 7. dim
+8. Refinement criteria
+DONE 9. setupbc
+10. Verify setup
+11. Pull derives into PLM
+

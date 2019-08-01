@@ -23,11 +23,7 @@ contains
 
     use network, only : nspecies, spec_names
     use PeleLM_F,  only : pphys_getP1atm_MKS
-    use mod_Fvar_def, only : time_points, vel_points, cntl_points, &
-                             ac_hist_file, cfix, changemax_control, coft_old, &
-                             controlvelmax, corr, dv_control, navg_pnts, &
-                             scale_control, sest, tau_control, tbase_control, &
-                             V_in, v_in_old, zbase_control
+    use mod_Fvar_def, only : V_in
 
     use probdata_module, only : T_in, V_co, phi_in, T_co, &
                                 splitx, xfrontw, fuel_N2_vol_percent, &
@@ -48,7 +44,7 @@ contains
     REAL_T problo(amrex_spacedim), probhi(amrex_spacedim)
 
     integer i
-    REAL_T h_control, pamb
+    REAL_T pamb
 
     namelist /fortin/ vorterr, temperr, adverr, tempgrad, &
                       hrr_thresh, OH_thresh, RO2_thresh, &
@@ -66,8 +62,6 @@ contains
     namelist /flctin/ tstart_turb, forceInflow, numInflPlanesStore, forceLo, forceHi, &
          strmwse_dir, nCompInflow, flct_file
 #endif
-    namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
-         zbase_control, pseudo_gravity, corr, controlVelMax, navg_pnts
 
     !
     ! Build `probin' filename -- the name of file containing fortin namelist.
@@ -154,27 +148,10 @@ contains
     turb_scale = 1.d0
     nCompInFlow = amrex_spacedim
 #endif
-    zbase_control = 0.d0
 
     ! Note: for setup with no coflow, set Ro=Rf+wallth
     standoff = zero
     pertmag = 0.d0
-
-    ! Initialize control variables
-    tau_control = one
-    sest = zero
-    corr = one
-    changeMax_control = .05
-    coft_old = -one
-    cfix = zero
-    ac_hist_file = 'AC_History'
-    dV_control = zero
-    tbase_control = zero
-    h_control = -one
-    pseudo_gravity = 0
-
-    ! Initialize control variables that depend on fortin variables
-    V_in_old = V_in
 
     if (isioproc .eq. 1) write(6,*)"reading fortin"
     read(untin,fortin)
@@ -194,11 +171,6 @@ contains
     endif
 #endif
 
-    if (isioproc .eq. 1) write(6,*)"reading control"
-    read(untin,control)
-    if (isioproc .eq. 1) write(6,*)"done reading control"
-
-
     ! Set up boundary functions
     if (isioproc .eq. 1) write(6,*)" setup bc"
     call setupbc()
@@ -216,7 +188,6 @@ contains
 #if defined(BL_DO_FLCT)
        write(6,flctin)
 #endif
-       write(6,control)
     end if
 
     close(unit=untin)
