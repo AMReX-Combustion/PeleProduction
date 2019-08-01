@@ -13,12 +13,9 @@ DIM             = 3
 USE_OMP         = FALSE
 USE_MPI         = TRUE
 USE_WBAR        = TRUE
-USE_WBAR        = FALSE
 VERBOSE         = TRUE
 PROFILE         = FALSE
 COMP            = gnu
-#COMP            = intel
-#FCOMP           = intel
 COMM_PROFILE    = FALSE
 
 # Enable flctin namelist
