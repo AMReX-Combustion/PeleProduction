@@ -6,6 +6,8 @@
 
 module user_defined_fcts_3d_module
 
+  use amrex_fort_module, only : rt=>amrex_real, dim=>amrex_spacedim
+  
   implicit none
   
   private
@@ -17,8 +19,7 @@ contains
   subroutine bcfunction(x,y,z,dir,norm,time,u,v,w,rho,Yl,T,h,dx,getuvw) &
        bind(C, name="bcfunction")
 
-    use mod_Fvar_def, only : dim
-    use network,      only : nspec
+    use network, only : nspecies
     use probdata_module, only : u_bc, v_bc, w_bc, rho_bc, T_bc, h_bc, Y_bc
        
     implicit none
@@ -31,7 +32,7 @@ contains
 
     zone = 1
     rho = rho_bc(zone)
-    do n = 0, nspec-1
+    do n = 0, nspecies-1
        Yl(n) = Y_bc(n)
     end do
     T = T_bc(zone)
@@ -50,7 +51,7 @@ contains
                            bind(C, name="zero_visc")   
 
       use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, LastSpec
-      use mod_Fvar_def, only : domnhi, domnlo, dim
+      use mod_Fvar_def, only : domnhi, domnlo
       
       implicit none
       integer DIMDEC(diff)
