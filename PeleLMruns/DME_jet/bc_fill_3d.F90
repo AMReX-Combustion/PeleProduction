@@ -6,6 +6,8 @@
 
 module bc_fill_3d_module
 
+  use amrex_fort_module, only : dim=>amrex_spacedim
+
   implicit none
   
   private
@@ -18,7 +20,8 @@ contains
 
   subroutine den_fill (den,DIMS(den),domlo,domhi,delta, xlo,time,bc) bind(C, name="den_fill")
                        
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network, only : nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
               
     implicit none
@@ -31,7 +34,7 @@ contains
     integer i, j, k
     integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h
+    REAL_T  u, v, w, rho, Yl(0:nspecies-1), T, h
 
     integer lo(dim), hi(dim)
 
@@ -69,8 +72,6 @@ contains
 
   subroutine adv_fill (adv,DIMS(adv),domlo,domhi,delta,xlo,time,bc) bind(C, name="adv_fill")
 
-    use mod_Fvar_def, only : dim
-      
     implicit none
 
     integer    DIMDEC(adv)
@@ -105,7 +106,8 @@ contains
 
   subroutine temp_fill  (temp,DIMS(temp),domlo,domhi,delta, xlo,time,bc) bind(C, name="temp_fill")
 
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network, only : nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
       
     implicit none
@@ -118,7 +120,7 @@ contains
     integer i, j, k
     integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h
+    REAL_T  u, v, w, rho, Yl(0:nspecies-1), T, h
 
     integer lo(dim), hi(dim)
 
@@ -156,7 +158,8 @@ contains
 
   subroutine rhoh_fill  (rhoh,DIMS(rhoh),domlo,domhi,delta, xlo,time,bc) bind(C, name="rhoh_fill")
 
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network, only : nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
       
     implicit none
@@ -169,7 +172,7 @@ contains
     integer i, j, k
     integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h
+    REAL_T  u, v, w, rho, Yl(0:nspecies-1), T, h
 
     integer lo(dim), hi(dim)
 
@@ -207,7 +210,8 @@ contains
 
   subroutine vel_fill  (vel,DIMS(vel),domlo,domhi,delta,xlo,time,bc) bind(C, name="vel_fill")
 
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network, only : nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
     use turbinflow_module
     use extern_probin_module, only : do_flct
@@ -224,7 +228,7 @@ contains
 
     integer i, j, k
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h, eta1
+    REAL_T  u, v, w, rho, Yl(0:nspecies-1), T, h, eta1
 
     integer lo(dim), hi(dim)
 
@@ -290,8 +294,6 @@ contains
   subroutine xvel_fill (xvel,DIMS(xvel),domlo,domhi,delta, &
        xlo,time,bc) bind(C, name="xvel_fill")
 
-    use mod_Fvar_def, only : dim
-
     implicit none
 
     integer DIMDEC(xvel), bc(dim,2)
@@ -305,8 +307,6 @@ contains
 
   subroutine yvel_fill (yvel,DIMS(yvel),domlo,domhi,delta,&
        xlo,time,bc)  bind(C, name="yvel_fill")
-
-    use mod_Fvar_def, only : dim
 
     implicit none
 
@@ -322,8 +322,6 @@ contains
   subroutine zvel_fill (zvel,DIMS(zvel),domlo,domhi,delta, &
        xlo,time,bc) bind(C, name="zvel_fill")
 
-    use mod_Fvar_def, only : dim
-
     implicit none
 
     integer DIMDEC(zvel), bc(dim,2)
@@ -337,8 +335,8 @@ contains
   
   subroutine all_chem_fill(rhoY,DIMS(rhoY),domlo,domhi,delta,xlo,time,bc) bind(C, name="all_chem_fill")
 
-    use network,  only: nspec
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network,  only: nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
 
     implicit none
@@ -346,12 +344,12 @@ contains
     integer DIMDEC(rhoY), bc(dim,2)
     integer domlo(dim), domhi(dim)
     REAL_T  delta(dim), xlo(dim), time
-    REAL_T  rhoY(DIMV(rhoY),Nspec)
+    REAL_T  rhoY(DIMV(rhoY),nspecies)
 
     integer i, j, k, n
     integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(maxspec), T, h
+    REAL_T  u, v, w, rho, Yl(nspecies), T, h
 
     integer lo(dim), hi(dim)
 
@@ -369,7 +367,7 @@ contains
     jhi = min(hi(2),domhi(2))
     khi = min(hi(3),domhi(3))
       
-    do n = 1,Nspec
+    do n = 1,nspecies
        call filcc (rhoY(lo(1),lo(2),lo(3),n), &
                    DIMS(rhoY),domlo,domhi,delta,xlo,bc)
     end do
@@ -382,7 +380,7 @@ contains
              do i = lo(1), hi(1)
                 x = (float(i)+.5)*delta(1)+domnlo(1)
                 call bcfunction(x,y,z,3,1,time,u,v,w,rho,Yl,T,h,delta,.false.)
-                do n = 1,Nspec
+                do n = 1,nspecies
                    rhoY(i,j,k,n) = rho*Yl(n)
                 end do
              enddo
@@ -394,7 +392,8 @@ contains
 
   subroutine chem_fill  (rhoY,DIMS(rhoY),domlo,domhi,delta,xlo,time,bc,id) bind(C, name="chem_fill")
 
-    use mod_Fvar_def, only : domnlo, maxspec, dim
+    use network, only : nspecies
+    use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
       
     implicit none
@@ -407,7 +406,7 @@ contains
     integer i, j, k
     integer ilo, ihi, jlo, jhi, klo, khi
     REAL_T  z, y, x
-    REAL_T  u, v, w, rho, Yl(0:maxspec-1), T, h
+    REAL_T  u, v, w, rho, Yl(0:nspecies-1), T, h
 
     integer lo(dim), hi(dim)
 
@@ -444,8 +443,6 @@ contains
   end subroutine chem_fill
 
   subroutine press_fill  (p,DIMS(p),domlo,domhi,dx,xlo,time,bc) bind(C, name="press_fill")
-
-    use mod_Fvar_def, only : dim
 
     implicit none
 

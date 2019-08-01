@@ -8,7 +8,7 @@
 #include <PeleLM_F.H>
 module prob_3D_module
 
-  use amrex_fort_module, only : amrex_spacedim
+  use amrex_fort_module, only : dim=>amrex_spacedim
 
   implicit none
 
@@ -41,7 +41,7 @@ contains
     integer init, namlen
     integer name(namlen)
     integer untin
-    REAL_T problo(amrex_spacedim), probhi(amrex_spacedim)
+    REAL_T problo(dim), probhi(dim)
 
     integer i
     REAL_T pamb
@@ -107,7 +107,7 @@ contains
     open(untin,file=probin(1:namlen),form='formatted',status='old')
         
     ! Load domain dimensions into common
-    do i=1,amrex_spacedim
+    do i=1,dim
        domnlo(i) = problo(i)
        domnhi(i) = probhi(i)
     enddo
@@ -143,10 +143,10 @@ contains
     numInflPlanesStore = -1
     forceLo = .TRUE.
     forceHi = .FALSE.
-    strmwse_dir = amrex_spacedim
+    strmwse_dir = dim
     flct_file = ''
     turb_scale = 1.d0
-    nCompInFlow = amrex_spacedim
+    nCompInFlow = dim
 #endif
 
     ! Note: for setup with no coflow, set Ro=Rf+wallth
@@ -199,7 +199,6 @@ contains
   subroutine set_Y_from_Phi(phi,Yt)
     
     use network,   only: nspecies
-    use mod_Fvar_def, only : maxspec
     use probdata_module, only : iN2, iO2, iCH4, iH2, H2_frac
     use fuego_chemistry, only : CKXTY
 
@@ -208,7 +207,7 @@ contains
     REAL_T phi, Yt(*)
     
     REAL_T a, alpha,beta,gamma,delt,factor
-    REAL_T Xt(maxspec)
+    REAL_T Xt(nspecies)
     integer n, len
 
     do n = 1,nspecies
@@ -230,8 +229,7 @@ contains
     use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : pamb, domnlo, domnhi, maxspec, maxspnml, V_in,&
-         fuelID, oxidID, bathID
+    use mod_Fvar_def, only : pamb, domnlo, domnhi, V_in, fuelID, oxidID, bathID
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, w_bc, rho_bc, h_bc, &
          bcinit, T_in, V_co, T_co, fuel_N2_vol_percent, Nzones, iN2, iO2, iH2, iNC12H26
     use user_defined_fcts_3d_module, only : getZone
@@ -239,10 +237,10 @@ contains
 
     implicit none
 
-    REAL_T Patm, pmf_vals(maxspec+3), a, fact
-    REAL_T Xt(maxspec), Yt(maxspec), loc, YF(maxspec), YO(maxspec)
+    REAL_T Patm, pmf_vals(nspecies+3), a, fact
+    REAL_T Xt(nspecies), Yt(nspecies), loc, YF(nspecies), YO(nspecies)
     integer zone, n, fuelZone, airZone, region, len
-    integer b(amrex_spacedim),i, j
+    integer b(dim),i, j
     data  b / 1, 1, 1 /
 
     Patm = pamb / pphys_getP1atm_MKS()
@@ -386,28 +384,27 @@ contains
    use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
    use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
-   use mod_Fvar_def, only : domnlo, domnhi, maxspec, maxspnml
+   use mod_Fvar_def, only : domnlo, domnhi
    use probdata_module, only : Y_bc, T_co, blobr, Tfrontw, BL_COFLOW
    use user_defined_fcts_3d_module, only : getZone
 
    implicit none
 
    integer    level, nscal
-   integer    lo(amrex_spacedim), hi(amrex_spacedim)
+   integer    lo(dim), hi(dim)
    integer    DIMDEC(state)
    integer    DIMDEC(press)
-   REAL_T     xlo(amrex_spacedim), xhi(amrex_spacedim)
-   REAL_T     time, delta(amrex_spacedim)
-   REAL_T     vel(DIMV(state),amrex_spacedim)
+   REAL_T     xlo(dim), xhi(dim)
+   REAL_T     time, delta(dim)
+   REAL_T     vel(DIMV(state),dim)
    REAL_T    scal(DIMV(state),nscal)
    REAL_T   press(DIMV(press))
 
    integer i, j, k, n, airZone, fuelZone, zone
    integer iO2,iH2,iCH4
-   character*(maxspnml) name
-   REAL_T x, y, z, ztemp, r, Yl(maxspec), Xl(maxspec), Patm
-   REAL_T Xlin(maxspec),alpha,beta,gamma,delt,factor
-   REAL_T pmf_vals(maxspec+3), z1, z2, dx, Ly
+   REAL_T x, y, z, ztemp, r, Yl(nspecies), Xl(nspecies), Patm
+   REAL_T Xlin(nspecies),alpha,beta,gamma,delt,factor
+   REAL_T pmf_vals(nspecies+3), z1, z2, dx, Ly
    REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,w,rho,T,h
 
    fuelZone = getZone(domnlo(1), domnlo(2), domnlo(3))

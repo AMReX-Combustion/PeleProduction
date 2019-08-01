@@ -2,8 +2,7 @@
 
 module probdata_module
 
-  use mod_Fvar_def, only: maxspec
-
+  use network, only : nspecies
   implicit none
   
   REAL_T vorterr, temperr, adverr, tempgrad, flametracval, twall
@@ -14,7 +13,7 @@ module probdata_module
 
   integer max_vort_lev, max_temp_lev, max_trac_lev, max_nozzle_lev
   integer max_mix_lev, max_hrr_lev, max_diff_lev
-  integer fuelID, oxidID, prodID, nspecies
+  integer fuelID, oxidID, prodID
   character*50 probtype
 
   integer refine_nozzle
@@ -42,7 +41,7 @@ module probdata_module
   logical bcinit
   integer, parameter :: Nzones=5
   REAL_T u_bc(Nzones), v_bc(Nzones), w_bc(Nzones), rho_bc(Nzones)
-  REAL_T Y_bc(0:maxspec-1, Nzones), T_bc(Nzones)
+  REAL_T Y_bc(0:nspecies-1, Nzones), T_bc(Nzones)
   REAL_T h_bc(Nzones)
   
   integer, parameter :: BL_FUELPIPE = 1

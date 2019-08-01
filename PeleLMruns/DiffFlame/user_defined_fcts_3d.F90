@@ -6,6 +6,8 @@
 
 module user_defined_fcts_3d_module
 
+  use amrex_fort_module, only : dim=>amrex_spacedim
+
   implicit none
   
   private
@@ -37,13 +39,13 @@ contains
        bind(C, name="bcfunction")
 
     use network,   only: nspecies
-    use PeleLM_F,  only: pphys_getP1atm_MKS
+    use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_TfromHYpt
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : pamb, dim, domnlo, domnhi
+    use mod_Fvar_def, only : pamb, domnlo, domnhi
     use probdata_module, only : blobr, bcinit, xfrontw, splitx, Tfrontw, &
          Y_bc, T_bc, u_bc, v_bc, w_bc
     use probdata_module, only : BL_FUELPIPE, BL_COFLOW, iN2, iO2, iNC12H26
-    use mod_Fvar_def, only: maxspec
+    use fuego_chemistry, only : CKHMS
 
     REAL_T, intent(in) ::  x, y, z, time
     REAL_T, intent(inout) :: u, v, w, rho, Yl(0:*), T, h, dx(dim)
@@ -52,17 +54,14 @@ contains
     
     REAL_T rho_temp(1), h_temp(1), T_temp(1)
     integer n, zone, len
-    REAL_T eta, eta1, xmid, etamax, Patm, FORT_P1ATMMKS
-    REAL_T h_fu(0:maxspec-1), h_ox(0:maxspec-1), hmix
-#if 0
-
+    REAL_T eta, eta1, xmid, etamax, Patm
+    REAL_T h_fu(0:nspecies-1), h_ox(0:nspecies-1), hmix
     REAL_T Wf, Wa, Wm, mf, Yf
 
     REAL_T,  parameter :: HtoTerrMAX = BL_REAL_E(7.8,-12)
     integer, parameter :: HtoTiterMAX = 20
     REAL_T res(0:HtoTiterMAX-1)
     integer Niter
-    character*(maxspnml) name
     integer b(3)
     data  b / 1, 1, 1 /
 
@@ -77,14 +76,7 @@ contains
 #if 0
     T = T_bc(BL_FUELPIPE)*eta + (1.d0-eta)*T_bc(BL_COFLOW)
 #else
-    ! do n=1,nspecies
-    !    call get_spec_name(name,n)
-    !    if (name .eq. 'N2' ) iN2 = n
-    !    if (name .eq. 'O2' ) iO2 = n
-    !    if (name .eq. 'NC12H26' ) iNC12H26 = n
-    ! enddo
     
-    ! call CKHMS(T_bc(BL_FUELPIPE),IWRK(ckbi),RWRK(ckbr),h_fu)
     call CKHMS(T_bc(BL_COFLOW), h_ox)
     h_fu = h_fu*1.d-4 ! cgs to MKS
 
@@ -93,18 +85,12 @@ contains
     h_fu( iNC12H26-1) = 10000.d0*((T_bc(BL_FUELPIPE)-298.d0)*0.375d0-352.1d0)/1.703348
     h_ox = h_ox*1.d-4 ! cgs to MKS
 
-    ! write(6,*)" temps", T_bc(BL_FUELPIPE),T_bc(BL_COFLOW)
-    ! write(6,*)" Yl ", Yl(0:nspecies-1)
-    ! write(6,*)" h_fu",h_fu
-
     hmix = Yl(iNC12H26-1)*h_fu(iNC12H26-1) &
          + Yl(iO2-1)     *h_ox(iO2-1) &
          + Yl(iN2-1)     *h_ox(iN2-1)
 
     T = T_bc(BL_COFLOW) ! initial guess
-    call FORT_TfromHYpt(T,hmix,Yl,HtoTerrMAX,HtoTiterMAX,res,Niter)
-    ! write(6,*)" temp in jet ",x,y, T
-    ! stop
+    call pphys_TfromHYpt(T,hmix,Yl,HtoTerrMAX,HtoTiterMAX,res,Niter)
 #endif
 
     if (getuv .eqv. .TRUE.) then
@@ -133,26 +119,24 @@ contains
     rho = rho_temp(1)
     h = h_temp(1)
     T = T_temp(1)
-#endif
   end subroutine bcfunction
 
   subroutine zero_visc(diff,DIMS(diff),lo,hi,domlo,domhi, &
        dx,problo,bc,idir,isrz,id,ncomp) &
        bind(C, name="zero_visc")
 
-    use amrex_fort_module, only : amrex_spacedim
     use mod_Fvar_def, only : Temp, FirstSpec, RhoH, LastSpec
     use probdata_module, only : domnlo
 
     implicit none
     integer DIMDEC(diff)
-    integer lo(amrex_spacedim), hi(amrex_spacedim)
-    integer domlo(amrex_spacedim), domhi(amrex_spacedim)
-    integer bc(2*amrex_spacedim)
+    integer lo(dim), hi(dim)
+    integer domlo(dim), domhi(dim)
+    integer bc(2*dim)
     integer idir, isrz, id, ncomp
     REAL_T  diff(DIMV(diff),*)
-    REAL_T  dx(amrex_spacedim)
-    REAL_T  problo(amrex_spacedim)
+    REAL_T  dx(dim)
+    REAL_T  problo(dim)
 
   end subroutine zero_visc
 
