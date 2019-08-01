@@ -22,7 +22,7 @@ COMP            = gnu
 COMM_PROFILE    = FALSE
 
 # Enable flctin namelist
-#USE_FLCTS       = TRUE
+USE_FLCTS       = TRUE
 
 #Chemistry_Model = DODECANE_LU_RED
 Chemistry_Model = dodecane_wang

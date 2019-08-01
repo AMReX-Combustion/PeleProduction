@@ -1,8 +1,8 @@
 1. Enable WBAR
 DONE 2. maxspec->NUM_SPECIES
 DONE 3. Set iN2, iO2, etc
-4. convVel
-5. BL_DO_FLCT
+DONE 4. convVel
+DONE 5. BL_DO_FLCT
 DONE 6. pseudo_gravity
 DONE 7. dim
 8. Refinement criteria

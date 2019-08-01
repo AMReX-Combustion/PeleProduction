@@ -21,10 +21,12 @@ contains
 
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
+#if defined(BL_DO_FLCT)
+    use turbinflow_module, only : init_turbinflow
+#endif
     use network, only : nspecies, spec_names
     use PeleLM_F,  only : pphys_getP1atm_MKS
     use mod_Fvar_def, only : V_in
-
     use probdata_module, only : T_in, V_co, phi_in, T_co, &
                                 splitx, xfrontw, fuel_N2_vol_percent, &
                                 blobr, bloby, blobx, blobz, blobT, Tfrontw, turb_scale, &
@@ -34,6 +36,9 @@ contains
                                 pseudo_gravity, refine_nozzle, RO2_thresh, splity, standoff, &
                                 stTh, T_switch, temperr, tempgrad, traceSpecVal, V_jet, &
                                 vorterr, yfrontw, zmax_diff, zmax_mix, &
+#if defined(BL_DO_FLCT)
+                                do_flct,&
+#endif
                                 iH2, iO2, iN2, iCH4, iNC12H26
 
     implicit none
@@ -45,6 +50,7 @@ contains
 
     integer i
     REAL_T pamb
+    character flct_file*(72)
 
     namelist /fortin/ vorterr, temperr, adverr, tempgrad, &
                       hrr_thresh, OH_thresh, RO2_thresh, &
@@ -59,8 +65,7 @@ contains
                       max_diff_lev, zmax_diff, diff_thresh
     namelist /heattransin/ pamb
 #if defined(BL_DO_FLCT)
-    namelist /flctin/ tstart_turb, forceInflow, numInflPlanesStore, forceLo, forceHi, &
-         strmwse_dir, nCompInflow, flct_file
+    namelist /flctin/ do_flct, flct_file, turb_scale
 #endif
 
     !
@@ -139,14 +144,8 @@ contains
 
 #if defined(BL_DO_FLCT)
     ! add_turb = .FALSE.
-    forceInflow = .FALSE.
-    numInflPlanesStore = -1
-    forceLo = .TRUE.
-    forceHi = .FALSE.
-    strmwse_dir = dim
+    do_flct = .FALSE.
     flct_file = ''
-    turb_scale = 1.d0
-    nCompInFlow = dim
 #endif
 
     ! Note: for setup with no coflow, set Ro=Rf+wallth
@@ -164,21 +163,14 @@ contains
     if (isioproc .eq. 1) write(6,*)"done reading flctin"
 #endif
 
-#if defined(BL_DO_FLCT)
-    if (forceInflow .eqv. .FALSE.) then
-       forceLo = .FALSE.
-       forceHi = .FALSE.
-    endif
-#endif
-
     ! Set up boundary functions
     if (isioproc .eq. 1) write(6,*)" setup bc"
     call setupbc()
     if (isioproc .eq. 1) write(6,*)" done setup bc"
 
 #if defined(BL_DO_FLCT)
-    if (do_flct.eq.1) then
-       call init_turbinflow(flct_in, .false.)
+    if (do_flct) then
+       call init_turbinflow(flct_file, .false.)
     endif
 #endif
 

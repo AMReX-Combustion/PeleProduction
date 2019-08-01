@@ -14,14 +14,13 @@ module probdata_module
   integer max_vort_lev, max_temp_lev, max_trac_lev, max_nozzle_lev
   integer max_mix_lev, max_hrr_lev, max_diff_lev
   integer fuelID, oxidID, prodID
-  character*50 probtype
 
   integer refine_nozzle
   REAL_T refine_nozzle_x, refine_nozzle_y, refine_nozzle_z, blobx, bloby, blobz, blobr, blobT, Tfrontw, xcen
 
   REAL_T v_strength,v_width,v_xcen,v_ycen, v_cl_x
 
-  REAL_T v_blob_r, v_blob_T, v_blob_airfrac, turb_scale,phi_in
+  REAL_T v_blob_r, v_blob_T, v_blob_airfrac, phi_in
 
   REAL_T stTh, Rf, V_in, V_co, T_in, T_co, R_hot, R_hotBL, stBL, pipeTh, pipeBL
   REAL_T tV_in_l, tV_in_r, V_in_new, tV_co_l, tV_co_r, V_co_new, H2_frac
@@ -34,9 +33,9 @@ module probdata_module
   integer :: iH2 = -1
   integer :: iNC12H26 = -1
   
-  integer dimFile
-  logical forceInflow
-  REAL_T convVelInit, probSizeFile(3), dxFile(3)
+  logical :: do_flct = .false.
+  REAL_T  :: turb_scale = 1.d0
+  REAL_T probSizeFile(3), dxFile(3)
 
   logical bcinit
   integer, parameter :: Nzones=5

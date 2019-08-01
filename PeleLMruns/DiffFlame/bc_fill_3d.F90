@@ -215,10 +215,10 @@ contains
     use user_defined_fcts_3d_module, only : bcfunction
 #if defined(BL_DO_FLCT)
     use turbinflow_module
-    use extern_probin_module, only : do_flct
+    use probdata_module, only : do_flct
+    use mod_Fvar_def, only : V_in
 #endif    
     use probdata_module, only : splitx, xfrontw, turb_scale
-    use mod_Fvar_def, only : V_in
 
     implicit none
 
@@ -272,7 +272,7 @@ contains
        enddo
     
 #if defined(BL_DO_FLCT)
-       if (do_flct.eq.1) then
+       if (do_flct) then
           do i = vel_l1,vel_h1
              xx(i) = (float(i)+.5)*delta(1)+domnlo(1)            
           enddo

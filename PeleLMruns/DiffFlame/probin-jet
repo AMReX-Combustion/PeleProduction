@@ -42,8 +42,8 @@
  /
   &flctin
    flct_file = "Turb_s3d_1E4"
-   forceInflow = .TRUE.
-   numInflPlanesStore = 8
+   do_flct = .TRUE.
+   turb_scale = 1.0
  /
   &control
  /
