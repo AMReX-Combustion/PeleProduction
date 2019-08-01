@@ -5,6 +5,4 @@
  /
  &heattransin
   pamb = 607950.
-  dpdt_factor = 1.0
-  closed_chamber = 1
  /

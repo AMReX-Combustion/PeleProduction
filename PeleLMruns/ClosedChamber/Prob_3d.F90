@@ -40,7 +40,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name="amrex_probinit")
 
     use PeleLM_F,  only: pphys_getP1atm_MKS
-    use mod_Fvar_def, only : pamb, dpdt_factor, closed_chamber
+    use mod_Fvar_def, only : pamb
     use mod_Fvar_def, only : fuelID, domnhi, domnlo
     use probdata_module, only : standoff, pertmag, pert_scale, rho_bc, Y_bc, blobz
 
@@ -55,7 +55,7 @@ contains
     REAL_T area
 
     namelist /fortin/ standoff, pertmag, pert_scale, blobz
-    namelist /heattransin/ pamb, dpdt_factor, closed_chamber
+    namelist /heattransin/ pamb
 
     !
     !      Build `probin' filename -- the name of file containing fortin namelist.
@@ -87,8 +87,6 @@ contains
     open(untin,file=probin(1:namlen),form='formatted',status='old')
 
     pamb = pphys_getP1atm_MKS()
-    dpdt_factor = 1.0
-    closed_chamber = 0
 
     !     Note: for setup with no coflow, set Ro=Rf+wallth
     standoff = zero
