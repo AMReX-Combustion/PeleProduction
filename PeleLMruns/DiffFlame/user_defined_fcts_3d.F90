@@ -1,0 +1,159 @@
+#include <AMReX_REAL.H>
+#include <AMReX_CONSTANTS.H>
+#include <AMReX_BC_TYPES.H>
+#include <PeleLM_F.H>
+#include <AMReX_ArrayLim.H>
+
+module user_defined_fcts_3d_module
+
+  implicit none
+  
+  private
+  
+  public :: bcfunction, zero_visc, getZone
+
+contains
+  
+  ! ::: -----------------------------------------------------------
+
+  integer function getZone(x, y, z)
+      
+    use probdata_module, only : domnlo, BL_FUELPIPE, BL_COFLOW, BL_VOLUME
+      
+    REAL_T x, y, z
+
+    getZone = BL_VOLUME
+    if (z.gt.domnlo(3)) then
+       getZone = BL_COFLOW
+    else
+       getZone = BL_FUELPIPE
+    endif
+    
+  end function getZone
+
+  ! ::: -----------------------------------------------------------
+      
+  subroutine bcfunction(x,y,z,dir,norm,time,u,v,w,rho,Yl,T,h,dx,getuv) &
+       bind(C, name="bcfunction")
+
+    use network,   only: nspec
+    use PeleLM_F,  only: pphys_getP1atm_MKS
+    use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
+    use mod_Fvar_def, only : pamb, dim, domnlo, domnhi
+    use probdata_module, only : blobr, bcinit, xfrontw, splitx, Tfrontw, &
+         Y_bc, T_bc, u_bc, v_bc, w_bc
+    use probdata_module, only : BL_FUELPIPE, BL_COFLOW, iN2, iO2, iNC12H26
+    use mod_Fvar_def, only: maxspec
+
+    REAL_T, intent(in) ::  x, y, z, time
+    REAL_T, intent(inout) :: u, v, w, rho, Yl(0:*), T, h, dx(dim)
+    logical, intent(in) :: getuv
+    integer, intent(in) :: dir, norm
+    
+    REAL_T rho_temp(1), h_temp(1), T_temp(1)
+    integer n, zone, len
+    REAL_T eta, eta1, xmid, etamax, Patm, FORT_P1ATMMKS
+    REAL_T h_fu(0:maxspec-1), h_ox(0:maxspec-1), hmix
+#if 0
+
+    REAL_T Wf, Wa, Wm, mf, Yf
+
+    REAL_T,  parameter :: HtoTerrMAX = BL_REAL_E(7.8,-12)
+    integer, parameter :: HtoTiterMAX = 20
+    REAL_T res(0:HtoTiterMAX-1)
+    integer Niter
+    character*(maxspnml) name
+    integer b(3)
+    data  b / 1, 1, 1 /
+
+    if (.not. bcinit) then
+       call bl_abort('Need to initialize boundary condition function')
+    end if
+
+    eta = 0.5d0*(1.d0 - TANH(2.d0*(sqrt(x**2+y**2)-blobr)/Tfrontw))
+    do n = 0, Nspec-1
+       Yl(n) = Y_bc(n,BL_FUELPIPE)*eta + (1.d0-eta)*Y_bc(n,BL_COFLOW)
+    end do
+#if 0
+    T = T_bc(BL_FUELPIPE)*eta + (1.d0-eta)*T_bc(BL_COFLOW)
+#else
+    ! do n=1,Nspec
+    !    call get_spec_name(name,n)
+    !    if (name .eq. 'N2' ) iN2 = n
+    !    if (name .eq. 'O2' ) iO2 = n
+    !    if (name .eq. 'NC12H26' ) iNC12H26 = n
+    ! enddo
+    
+    ! call CKHMS(T_bc(BL_FUELPIPE),IWRK(ckbi),RWRK(ckbr),h_fu)
+    call CKHMS(T_bc(BL_COFLOW), h_ox)
+    h_fu = h_fu*1.d-4 ! cgs to MKS
+
+
+    !   fuel enthalpy inncluding heat of vaporization
+    h_fu( iNC12H26-1) = 10000.d0*((T_bc(BL_FUELPIPE)-298.d0)*0.375d0-352.1d0)/1.703348
+    h_ox = h_ox*1.d-4 ! cgs to MKS
+
+    ! write(6,*)" temps", T_bc(BL_FUELPIPE),T_bc(BL_COFLOW)
+    ! write(6,*)" Yl ", Yl(0:Nspec-1)
+    ! write(6,*)" h_fu",h_fu
+
+    hmix = Yl(iNC12H26-1)*h_fu(iNC12H26-1) &
+         + Yl(iO2-1)     *h_ox(iO2-1) &
+         + Yl(iN2-1)     *h_ox(iN2-1)
+
+    T = T_bc(BL_COFLOW) ! initial guess
+    call FORT_TfromHYpt(T,hmix,Yl,HtoTerrMAX,HtoTiterMAX,res,Niter)
+    ! write(6,*)" temp in jet ",x,y, T
+    ! stop
+#endif
+
+    if (getuv .eqv. .TRUE.) then
+       eta1 = 0.5d0*(1.d0 - TANH(2.d0*(sqrt(x**2+y**2)-splitx)/xfrontw))
+
+       if(time.le.0.00006) then
+          w = w_bc(BL_FUELPIPE)*eta1/2.0 + w_bc(BL_FUELPIPE)*eta1/2.0*time/0.0006
+       else
+          w = w_bc(BL_FUELPIPE)*eta1 + (1.d0-eta1)*w_bc(BL_COFLOW)
+       endif
+       u = u_bc(BL_FUELPIPE)*eta1 + (1.d0-eta1)*u_bc(BL_COFLOW)
+       v = v_bc(BL_FUELPIPE)*eta1 + (1.d0-eta1)*v_bc(BL_COFLOW)
+    endif
+
+    Patm = pamb / pphys_getP1atm_MKS()
+
+    call pphys_RHOfromPTY(b, b, &
+                          rho_temp(1), DIMARG(b), DIMARG(b), &
+                          T_temp(1),   DIMARG(b), DIMARG(b), &
+                          Yl, DIMARG(b), DIMARG(b), Patm)
+    call pphys_HMIXfromTY(b, b, &
+                          h_temp(1),   DIMARG(b), DIMARG(b), &
+                          T_temp(1),   DIMARG(b), DIMARG(b), &
+                          Yl, DIMARG(b), DIMARG(b))
+
+    rho = rho_temp(1)
+    h = h_temp(1)
+    T = T_temp(1)
+#endif
+  end subroutine bcfunction
+
+  subroutine zero_visc(diff,DIMS(diff),lo,hi,domlo,domhi, &
+       dx,problo,bc,idir,isrz,id,ncomp) &
+       bind(C, name="zero_visc")
+
+    use amrex_fort_module, only : amrex_spacedim
+    use mod_Fvar_def, only : Temp, FirstSpec, RhoH, LastSpec
+    use probdata_module, only : domnlo
+
+    implicit none
+    integer DIMDEC(diff)
+    integer lo(amrex_spacedim), hi(amrex_spacedim)
+    integer domlo(amrex_spacedim), domhi(amrex_spacedim)
+    integer bc(2*amrex_spacedim)
+    integer idir, isrz, id, ncomp
+    REAL_T  diff(DIMV(diff),*)
+    REAL_T  dx(amrex_spacedim)
+    REAL_T  problo(amrex_spacedim)
+
+  end subroutine zero_visc
+
+end module user_defined_fcts_3d_module
