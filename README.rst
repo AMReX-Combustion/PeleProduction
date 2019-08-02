@@ -29,8 +29,8 @@ Git will look at the ``.gitmodules`` file in this branch and use that to initial
 
 Now, you are ready to to build one of the cases associated with this branch, for example ::
 
-    cd PeleProduction/PeleLMruns/ClosedChamber
-    make -j 12
+    cd PeleLMruns/DiffFlame
+    make
 
 As a side note, this "make" will assume that the usual environment variables pointing to ``PeleLM``, ``IAMR``, ``PelePhysics`` and ``AMReX`` have NOT been set, and will instead point to the local sub-repo folders.
 
