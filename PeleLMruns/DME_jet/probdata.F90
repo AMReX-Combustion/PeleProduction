@@ -3,7 +3,7 @@
 
 module probdata_module
 
-  use mod_Fvar_def, only: maxspec
+  use network, only : nspecies
 
   implicit none
 
@@ -26,7 +26,7 @@ module probdata_module
   integer, parameter :: Nzones=3
     
   REAL_T :: u_bc(Nzones), v_bc(Nzones), w_bc(Nzones), rho_bc(Nzones)
-  REAL_T :: Y_bc(0:maxspec-1, Nzones), T_bc(Nzones)
+  REAL_T :: Y_bc(0:nspecies-1, Nzones), T_bc(Nzones)
   REAL_T :: h_bc(Nzones)
     
 contains

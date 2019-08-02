@@ -6,7 +6,9 @@
 
 module user_defined_fcts_3d_module
 
-implicit none
+  use amrex_fort_module, only : dim=>amrex_spacedim
+
+  implicit none
   
   private
   
@@ -42,10 +44,10 @@ contains
   subroutine bcfunction(x,y,z,dir,norm,time,u,v,w,rho,Yl,T,h,dx,getuv) &
                         bind(C, name="bcfunction")
 
-      use network,   only: nspec
+      use network,   only: nspecies
       use PeleLM_F,  only: pphys_getP1atm_MKS
       use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-      use mod_Fvar_def, only : pamb, dim, domnlo, domnhi
+      use mod_Fvar_def, only : pamb, domnlo, domnhi
       use probdata_module, only : blobr, bcinit, xfrontw, splitx, Tfrontw, &
                                   Y_bc, T_bc, u_bc, v_bc, w_bc
       use probdata_module, only : IDX_FUELPIPE, IDX_COFLOW
@@ -68,7 +70,7 @@ contains
       end if
       
       eta = 0.5d0*(1.d0 - TANH(2.d0*(ABS(y)-blobr)/Tfrontw))
-      do n = 0, Nspec-1
+      do n = 0, nspecies-1
         Yl(n) = Y_bc(n,IDX_FUELPIPE)*eta + (1.d0-eta)*Y_bc(n,IDX_COFLOW)
       end do
       T = T_bc(IDX_FUELPIPE)*eta + (1.d0-eta)*T_bc(IDX_COFLOW)
@@ -125,7 +127,7 @@ contains
                            bind(C, name="zero_visc")
 
       use mod_Fvar_def, only : Temp, FirstSpec, RhoH, LastSpec
-      use mod_Fvar_def, only : domnlo, dim
+      use mod_Fvar_def, only : domnlo
 
       implicit none
       integer DIMDEC(diff)
