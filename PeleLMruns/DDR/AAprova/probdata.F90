@@ -2,7 +2,7 @@
 
 module probdata_module
 
-  use mod_Fvar_def, only: maxspec
+  use network, only: nspecies
 
   implicit none
 
@@ -25,7 +25,7 @@ module probdata_module
   logical :: bcinit = .false.
   
   REAL_T :: u_bc(BL_NZONES), v_bc(BL_NZONES), w_bc(BL_NZONES)
-  REAL_T :: Y_bc(0:maxspec-1,BL_NZONES), T_bc(BL_NZONES), h_bc(BL_NZONES), rho_bc(BL_NZONES)
+  REAL_T :: Y_bc(0:nspecies-1,BL_NZONES), T_bc(BL_NZONES), h_bc(BL_NZONES), rho_bc(BL_NZONES)
 
   REAL_T fuel_ox_split, ox_air_split, blobw, blobx, bloby, blobr, blobT, pipeBL, pipeTh,&
        T_air, T_ox, T_fu, V_air, V_fu, V_ox

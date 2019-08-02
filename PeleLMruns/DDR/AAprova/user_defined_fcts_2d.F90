@@ -6,6 +6,8 @@
 
 module user_defined_fcts_2d_module
 
+  use amrex_fort_module, only : dim=>amrex_spacedim
+
   implicit none
   
   private
@@ -16,7 +18,7 @@ contains
 
   integer function getZone(x, y)
     
-    use mod_Fvar_def, only : domnhi, domnlo, dim
+    use mod_Fvar_def, only : domnhi, domnlo
     use probdata_module, only : BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
          fuel_ox_split, ox_air_split, pipeTh
 
@@ -40,17 +42,13 @@ contains
       
   subroutine bcfunction(x,y,coord,lohi,time,u,v,rho,Yl,T,h,dx,getuv) bind(c, name='bcfunction')
 
-    use network,   only: Nspec
-    use chemistry_module, only : L_spec_name
+    use network,   only: nspecies
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : maxspec, pamb
+    use mod_Fvar_def, only : pamb
     use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
          fuel_ox_split, blobw, bloby, pipeBL, pipeTh
-    !use prob_2D_module, only : getZone
-      
-    implicit none
 
     integer coord, lohi
     REAL_T x, y, time, u, v, rho, Yl(0:*), T, h, dx(2), r
@@ -67,7 +65,6 @@ contains
     REAL_T res(0:HtoTiterMAX-1)
     integer Niter
     integer zoneL, zoneR, zoneT
-    character*(L_spec_name) name
 
     data  b / 1, 1 /
     
@@ -78,7 +75,7 @@ contains
     zone = getZone(x,y)
     if (zone .eq. BL_OUTFLOW) then
        rho = rho_bc(zone)
-       do n = 0, Nspec-1
+       do n = 0, nspecies-1
           Yl(n) = Y_bc(n,zone)
        end do
        T = T_bc(zone)
@@ -92,13 +89,13 @@ contains
        zoneR = BL_OXIDIZER
        zoneT = BL_VOLUME         
        eta = 0.5d0*(1.d0 - TANH(2.d0*(ABS(x)-fuel_ox_split)/blobw))
-       do n = 0, Nspec-1
+       do n = 0, nspecies-1
           Yl(n) = Y_bc(n,zoneL)*eta + Y_bc(n,zoneR)*(1.d0-eta)
        end do
        T = T_bc(zoneL)*eta + T_bc(zoneR)*(1.d0-eta)
 
        eta = 0.5d0*(1.d0 - TANH(2.d0*(y-bloby)/blobw))
-       do n = 0, Nspec-1
+       do n = 0, nspecies-1
           Yl(n) = Yl(n)*eta + Y_bc(n,zoneT)*(1.d0-eta)
        end do
        T = T*eta + T_bc(zoneT)*(1.d0-eta)
@@ -147,6 +144,7 @@ contains
           endif
        endif
     endif
+
   end subroutine bcfunction
 
 ! ::: -----------------------------------------------------------
@@ -174,10 +172,8 @@ contains
   subroutine zero_visc(diff,DIMS(diff),lo,hi,domlo,domhi, &
                            dx,problo,bc,idir,isrz,id,ncomp) &
                            bind(C, name="zero_visc")   
-
-    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, LastSpec, dim
+    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, LastSpec
     use probdata_module, only : BL_PIPEEND
-    !use prob_2D_module, only : getZone
       
     implicit none
     integer DIMDEC(diff)
@@ -232,6 +228,7 @@ contains
           endif
        end do
     endif
+
   end subroutine zero_visc
   
 end module user_defined_fcts_2d_module

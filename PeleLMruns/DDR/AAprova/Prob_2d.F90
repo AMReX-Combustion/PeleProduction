@@ -8,6 +8,7 @@
 
 module prob_2D_module
 
+  use amrex_fort_module, only : dim=>amrex_spacedim
   use fuego_chemistry
 
   implicit none
@@ -39,7 +40,7 @@ contains
 
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use mod_Fvar_def, only : pamb
-    use mod_Fvar_def, only : fuelID, domnhi, domnlo, dim
+    use mod_Fvar_def, only : fuelID, domnhi, domnlo
     use probdata_module, only : rho_bc, Y_bc
     use probdata_module, only : T_fu, T_ox, T_air, pipeTh, pipeBL,&
          V_fu, V_ox, V_air, fuel_ox_split, ox_air_split,blobx, bloby, blobr, blobT, blobw
@@ -134,40 +135,44 @@ contains
        write(6,flctin)
 #endif
     end if
-
   end subroutine amrex_probinit
 
   subroutine setupbc() bind(c, name='setupbc')
       
-    use network,   only: nspec
-    use PeleLM_F, only: pphys_getP1atm_MKS, pphys_get_spec_name2
+    use network,   only: nspecies, spec_names
+    use PeleLM_F, only: pphys_getP1atm_MKS
     use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : pamb, domnlo, maxspec, maxspnml, dim
+    use mod_Fvar_def, only : pamb, domnlo
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, rho_bc, h_bc
     use probdata_module, only : bcinit, iN2, iO2, iCO2, iCH4, iH2O, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME,&
          T_air, T_ox, T_fu, V_air, V_fu, V_ox
     implicit none
     
-    REAL_T Patm, pmf_vals(maxspec+3), a
-    REAL_T Xt(maxspec), Yt(maxspec), loc
+    REAL_T Patm, pmf_vals(nspecies+3), a
+    REAL_T Xt(nspecies), Yt(nspecies), loc
     REAL_T rho	! added
     integer zone, n, fuelZone, airZone, oxZone, volZone, peZone, ofZone, region, len
     integer b(dim)
-    integer num_zones_defined
-    character*(maxspnml) name
+    integer num_zones_defined, i
 
     b = 1
     Patm = pamb / pphys_getP1atm_MKS()
 
-    do n=1,Nspec
-       call pphys_get_spec_name2(name,n)
-       if (name .eq. 'N2' ) iN2 = n
-       if (name .eq. 'O2' ) iO2 = n
-       if (name .eq. 'CO2' ) iCO2 = n
-       if (name .eq. 'CH4' ) iCH4 = n
-       if (name .eq. 'H2O' ) iH2O = n
+    do i = 1,nspecies
+       if (spec_names(i) .eq. "O2") iO2 = i
+       if (spec_names(i) .eq. "CH4") iCH4 = i
+       if (spec_names(i) .eq. "N2") iN2 = i
+       if (spec_names(i) .eq. "H2O") iH2O = i
+       if (spec_names(i) .eq. "CO2") iCO2 = i
     enddo
+    if (iO2.le.0 .or. iO2.gt.nspecies .or. &
+         iCH4.le.0 .or. iCH4.gt.nspecies .or. &
+         iN2.le.0 .or. iN2.gt.nspecies .or. &
+         iH2O.le.0 .or. iH2O.gt.nspecies .or. &
+         iCO2.le.0 .or. iCO2.gt.nspecies) then
+       call bl_pd_abort('Could not find all special species in mech')
+    endif
 
     !     A diffusion flame
 
@@ -180,7 +185,7 @@ contains
     num_zones_defined = 6
 
     !     Fuel
-    do n = 1,Nspec
+    do n = 1,nspecies
        Yt(n) = 0.d0
     end do
 
@@ -189,7 +194,7 @@ contains
     Yt(iH2O) = 0.d0
     Yt(iN2) = 1.d0 -  Yt(iCH4) -  Yt(iO2) - Yt(iH2O)
 
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,fuelZone) = Yt(n)
     end do
     T_bc(fuelZone) = T_fu
@@ -197,7 +202,7 @@ contains
     v_bc(fuelZone) = V_fu
 
     !     Oxidizer
-    do n = 1,Nspec
+    do n = 1,nspecies
        Yt(n) = 0.d0
     end do
 
@@ -205,7 +210,7 @@ contains
     Yt(iCO2) = 0.000d0
     Yt(iN2) = 1.d0 -  Yt(iO2) -  Yt(iCO2)
        
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,oxZone) = Yt(n)
     end do
     T_bc(oxZone) = T_ox
@@ -213,14 +218,14 @@ contains
     v_bc(oxZone) = V_ox
 
     !     Air
-    do n=1,Nspec
+    do n=1,nspecies
        Xt(n) = zero
     enddo
     Xt(iO2) = 0.21d0
     Xt(iN2) = 1.d0 - Xt(iO2)
 
     CALL CKXTY (Xt, Yt)         
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,airZone) = Yt(n)
     end do
        
@@ -229,7 +234,7 @@ contains
     v_bc(airZone) = V_air
 
     !     Pipeend (as oxidizer
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,peZone) = Y_bc(n-1,oxZone)
     end do
          
@@ -238,7 +243,7 @@ contains
     v_bc(peZone) = 0.d0
 
     !     Volume (as air)
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,volZone) = Y_bc(n-1,airZone)
     end do
 
@@ -247,7 +252,7 @@ contains
     v_bc(volZone) = v_bc(airZone)
 
     !     Outflow (as air, except phi)
-    do n=1,Nspec
+    do n=1,nspecies
        Y_bc(n-1,ofZone) = Y_bc(n-1,airZone)
     end do
     
@@ -306,11 +311,11 @@ contains
   subroutine init_data(level,time,lo,hi,nscal,&
                        vel,scal,DIMS(state),press,DIMS(press),&
                        delta,xlo,xhi) bind(c, name='init_data')
-    use network,   only: nspec
-    use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
+    use network,   only: nspecies
+    use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac, dim
-    use mod_Fvar_def, only : bathID, domnhi, domnlo, maxspec, maxspnml
+    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
+    use mod_Fvar_def, only : bathID, domnhi, domnlo
     use probdata_module, only : BL_XLO, blobr, blobT, blobw, blobx, bloby
     use probdata_module, only : bcinit, iN2, iO2, iCO2, iCH4, iH2O, &
          BL_FUELPIPE, BL_OUTFLOW, BL_OXIDIZER, BL_AIR, BL_PIPEEND, BL_VOLUME
@@ -330,11 +335,11 @@ contains
     integer tmpi, nPMF
 
     integer i, j, n, airZone, fuelZone, zone, len
-    REAL_T x, y, r, Yl(maxspec), Xl(maxspec), Patm
-    REAL_T pmf_vals(maxspec+3), y1, y2, dx
+    REAL_T x, y, r, Yl(nspecies), Xl(nspecies), Patm
+    REAL_T pmf_vals(nspecies+3), y1, y2, dx
     REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,rho,T,h
 
-    if (iN2.lt.1 .or. iN2.gt.Nspec) then
+    if (iN2.lt.1 .or. iN2.gt.nspecies) then
        call bl_pd_abort('N2 id not sest prior to calling INITDATA')
     endif
     
@@ -345,7 +350,7 @@ contains
 
           call bcfunction(x,y,1,-1,time,u,v,rho,Yl,T,h,delta,.true.)
 
-          do n=1,Nspec
+          do n=1,nspecies
              scal(i,j,FirstSpec-1+n) = Yl(n)
           enddo
           scal(i,j,Temp) = T
@@ -378,7 +383,7 @@ contains
 
     do j = lo(2), hi(2)
        do i = lo(1), hi(1)
-          do n = 0,Nspec-1
+          do n = 0,nspecies-1
              scal(i,j,FirstSpec+n) = scal(i,j,FirstSpec+n)*scal(i,j,Density)
           enddo
           scal(i,j,RhoH) = scal(i,j,RhoH)*scal(i,j,Density)
