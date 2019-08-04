@@ -26,7 +26,7 @@ contains
 #endif
     use network, only : nspecies, spec_names
     use PeleLM_F,  only : pphys_getP1atm_MKS
-    use mod_Fvar_def, only : V_in
+    use mod_Fvar_def, only : V_in, pamb
     use probdata_module, only : T_in, V_co, phi_in, T_co, &
                                 splitx, xfrontw, fuel_N2_vol_percent, &
                                 blobr, bloby, blobx, blobz, blobT, Tfrontw, turb_scale, &
@@ -49,7 +49,6 @@ contains
     REAL_T problo(dim), probhi(dim)
 
     integer i
-    REAL_T pamb
     character flct_file*(72)
 
     namelist /fortin/ vorterr, temperr, adverr, tempgrad, &
