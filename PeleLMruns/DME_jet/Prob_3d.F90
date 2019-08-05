@@ -9,6 +9,7 @@
 
 module prob_3D_module
 
+  use amrex_fort_module, only : dim=>amrex_spacedim
   use fuego_chemistry
 
   implicit none
@@ -41,13 +42,10 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
       use PeleLM_F,  only: pphys_getP1atm_MKS
-      use mod_Fvar_def, only : pamb, dpdt_factor, closed_chamber
-      use mod_Fvar_def, only : dim
-      use mod_Fvar_def, only : V_in
+      use mod_Fvar_def, only : pamb, V_in
       use probdata_module, only : T_in, V_co, phi_in, T_co, &
                                   splitx, xfrontw, fuel_N2_vol_percent, &
                                   blobr, bloby, blobx, Tfrontw, blobT, turb_scale
-
       use extern_probin_module, only : do_flct, flct_in
       use turbinflow_module
       
@@ -63,7 +61,7 @@ contains
       namelist /fortin/ V_in, T_in, V_co, phi_in, T_co, &
                         splitx, xfrontw, fuel_N2_vol_percent, &
                         blobr, bloby, blobx, Tfrontw, blobT, turb_scale
-      namelist /heattransin/ pamb, dpdt_factor
+      namelist /heattransin/ pamb
 
 
 !
@@ -98,8 +96,6 @@ contains
 
 !     Set defaults
       pamb = pphys_getP1atm_MKS()
-      dpdt_factor = 1.d0
-      closed_chamber = 0
 
       read(untin,fortin)
 
@@ -125,10 +121,10 @@ contains
 
   subroutine setupbc()bind(C, name="setupbc")
 
-    use network,   only: nspec
-    use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
+    use network,   only: nspecies
+    use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : pamb, domnlo, domnhi, maxspec, maxspnml, V_in
+    use mod_Fvar_def, only : pamb, domnlo, domnhi, V_in
     use mod_Fvar_def, only : fuelID, oxidID, bathID
     use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, w_bc, rho_bc, h_bc
     use probdata_module, only : bcinit, T_in, V_co, T_co, fuel_N2_vol_percent, Nzones
@@ -137,7 +133,7 @@ contains
     implicit none
 
     REAL_T Patm
-    REAL_T Xt(maxspec), Yt(maxspec)
+    REAL_T Xt(nspecies), Yt(nspecies)
 
     integer b(3)
     integer zone, n, fuelZone, airZone, volZone
@@ -154,7 +150,7 @@ contains
     num_zones_defined = 2
 
 !     Fuel
-    do n = 1,nspec
+    do n = 1,nspecies
       Xt(n) = 0.d0
     end do 
     Xt(bathID) = fuel_N2_vol_percent*1.d-2
@@ -162,7 +158,7 @@ contains
 
     CALL CKXTY (Xt, Yt)
 
-    do n=1,Nspec
+    do n=1,nspecies
       Y_bc(n-1,fuelZone) = Yt(n)
     end do
     T_bc(fuelZone) = T_in
@@ -171,14 +167,14 @@ contains
     w_bc(fuelZone) = V_in
 
 !     Air
-    do n=1,Nspec
+    do n=1,nspecies
       Xt(n) = zero
     enddo
     Xt(oxidID) = 0.21d0
     Xt(bathID) = 1.d0 - Xt(oxidID)
 
     CALL CKXTY (Xt, Yt)         
-    do n=1,Nspec
+    do n=1,nspecies
       Y_bc(n-1,airZone) = Yt(n)
     end do
          
@@ -237,11 +233,11 @@ contains
                        bind(C, name="init_data")
 
 
-      use network,   only: nspec
-      use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
+      use network,   only: nspecies
+      use PeleLM_F,  only: pphys_getP1atm_MKS
       use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-      use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac, dim
-      use mod_Fvar_def, only : domnlo, domnhi, maxspec, maxspnml
+      use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
+      use mod_Fvar_def, only : domnlo, domnhi
       use probdata_module, only : blobr, tfrontw, &
                                   Y_bc, IDX_COFLOW, &
                                   T_co
@@ -261,7 +257,7 @@ contains
 
       integer i, j, k, n, airZone, fuelZone
       REAL_T x, y, z, ztemp, Patm, eta
-      REAL_T pert, u,v,w,rho,T,h, Yl(maxspec)
+      REAL_T pert, u,v,w,rho,T,h, Yl(nspecies)
 
       fuelZone = getZone(domnlo(1), domnlo(2), domnlo(3))
       airZone  = getZone(domnhi(1), domnhi(2), domnhi(3))
@@ -276,7 +272,7 @@ contains
 
             ztemp = domnlo(3)
             call bcfunction(x,y,ztemp,1,1,time,u,v,w,rho,Yl,T,h,delta,.true.)
-            do n = 1,Nspec
+            do n = 1,nspecies
               scal(i,j,k,FirstSpec+n-1) = Yl(n)* eta + (1.d0-eta) *Y_bc(n-1,IDX_COFLOW)
             end do
 
@@ -312,7 +308,7 @@ contains
       do k = lo(3), hi(3)
          do j = lo(2), hi(2)
             do i = lo(1), hi(1)
-               do n = 0,Nspec-1
+               do n = 0,nspecies-1
                   scal(i,j,k,FirstSpec+n) = scal(i,j,k,FirstSpec+n)*scal(i,j,k,Density)
                enddo
                scal(i,j,k,RhoH) = scal(i,j,k,RhoH)*scal(i,j,k,Density)
