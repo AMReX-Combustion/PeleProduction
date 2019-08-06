@@ -74,7 +74,6 @@ contains
         Yl(n) = Y_bc(n,IDX_FUELPIPE)*eta + (1.d0-eta)*Y_bc(n,IDX_COFLOW)
       end do
       T = T_bc(IDX_FUELPIPE)*eta + (1.d0-eta)*T_bc(IDX_COFLOW)
-      T_temp(1) = T
          
       if (getuv .eqv. .TRUE.) then
         eta1 = 0.5d0*(1.d0 - TANH(2.d0*(ABS(y)-splitx)/xfrontw))
@@ -84,6 +83,7 @@ contains
       endif
 
       Patm = pamb / pphys_getP1atm_MKS()
+      T_temp(1) = T
  
       call pphys_RHOfromPTY(dimloc, dimloc, &
                             rho_temp(1), DIMARG(dimloc), DIMARG(dimloc), &
