@@ -9,6 +9,7 @@
 module prob_3D_module
 
   use amrex_fort_module, only : dim=>amrex_spacedim
+  use amrex_omp_module
 
   implicit none
 
@@ -169,7 +170,9 @@ contains
 
 #if defined(BL_DO_FLCT)
     if (do_flct) then
+       !$omp parallel
        call init_turbinflow(flct_file, .false.)
+       !$omp end parallel
     endif
 #endif
 
