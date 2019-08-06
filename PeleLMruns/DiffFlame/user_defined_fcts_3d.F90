@@ -106,6 +106,7 @@ contains
     endif
 
     Patm = pamb / pphys_getP1atm_MKS()
+    T_temp(1) = T
 
     call pphys_RHOfromPTY(b, b, &
                           rho_temp(1), DIMARG(b), DIMARG(b), &
@@ -119,6 +120,7 @@ contains
     rho = rho_temp(1)
     h = h_temp(1)
     T = T_temp(1)
+    
   end subroutine bcfunction
 
   subroutine zero_visc(diff,DIMS(diff),lo,hi,domlo,domhi, &
