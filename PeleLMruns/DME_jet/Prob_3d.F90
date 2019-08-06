@@ -107,7 +107,9 @@ contains
       call setupbc()
 
       if (do_flct.eq.1) then
+         !$omp parallel
          call init_turbinflow(flct_in, .false.)
+         !$omp end parallel
       endif
 
       if (isioproc.eq.1) then
