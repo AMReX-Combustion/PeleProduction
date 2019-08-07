@@ -213,8 +213,10 @@ contains
     use network, only : nspecies
     use mod_Fvar_def, only : domnlo
     use user_defined_fcts_3d_module, only : bcfunction
+#if defined(BL_DO_FLCT)
     use turbinflow_module
     use extern_probin_module, only : do_flct
+#endif
     use probdata_module, only : splitx, xfrontw, turb_scale
     use mod_Fvar_def, only : V_in
 
@@ -224,7 +226,9 @@ contains
     integer domlo(dim), domhi(dim)
     REAL_T  delta(dim), xlo(dim), time
     REAL_T  vel(DIMV(vel),dim)
+#if defined(BL_DO_FLCT)
     REAL_T  xx(vel_l1:vel_h1), yy(vel_l2:vel_h2), zz, vfluc(vel_l1:vel_h1,vel_l2:vel_h2,turb_ncomp)
+#endif
 
     integer i, j, k
     REAL_T  z, y, x
@@ -268,6 +272,7 @@ contains
           enddo
        enddo
     
+#if defined(BL_DO_FLCT)
        if (do_flct.eq.1) then
           do i = vel_l1,vel_h1
              xx(i) = (float(i)+.5)*delta(1)+domnlo(1)            
@@ -287,6 +292,7 @@ contains
              enddo
           enddo
        endif
+#endif
     endif
 
   end subroutine vel_fill
