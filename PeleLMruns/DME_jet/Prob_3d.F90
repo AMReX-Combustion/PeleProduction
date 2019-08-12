@@ -46,8 +46,10 @@ contains
       use probdata_module, only : T_in, V_co, phi_in, T_co, &
                                   splitx, xfrontw, fuel_N2_vol_percent, &
                                   blobr, bloby, blobx, Tfrontw, blobT, turb_scale
+#if defined(BL_DO_FLCT)
       use extern_probin_module, only : do_flct, flct_in
       use turbinflow_module
+#endif
       
       implicit none
 
@@ -106,9 +108,13 @@ contains
 !     Set up boundary functions
       call setupbc()
 
+#if defined(BL_DO_FLCT)
       if (do_flct.eq.1) then
+         !$omp parallel
          call init_turbinflow(flct_in, .false.)
+         !$omp end parallel
       endif
+#endif
 
       if (isioproc.eq.1) then
          write(6,fortin)
