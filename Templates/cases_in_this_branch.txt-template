@@ -1,5 +1,0 @@
-The only cases guaranteed to work in this branch (that is, ones for which the
-Submodule git repos are consistent with the run setup, are:
-
- 1. ...
- 
