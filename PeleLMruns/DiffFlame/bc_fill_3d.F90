@@ -284,10 +284,13 @@ contains
           call get_turbstate(vel_l1,vel_l2,vel_h1,vel_h2,xx,yy,zz,vfluc)
           do k = vel_l3, domlo(3)-1
              do j = vel_l2,vel_h2
-                eta1 = 0.5d0*(1.d0 - TANH(2.d0*(ABS(yy(j))-splitx)/xfrontw))
-                if (bc(3,1,1).eq.EXT_DIR) vel(:,j,k,1) = vel(:,j,k,1) + eta1*vfluc(:,j,1)*turb_scale
-                if (bc(3,1,2).eq.EXT_DIR) vel(:,j,k,2) = vel(:,j,k,2) + eta1*vfluc(:,j,2)*turb_scale
-                if (bc(3,1,3).eq.EXT_DIR) vel(:,j,k,3) = vel(:,j,k,3) + eta1*vfluc(:,j,3)*turb_scale
+              do i = vel_l1, vel_h1
+                eta1 = 0.5d0*(1.d0 - TANH(2.d0*(SQRT(yy(j)**2+xx(i)**2)-splitx)/xfrontw))
+                if (bc(3,1,1).eq.EXT_DIR) vel(i,j,k,1) = vel(i,j,k,1) + eta1*vfluc(i,j,1)*turb_scale
+                if (bc(3,1,2).eq.EXT_DIR) vel(i,j,k,2) = vel(i,j,k,2) + eta1*vfluc(i,j,2)*turb_scale
+                if (bc(3,1,3).eq.EXT_DIR) vel(i,j,k,3) = vel(i,j,k,3) + eta1*vfluc(i,j,3)*turb_scale
+
+               enddo
              enddo
           enddo
        endif
