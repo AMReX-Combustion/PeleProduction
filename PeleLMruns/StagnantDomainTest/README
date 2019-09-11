@@ -1,0 +1,7 @@
+This case is a stagnant domain of air with a region of static mesh refinement. This tests the refluxing/multi-level sync.
+
+Note: This case uses a fixed time step because there is no motion (time step from CFL is ~1e+20)
+
+Expected behavior: There should be no flow and no increase in temperature along coarse-fine boundaries.
+
+Observed behavior (9-11-19): Works as expected for single-level, but not for multi-level.
