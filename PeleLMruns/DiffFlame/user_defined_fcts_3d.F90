@@ -9,19 +9,19 @@ module user_defined_fcts_3d_module
   use amrex_fort_module, only : dim=>amrex_spacedim
 
   implicit none
-  
+
   private
-  
-  public :: bcfunction, zero_visc, getZone
+
+  public :: bcfunction, zero_visc, getZone, dcma_error
 
 contains
-  
+
   ! ::: -----------------------------------------------------------
 
   integer function getZone(x, y, z)
-      
+
     use probdata_module, only : domnlo, BL_FUELPIPE, BL_COFLOW, BL_VOLUME
-      
+
     REAL_T x, y, z
 
     getZone = BL_VOLUME
@@ -30,11 +30,11 @@ contains
     else
        getZone = BL_FUELPIPE
     endif
-    
+
   end function getZone
 
   ! ::: -----------------------------------------------------------
-      
+
   subroutine bcfunction(x,y,z,dir,norm,time,u,v,w,rho,Yl,T,h,dx,getuv) &
        bind(C, name="bcfunction")
 
@@ -51,7 +51,7 @@ contains
     REAL_T, intent(inout) :: u, v, w, rho, Yl(0:*), T, h, dx(dim)
     logical, intent(in) :: getuv
     integer, intent(in) :: dir, norm
-    
+
     REAL_T rho_temp(1), h_temp(1), T_temp(1)
     integer n, zone, len
     REAL_T eta, eta1, xmid, etamax, Patm
@@ -76,7 +76,7 @@ contains
 #if 0
     T = T_bc(BL_FUELPIPE)*eta + (1.d0-eta)*T_bc(BL_COFLOW)
 #else
-    
+
     call CKHMS(T_bc(BL_COFLOW), h_ox)
     h_fu = h_fu*1.d-4 ! cgs to MKS
 
@@ -120,7 +120,7 @@ contains
     rho = rho_temp(1)
     h = h_temp(1)
     T = T_temp(1)
-    
+
   end subroutine bcfunction
 
   subroutine zero_visc(diff,DIMS(diff),lo,hi,domlo,domhi, &
@@ -141,5 +141,64 @@ contains
     REAL_T  problo(dim)
 
   end subroutine zero_visc
+
+  subroutine dcma_error(tag, DIMS(tag), &
+                        set, clear, hrr, DIMS(hrr), &
+                        lo,hi,nvar, &
+                        domlo, domhi, &
+                        dx, xlo, &
+                        problo,time, &
+                        level, value) bind(C, name="dcma_error")
+      use probdata_module
+      implicit none
+      integer   DIMDEC(tag)
+      integer   DIMDEC(hrr)
+      integer   nvar, set, clear, level
+      integer   lo(DIM), hi(DIM)
+      integer   domlo(DIM), domhi(DIM)
+      REAL_T    dx(DIM), xlo(DIM), problo(DIM), time
+      integer   tag(DIMV(tag))
+      REAL_T    hrr(DIMV(hrr),nvar), value
+
+      REAL_T x,y,z
+      integer   i, j, k
+
+      ! First component is mixfrac, second is HRR, third is OH, fourth is RO2
+      do k = lo(3), hi(3)
+        z = problo(3)+(k+0.5)*dx(3)
+        do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+            if(hrr(i,j,k,1).gt.mix_thresh.and.level.eq.0) tag(i,j,k)=set
+            if(hrr(i,j,k,1).gt.mix_thresh.and.level.eq.1.and.abs(hrr(i,j,k,2)).gt.hrr_thresh) tag(i,j,k)=set
+
+            if(level.eq.2) then
+              if(z.lt.5*0.00017.and.hrr(i,j,k,1).gt.mix_thresh) then
+                tag(i,j,k) = set
+              endif
+
+              if(z.lt.zmax_diff.and.abs(hrr(i,j,k,2)).gt.hrr_thresh) then
+                tag(i,j,k) = set
+              endif
+
+              if(abs(hrr(i,j,k,2)).gt.hrr_thresh.and.hrr(i,j,k,3).lt.OH_thresh) tag(i,j,k)=set
+              tag(i,j,k) = merge(set,tag(i,j,k), &
+                                abs(hrr(i,j,k,4)).gt.RO2_thresh)
+
+              if(z.gt.zmax_diff) then
+                tag(i,j,k) = merge(clear,tag(i,j,k), &
+                                  abs(hrr(i,j,k,3)).ge.OH_thresh)
+              endif
+            endif
+
+            if(level.eq.3.and.hrr(i,j,k,4).ge.RO2_thresh) tag(i,j,k)=set
+            if(level.eq.3.and.hrr(i,j,k,3).ge.OH_thresh.and.z.lt.0.002) tag(i,j,k)=set
+
+            if(z.gt.zmax_mix) tag(i,j,k)=clear
+
+          enddo
+        enddo
+      enddo
+  end subroutine dcma_error
 
 end module user_defined_fcts_3d_module
