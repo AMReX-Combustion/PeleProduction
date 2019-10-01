@@ -36,7 +36,7 @@ ns.htt_tempmin=1.0
 ns.htt_tempmax=2.5
 ns.v = 1
 mac.v = 0
-proj.v = 0
+proj.v = 3
 ns.do_group_bndry_fills = 1
 
 cg.cg_solver=1
@@ -44,20 +44,22 @@ cg.cg_solver=1
 geometry.prob_lo    = 0.0 0.0 0.0
 geometry.prob_hi    = 0.028 0.028 .042
 amr.n_cell          = 64 64 96
-amr.blocking_factor = 8
-max_step            = 5
+amr.n_cell          = 512 512 768
+amr.blocking_factor = 16
+max_step            = 10000
 amr.check_file      = chk_3d_
 amr.plot_file       = plt_3d_
-amr.check_int       = 10
-amr.plot_int        = 1
+amr.check_int       = 5
+amr.plot_int        = 5
+ns.cfl              = 0.7
 ns.cfl              = 0.25
 
 amr.max_grid_size   = 32
 #fabarray.mfiter_tile_size = 1024 1024 1024
-godunov.ppm_type = 0
+#godunov.ppm_type = 0
 
 amr.v=1
-amr.max_level =  0            # maximum level number allowed
+amr.max_level =  2            # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.n_error_buf     = 4 2 1 2 # number of buffer cells in error est
@@ -108,7 +110,7 @@ ns.oxidizerName    = O2
 ns.flameTracName   = CH
 ns.unity_Le = 0
 
-ns.sdc_iterMAX = 4
+ns.sdc_iterMAX = 2
 
 ns.dpdt_option = 0
 #macop.max_order = 3
@@ -122,6 +124,9 @@ ns.dpdt_option = 0
 
 ns.lo_bc          = 0 0 4
 ns.hi_bc          = 0 0 4
+peleLM.lo_bc = Interior  Interior SlipWallAdiab
+peleLM.hi_bc = Interior  Interior SlipWallAdiab
+
 
 #fabarray.mfiter_tile_size = 1024 1024 1024
 
@@ -172,10 +177,10 @@ mac.do_outflow_bcs = 0
 #
 fab.format = NATIVE
 
-ns.hack_nochem=1
+#ns.hack_nochem=1
 #ns.hack_nospecdiff=1
-ns.init_iter=0
-ns.do_init_proj=0
+#ns.init_iter=0
+#ns.do_init_proj=0
 #ShowMF_Sets = mac velVT dd estate
 #ShowMF_Sets = dddt dd divu 1D mac
 #ShowMF_Sets = sdc
@@ -196,3 +201,4 @@ amr.refinement_indicators = flame_tracer
 amr.flame_tracer.max_level = 1
 amr.flame_tracer.value_greater = 1.e-6
 amr.flame_tracer.field_name = Y(CH)
+
