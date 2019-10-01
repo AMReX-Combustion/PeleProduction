@@ -123,8 +123,8 @@ contains
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use fuego_chemistry, only: ckxty
-    use mod_Fvar_def, only : pamb
-    use probdata_module, only : standoff, rho_bc, u_bc, v_bc, w_bc, T_bc, h_bc, Y_bc, bcinit, domnlo
+    use mod_Fvar_def, only : pamb, domnlo
+    use probdata_module, only : standoff, rho_bc, u_bc, v_bc, w_bc, T_bc, h_bc, Y_bc, bcinit
 
     implicit none
 
@@ -205,8 +205,8 @@ contains
     use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
     use PeleLM_3D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use fuego_chemistry, only: ckxty
-    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
-    use probdata_module, only : standoff, pert_scale, pertmag, domnlo, domnhi, blobz
+    use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac, domnlo, domnhi
+    use probdata_module, only : standoff, pert_scale, pertmag, blobz
 
     implicit none
     integer    level, nscal
@@ -222,8 +222,8 @@ contains
 
     integer i, j, k, n
     REAL_T x, y, z, r, Yl(nspecies), Xl(nspecies), Patm
-    REAL_T pmf_vals(nspecies+3), z1, z2, dx, Ly
-    REAL_T pert,Lx,eta,u,v,w,rho,T,h
+    REAL_T pmf_vals(nspecies+3), z1, z2, dx, Lx, Ly
+    REAL_T pert,eta,u,v,w,rho,T,h
 
     do k = lo(3), hi(3)
        z = (float(k)+.5d0)*delta(3)+domnlo(3)
@@ -241,11 +241,11 @@ contains
                      + 0.945 * sin(2*Pi*3*(x-.00712435)/Lx) * sin(2*Pi*3*(y-.02137)/Ly)&
                      + 1.017 * sin(2*Pi*5*(x-.0033)/Lx)     * sin(2*Pi*6*(y-.018)/Ly)&
                      + .982 * sin(2*Pi*5*(x-.014234)/Lx) )
-                
+                    
              endif
 
-             z1 = (z - blobz - standoff - 0.5d0*delta(2) + pert )*100.d0
-             z2 = (z - blobz - standoff + 0.5d0*delta(2) + pert )*100.d0 
+             z1 = (z - blobz - standoff - 0.5d0*delta(3) + pert )*100.d0
+             z2 = (z - blobz - standoff + 0.5d0*delta(3) + pert )*100.d0 
 
              call pmf(z1,z2,pmf_vals,nPMF)               
              if (nPMF.ne.nspecies+3) then
@@ -253,6 +253,7 @@ contains
              endif
 
              scal(i,j,k,Temp) = pmf_vals(1)
+
              do n = 1,nspecies
                 Xl(n) = pmf_vals(3+n)
              end do

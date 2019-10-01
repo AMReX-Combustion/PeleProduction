@@ -8,7 +8,6 @@ module probdata_module
   implicit none
 
   REAL_T :: standoff, pert_scale, pertmag, blobz
-  REAL_T domnlo(3), domnhi(3)
 
   logical :: bcinit = .false.
   REAL_T :: u_bc, v_bc, w_bc
