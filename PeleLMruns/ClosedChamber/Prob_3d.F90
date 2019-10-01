@@ -41,8 +41,8 @@ contains
 
     use PeleLM_F,  only: pphys_getP1atm_MKS
     use mod_Fvar_def, only : pamb
-    use mod_Fvar_def, only : fuelID, domnhi, domnlo
-    use probdata_module, only : standoff, pertmag, pert_scale, rho_bc, Y_bc, blobz
+    use mod_Fvar_def, only : domnhi, domnlo
+    use probdata_module, only : standoff, pertmag, pert_scale, blobz
 
     implicit none
 
@@ -52,7 +52,6 @@ contains
     REAL_T problo(dim), probhi(dim)
 
     integer i
-    REAL_T area
 
     namelist /fortin/ standoff, pertmag, pert_scale, blobz
     namelist /heattransin/ pamb
@@ -128,9 +127,9 @@ contains
 
     implicit none
 
-    REAL_T Patm, pmf_vals(nspecies+3), a
+    REAL_T Patm, pmf_vals(nspecies+3)
     REAL_T Xt(nspecies), loc
-    integer n, len, b(3)
+    integer n, b(3)
 
     b = 1
     Patm = pamb / pphys_getP1atm_MKS()
@@ -218,12 +217,11 @@ contains
     REAL_T     vel(DIMV(state),dim)
     REAL_T    scal(DIMV(state),nscal)
     REAL_T   press(DIMV(press))
-    integer tmpi, nPMF
+    integer  nPMF
 
     integer i, j, k, n
-    REAL_T x, y, z, r, Yl(nspecies), Xl(nspecies), Patm
-    REAL_T pmf_vals(nspecies+3), z1, z2, dx, Lx, Ly
-    REAL_T pert,eta,u,v,w,rho,T,h
+    REAL_T x, y, z, Yl(nspecies), Xl(nspecies), Patm
+    REAL_T pmf_vals(nspecies+3), z1, z2, Lx, Ly, pert
 
     do k = lo(3), hi(3)
        z = (float(k)+.5d0)*delta(3)+domnlo(3)

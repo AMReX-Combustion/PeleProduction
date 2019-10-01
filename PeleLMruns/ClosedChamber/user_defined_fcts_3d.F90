@@ -50,9 +50,6 @@ contains
                            dx,problo,bc,idir,isrz,id,ncomp) &
                            bind(C, name="zero_visc")   
 
-      use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, LastSpec
-      use mod_Fvar_def, only : domnhi, domnlo
-      
       implicit none
       integer DIMDEC(diff)
       integer lo(dim), hi(dim)
