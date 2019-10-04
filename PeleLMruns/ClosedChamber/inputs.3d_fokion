@@ -16,7 +16,7 @@ ht.plot_rhoY=0
 ht.plot_molefrac=1
 #ht.plot_massfrac=1
 ht.plot_ydot=0
-amr.derive_plot_vars=rhoRT mag_vort
+amr.derive_plot_vars=rhoRT mag_vort mass_fractions
 
 geometry.coord_sys = 0  # 0 => cart, 1 => RZ
 
@@ -146,7 +146,7 @@ diffuse.use_cg_solve = 0
 diffuse.max_order = 4
 diffuse.tensor_max_order = 4
 diffuse.use_tensor_cg_solve = 0
-diffuse.v = 1
+diffuse.v = 0
 diffuse.Rhs_in_abs_tol = 1
 
 # ------------------  INPUTS TO PROJECTION CLASS -------------------
@@ -198,7 +198,7 @@ ns.visc_abs_tol    = 1.0e-14  # tolerence for viscous solves
 
 # Refinement according to a species tracer
 amr.refinement_indicators = flame_tracer 
-amr.flame_tracer.max_level = 1
-amr.flame_tracer.value_greater = 1.e-6
+amr.flame_tracer.max_level = 2
+amr.flame_tracer.value_greater = 1.e-8
 amr.flame_tracer.field_name = Y(CH)
 
