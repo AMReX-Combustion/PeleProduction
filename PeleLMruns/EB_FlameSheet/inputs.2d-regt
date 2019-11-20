@@ -32,9 +32,9 @@ amr.checkpoint_files_output = 0
 amr.check_file      = chk     # root name of checkpoint file
 amr.check_int       = 5       # number of timesteps between checkpoints
 
-amr.plotfiles_output = 0
+#amr.plot_files_output = 0
 amr.plot_file       = plt
-amr.plot_int        = 1
+amr.plot_int        = 1000
 amr.derive_plot_vars=rhoRT mag_vort avg_pressure gradpx gradpy diveru mass_fractions molweight
 
 amr.grid_log        = grdlog  # name of grid logging file
