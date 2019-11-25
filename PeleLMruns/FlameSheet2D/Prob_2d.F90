@@ -166,7 +166,7 @@ contains
 
     use network,   only: nspecies
     use PeleLM_F, only: pphys_getP1atm_MKS
-    use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
+    use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : pamb, domnlo, V_in
     use probdata_module, only : standoff, Y_bc, T_bc, u_bc, v_bc, rho_bc, h_bc
     use probdata_module, only : bcinit
@@ -261,7 +261,7 @@ contains
 
       use network,   only: nspecies
       use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
-      use PeleLM_2D, only: pphys_RHOfromPTY, pphys_HMIXfromTY
+      use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
       use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb
       use mod_Fvar_def, only : bathID, domnhi, domnlo
 
