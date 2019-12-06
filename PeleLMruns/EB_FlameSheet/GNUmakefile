@@ -10,7 +10,7 @@ PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
 
 DIM             = 2
 COMP            = gnu
-DEBUG           = TRUE
+DEBUG           = FALSE
 USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
@@ -41,22 +41,22 @@ ifeq ($(DO_2S_CONVERGENCE),TRUE)
 	F90EXE_sources += 2step_Phi0.8_refined_CubicInterp.F90
 	DEFINES+=-DINTERP_PMF_AS_POINT
 else
-	# Enable the restart-from-plotfile option (ht.pltfile)
-	#  ... default this off because when on, code expects it to be used
-	# USE_NEWMECH    = FALSE
-	
-	# Choose model (from list below), and pmf file
-	Chemistry_Model = drm19
-	fEXE_sources += drm19Soln_seed_0.50.f
-	
-	#Chemistry_Model = LIDRYER
-	#fEXE_sources += LiDryer_040_01ATM.f
-	
-	#Chemistry_Model = LUDME
-	#fEXE_sources += LuDME_0700.f
-	
-	#Chemistry_Model = GRI30
-	#fEXE_sources += gri30_070.f
+# Enable the restart-from-plotfile option (ht.pltfile)
+#  ... default this off because when on, code expects it to be used
+# USE_NEWMECH    = FALSE
+
+# Choose model and pmf file
+Chemistry_Model = drm19
+fEXE_sources += drm19Soln_seed_0.50.f
+
+#Chemistry_Model = LIDRYER
+#fEXE_sources += LiDryer_040_01ATM.f
+
+#Chemistry_Model = LUDME
+#fEXE_sources += LuDME_0700.f
+
+#Chemistry_Model = GRI30
+#fEXE_sources += gri30_070.f
 endif
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
@@ -68,7 +68,8 @@ Reactions_dir := Fuego
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
 Transport_dir := EGLib
 
-Blocs   := .
+Blocs   := ${PELELM_HOME}/Exec/EB_cases/EB_FlameSheet
+Blocs   += .
 
 CEXE_sources +=
 F90EXE_sources += Prob_nd.F90 probdata.F90
