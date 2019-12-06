@@ -1,7 +1,8 @@
-PELELM_HOME ?= ../../Submodules/PeleLM
-PELE_PHYSICS_HOME ?= ../../Submodules/PelePhysics
-IAMR_HOME ?= ../../Submodules/IAMR
-AMREX_HOME ?= ../../Submodules/amrex
+TOP = ../../Submodules
+AMREX_HOME ?= ${TOP}/amrex
+IAMR_HOME ?= ${TOP}/IAMR
+PELELM_HOME ?= ${TOP}/PeleLM
+PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
 
 #
 # Build configuration
@@ -10,36 +11,30 @@ AMREX_HOME ?= ../../Submodules/amrex
 DIM             = 2
 COMP            = gnu
 DEBUG           = FALSE
-USE_MPI         = FALSE
+USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
+
+USE_EB = TRUE
 
 TINY_PROFILE = FALSE
 #USE_WBAR = TRUE
 
 DEFINES+=-DALWAYS_NEW_J
 
-DO_2S_CONVERGENCE=FALSE
-
 #######################
-USE_SUNDIALS_PP = FALSE
-
-USE_KLU_PP = FALSE
-
-#######################
+USE_SUNDIALS_3x4x = FALSE
 
 # Enable ht.velocity_plotfile option
 #USE_VELOCITY    = FALSE
 
-ifeq ($(DO_2S_CONVERGENCE),TRUE)
- Chemistry_Model = chem-CH4-2step
- F90EXE_sources += 2step_Phi0.8_refined_CubicInterp.F90
- DEFINES+=-DINTERP_PMF_AS_POINT
-else
- Chemistry_Model = drm19
- fEXE_sources += drm19Soln_seed_0.50.f
-endif
+# Enable the restart-from-plotfile option (ht.pltfile)
+#  ... default this off because when on, code expects it to be used
+# USE_NEWMECH    = FALSE
+
+# Choose model (from list below), and pmf file
+Chemistry_Model = air
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := Fuego
@@ -48,9 +43,10 @@ Eos_dir     := Fuego
 Reactions_dir := Fuego
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir := EGLib
+#Transport_dir := EGLib
+Transport_dir := Constant
 
-Blocs   := .
+Blocs   := ${PELELM_HOME}/Exec/EB_cases/EB_FlowPastCylinder
 
 CEXE_sources +=
 F90EXE_sources += Prob_nd.F90 probdata.F90
