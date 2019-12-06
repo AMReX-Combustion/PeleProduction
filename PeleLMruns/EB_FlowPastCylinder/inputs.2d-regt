@@ -161,10 +161,10 @@ ns.do_sync_proj = 0
 ns.do_MLsync_proj = 0
 
 # Embedded Boundary options
-#eb2.geom_type     = sphere
-#eb2.sphere_radius = 0.002
-#eb2.sphere_center =  -.025  0.00  # don't forget probin: adv_dir !=1
-#eb2.sphere_has_fluid_inside = 0
+eb2.geom_type     = sphere
+eb2.sphere_radius = 0.002
+eb2.sphere_center =  -.025  0.00  # don't forget probin: adv_dir !=1
+eb2.sphere_has_fluid_inside = 0
 
 #eb2.geom_type     = box
 #eb2.box_lo = -.027   -0.002
