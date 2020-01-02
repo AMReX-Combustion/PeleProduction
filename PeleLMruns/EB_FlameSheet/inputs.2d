@@ -4,7 +4,7 @@ geometry.is_periodic = 1 0
 geometry.coord_sys = 0  # 0 => cart, 1 => RZ
 
 geometry.prob_lo   =  0. 0.
-geometry.prob_hi   = .016 .032
+geometry.prob_hi   = .008 .016
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
@@ -17,7 +17,8 @@ max_step  =  1
 stop_time = 4.00
 
 #-------------------------AMR INPUTS----------------------------
-amr.n_cell    = 32 64
+amr.n_cell    = 64 128
+amr.n_cell    = 128 256
 
 amr.v=1
 amr.max_level =  0            # maximum level number allowed
@@ -28,13 +29,13 @@ amr.grid_eff        = 0.9     # what constitutes an efficient grid
 amr.grid_eff        = 0.7     # what constitutes an efficient grid
 amr.blocking_factor = 16      # block factor in grid generation
 
-amr.checkpoint_files_output = 0
+amr.checkpoint_files_output = 1
 amr.check_file      = chk     # root name of checkpoint file
-amr.check_int       = 5       # number of timesteps between checkpoints
+amr.check_int       = 50      # number of timesteps between checkpoints
 
 #amr.plot_files_output = 0
 amr.plot_file       = plt
-amr.plot_int        = 1000
+amr.plot_int        = 5
 amr.derive_plot_vars=rhoRT mag_vort avg_pressure gradpx gradpy diveru mass_fractions molweight
 
 amr.grid_log        = grdlog  # name of grid logging file
@@ -68,8 +69,9 @@ ns.dt_cutoff       = 5.e-10   # level 0 timestep below which we halt
 ns.visc_tol        = 1.0e-14  # tolerence for viscous solves
 ns.visc_abs_tol    = 1.0e-14  # tolerence for viscous solves
 ns.cfl            = 0.7       # cfl number for hyperbolic system
+ns.cfl            = 0.1       # cfl number for hyperbolic system
 ns.init_shrink    = 1.0       # scale back initial timestep
-ns.init_shrink    = 0.0001       # scale back initial timestep
+ns.init_shrink    = 0.01       # scale back initial timestep
 ns.change_max     = 1.1       # scale back initial timestep
 ns.init_iter      = 3        # number of init iters to def pressure
 ns.gravity        = 0        # body force  (gravity in MKS units)
@@ -180,6 +182,10 @@ fab.format = NATIVE
 #ns.do_MLsync_proj = 0
 
 # Embedded Boundary options
-eb2.geom_type    =  all_regular
+#eb2.geom_type    =  all_regular
 
-#ns.hack_nochem = 1
+# Embedded Boundary options
+eb2.geom_type     = sphere
+eb2.sphere_radius = 0.0007
+eb2.sphere_center =  0.004 0.01
+eb2.sphere_has_fluid_inside = 0
