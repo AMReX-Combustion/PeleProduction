@@ -1,13 +1,13 @@
 PeleProduction - README
 =======================
 
-``PeleProduction`` is a collection of run folders for various Pele codes and processing. It includes git submodules for the dependent codes (such as ``PeleLM``, ``PeleC``, ``AMReX``, etc).  This organizational strategy is a work-in-progress attempt to manage the interactions between the various dependent repositories -- ie to keep them all compatible with each other.  So far, I have found that the system works reasonably well as long as you don't get too fancy and try to use the "recursive" clone thing that people try to do.  Instead, this note explains how I use it with some success.
+``PeleProduction`` is a collection of run folders for various Pele codes and processing. It includes git submodules for the dependent codes (such as ``PeleLM``, ``PeleC``, ``AMReX``, etc).  This organizational strategy is a work-in-progress attempt to manage the interactions between the various dependent repositories -- ie to keep them all compatible with each other.  So far, I have found that the system works reasonably well as long as you don't get too fancy and try to use the "recursive" clone thing that people try to do.  Instead, this note explains how I use it with some success. The master branch should contain a basic setup with the latest stable and compatible commits of all the relevant repos for ``PeleLM``.
 
 
 Getting started
 ---------------
 
-This repo consists of the working environment of several of our collaborators.  They are organized into git branches.  The submodules feature of git is used to track the specific commits of each of the dependent repositories that are compatible with the current state of each of those branches. So, the ``jbb`` branch might require one version of ``PeleLM`` while the ``UNSW`` branch needs another, and each depends on different branches of ``AMReX``.  In order to deal with this annoyance, there is a file in the root of this repository called ``.gitmodules`` that lists the local and remote locations of each dependent repo, and the specific commit for each of these repos is tucked away in ``PeleProduction``'s git history.
+This repo consists of the working environment of several of our collaborators, as well as a default setup for new users to get started with.  They are organized into git branches.  The submodules feature of git is used to track the specific commits of each of the dependent repositories that are compatible with the current state of each of those branches. So, the ``jbb`` branch might require one version of ``PeleLM`` while the ``UNSW`` branch needs another, and each depends on different branches of ``AMReX``.  In order to deal with this annoyance, there is a file in the root of this repository called ``.gitmodules`` that lists the local and remote locations of each dependent repo, and the specific commit for each of these repos is tucked away in ``PeleProduction``'s git history.
 
 To clone all the sutff you need for a specific branch ::
 
@@ -15,11 +15,11 @@ To clone all the sutff you need for a specific branch ::
     git clone git@github.com:AMReX-Combustion/PeleProduction.git
     cd PeleProduction
 
-Then change to the desired branch, e.g. ``UNSW`` ::
+Then change to the desired branch, e.g. ``master`` ::
 
-    git checkout UNSW
+    git checkout master
 
-The first time you do this, you will need to tell git that there are submodules (a necessary evil of submodules).  Do ::
+(note that you are likely already in the ``master`` branch, so this command might be a no-op.  The first time you do this, you will need to tell git that there are submodules (a necessary evil of submodules).  Do ::
 
     git submodule init
 
@@ -29,10 +29,10 @@ Git will look at the ``.gitmodules`` file in this branch and use that to initial
 
 Now, you are ready to to build one of the cases associated with this branch, for example ::
 
-    cd PeleLMruns/DiffFlame
+    cd PeleLMruns/FlameSheet2D
     make
 
-As a side note, this "make" will assume that the usual environment variables pointing to ``PeleLM``, ``IAMR``, ``PelePhysics`` and ``AMReX`` have NOT been set, and will instead point to the local sub-repo folders.
+As a side note, this "make" will assume that the usual environment variables pointing to ``PeleLM``, ``IAMR``, ``PelePhysics`` and ``AMReX`` have NOT been set, and will instead point to the local sub-repo folders. This keeps everything self-contained and consistent, as long as you don't accidentally subvert the process by defined those HOME variables.
 
 
 Pulling/updating with submodules
