@@ -38,7 +38,7 @@ contains
 ! ::: 
 ! ::: -----------------------------------------------------------
 
-  subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
+   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
   
       
       use PeleLM_F,  only: pphys_getP1atm_MKS
@@ -101,16 +101,16 @@ contains
  
       close(unit=untin)
 
+!     Set up boundary functions
+      call setupbc()
+
+
       if (isioproc.eq.1) then
          write(6,fortin)
          write(6,heattransin)
       end if
 
-!     Set up boundary functions
-      call setupbc()
-      
-      
-  end subroutine amrex_probinit
+   end subroutine amrex_probinit
 
 ! ::: -----------------------------------------------------------
 ! ::: This routine is called at problem setup time and is used
@@ -144,7 +144,7 @@ contains
                         vel, scal, s_lo, s_hi, press, p_lo, p_hi, &
                         delta, xlo, xhi) &
                         bind(C, name="init_data")
-                              
+
       use network,   only: nspecies
       use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
       use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
@@ -153,6 +153,7 @@ contains
       use probdata_module, only: T_mean, P_mean, xblob, yblob, radblob, MeanFlow
       
       implicit none
+
 ! In/Out
       integer, intent(in) :: level, nscal
       integer, intent(in) :: lo(3), hi(3)
@@ -167,18 +168,18 @@ contains
 ! Local
       integer :: i, j, k, n
       REAL_T  :: x, y, z, Yl(nspecies), Patm
-      REAL_T :: dist, delta_blob, RC
+      REAL_T  :: dist, delta_blob, RC
 
-delta_blob = 2.0d0
-    RC = 0.02d0
+      delta_blob = 2.0d-1
+      RC = 0.02d-1
 
       do k = lo(3), hi(3)
-        z = (float(k)+.5d0)*delta(3)+domnlo(3)
-        do j = lo(2), hi(2)
-          y = (float(j)+.5d0)*delta(2) +domnlo(2)
-          do i = lo(1), hi(1)
-            x = (float(i)+.5d0)*delta(1) +domnlo(1)
-          
+         z = (float(k)+.5d0)*delta(3)+domnlo(3)
+         do j = lo(2), hi(2)
+            y = (float(j)+.5d0)*delta(2) +domnlo(2)
+            do i = lo(1), hi(1)
+               x = (float(i)+.5d0)*delta(1) +domnlo(1)
+   
             dist = sqrt((x-xblob)**2 + (y-yblob)**2)
             dist = sqrt((x-xblob)**2 )
 
@@ -196,10 +197,10 @@ delta_blob = 2.0d0
             end do
 
 !            scal(i,j,k,Temp) = merge(600.d0,300.d0,dist.lt.radblob) !T_mean
-            scal(i,j,k,Temp) = T_mean!*(1.0d0 + delta_blob*exp(-dist/(2.0d0 *RC)))
-
-          enddo  
-        end do
+            scal(i,j,k,Temp) = T_mean*(1.0d0 + delta_blob*exp(-dist/(2.0d0 *RC)))  
+            
+           end do
+         end do
       end do
 
       Patm = P_mean / pphys_getP1atm_MKS()
@@ -225,8 +226,9 @@ delta_blob = 2.0d0
          enddo
       enddo
       
-  end subroutine init_data
+   end subroutine init_data
       
+
 !------------------------------------
 
    subroutine setupbc()bind(C, name="setupbc")
@@ -249,7 +251,7 @@ delta_blob = 2.0d0
 
 
       Yt(1) = 0.233d0
-      Yt(2) = 0.767d0
+      Yt(2) = 1.0d0 - Yt(1)
 
       do n = 1, nspecies
         Y_bc(n-1) = Yt(n)
