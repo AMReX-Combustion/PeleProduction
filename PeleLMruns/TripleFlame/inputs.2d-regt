@@ -10,25 +10,24 @@ geometry.prob_hi     = 0.02 0.04 # x_hi y_hi
 peleLM.lo_bc = Symmetry  Inflow
 peleLM.hi_bc = Symmetry  Outflow
 
-#----------------------TIME STEPING CONTROL----------------------
-max_step       =  2500           # maximum number of time steps
-stop_time      = 4.00            # final physical time
-ns.cfl         = 0.1             # cfl number for hyperbolic system
-ns.init_shrink = 0.01            # scale back initial timestep
-ns.change_max  = 1.1             # max timestep size increase
-ns.dt_cutoff   = 5.e-10          # level 0 timestep below which we halt
-
 #-------------------------AMR CONTROL----------------------------
 amr.n_cell          = 64 128     # Level 0 number of cells in each direction
 amr.v               = 1          # amr verbosity level
 amr.max_level       = 1          # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2    # refinement ratio
 amr.regrid_int      = 2          # how often to regrid
-amr.n_error_buf     = 1 1 1 2    # number of buffer cells in error est
-amr.grid_eff        = 0.9        # what constitutes an efficient grid
+amr.n_error_buf     = 1 1 2 2    # number of buffer cells in error est
 amr.grid_eff        = 0.7        # what constitutes an efficient grid
 amr.blocking_factor = 16         # block factor in grid generation
 amr.max_grid_size   = 32         # maximum box size
+
+#----------------------TIME STEPING CONTROL----------------------
+max_step       = 2500            # maximum number of time steps
+stop_time      = 4.00            # final physical time
+ns.cfl         = 0.1             # cfl number for hyperbolic system
+ns.init_shrink = 0.01            # scale back initial timestep
+ns.change_max  = 1.1             # max timestep size increase
+ns.dt_cutoff   = 5.e-10          # level 0 timestep below which we halt
 
 #-------------------------IO CONTROL----------------------------
 #amr.restart = chk02000           # Restart from checkpoint ?
