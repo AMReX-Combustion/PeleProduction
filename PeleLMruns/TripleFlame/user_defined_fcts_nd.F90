@@ -16,10 +16,10 @@ implicit none
   public :: bcfunction, zero_visc, set_Y_from_Phi, set_Y_from_ksi, set_Zst
 
 contains
-  
 
-
-!-----------------------
+!=========================================================
+!  Dimension agnostic bndy function for Dirichlet
+!=========================================================
 
    subroutine bcfunction( x, dx, dir, norm, time, getuvw, &
                           vel, rho, Yl, T, h)&
@@ -27,7 +27,7 @@ contains
 
       use network,   only: nspecies
       use mod_Fvar_def, only : dv_control, tbase_control, V_in, f_flag_active_control, pamb
-      use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, midtanh, widthtanh
+      use probdata_module, only : bcinit, T_bc, u_bc, v_bc, midtanh, widthtanh
       use PeleLM_F, only: pphys_getP1atm_MKS
       use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
       
@@ -77,8 +77,7 @@ contains
         h = h_tmp(1)
 
         if (getuvw .eqv. .TRUE.) then
-            
-          vel(1) = zero
+          vel(1) = u_bc
           if (f_flag_active_control == 1 ) then               
             vbase =  V_in + (time-tbase_control)*dV_control
             vel(2) = vbase 
@@ -135,6 +134,10 @@ contains
 
    end subroutine zero_visc
 
+!=========================================================
+! Get mass fractions of fuel, H2, oxidizer and bath at the input phi value
+!=========================================================
+
   subroutine set_Y_from_Phi(phi,Yt)bind(C, name="set_Y_from_Phi")
   
       use mod_Fvar_def, only : fuelID, oxidID, bathID, H2ID
@@ -188,6 +191,10 @@ contains
       
   end subroutine set_Y_from_Phi
 
+!=========================================================
+! Convert from mixture fraction to equivalence ratio
+!=========================================================
+
   subroutine set_Y_from_Ksi(ksi,Yt)bind(C, name="set_Y_from_ksi")
   
       use network,   only: nspecies
@@ -207,6 +214,11 @@ contains
       call set_Y_from_Phi(phi,Yt)
       
   end subroutine set_Y_from_ksi
+
+!=========================================================
+! Compute stoichiometric mixture fraction for the fuel mixture defined by 
+! the fuel name in the input file and the H2_enrich set in probin file
+!=========================================================
 
   subroutine set_Zst( )bind(C, name="set_Zst")
   

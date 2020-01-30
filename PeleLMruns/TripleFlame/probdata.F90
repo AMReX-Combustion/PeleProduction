@@ -1,32 +1,25 @@
 #include <AMReX_REAL.H>
 
-
 module probdata_module
-
-  use network, only : nspecies
 
   implicit none
 
-  ! from probdata.H
-    REAL_T :: standoff
-    REAL_T :: pertmag
-    
-    ! from bc.H
-    
+  !   Flag checking if setupbc() has been called    
     logical :: bcinit
     
-    REAL_T :: u_bc, v_bc, w_bc
-    REAL_T :: Y_bc(0:nspecies-1,2), T_bc(1), h_bc(1,2), rho_bc(1,2)
+!   BC variables: filled in setupbc(), read in bcfunction()    
+    REAL_T :: u_bc, v_bc, T_bc(1)
 
-    REAL_T :: midtanh
-    REAL_T :: splitx
-    REAL_T :: widthtanh
+!   Input data from probin file    
+    REAL_T :: midtanh         ! Position of the mixing layer (in x direction)
+    REAL_T :: splitx          ! Half of the domain in x direction
+    REAL_T :: widthtanh       ! Width of the mixing layer TANH
     REAL_T :: H2_enrich       ! H2 enrichment in volume (or mole fraction)
-    REAL_T :: T_in
-    REAL_T :: Zst
+    REAL_T :: T_in            ! Inflow temperature (uniform)
+
+!   Definition of the stoichiometric mixture fraction (useful here)   
+    REAL_T :: Zst             
     
-    integer, parameter :: flame_dir = 2
-  
 contains
 
 !subroutines here

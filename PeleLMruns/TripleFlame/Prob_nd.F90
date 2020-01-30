@@ -10,6 +10,7 @@
 module prob_nD_module
 
    use amrex_fort_module, only : dim=>amrex_spacedim
+   use amrex_error_module, only : amrex_abort
    use fuego_chemistry
 
   implicit none
@@ -27,29 +28,28 @@ contains
 ! ::: (not all problems start at time=0.0) and (2) to read
 ! ::: problem specific data from a namelist or other input
 ! ::: files and possibly store them or derived information
-! ::: in FORTRAN common blocks for later use.
+! ::: in FORTRAN modules for later use.
 ! ::: 
 ! ::: 
 ! ::: INPUTS/OUTPUTS:
 ! ::: 
 ! ::: init      => TRUE if called at start of problem run
 ! :::              FALSE if called from restart
-! ::: strttime <=  start problem with this time variable
 ! ::: 
 ! ::: -----------------------------------------------------------
 
-  subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
+  subroutine amrex_probinit ( init, name, namlen, problo, probhi) bind(c)
   
       use PeleLM_F,  only: pphys_getP1atm_MKS
       use mod_Fvar_def, only : pamb 
-      use mod_Fvar_def, only : fuelID, domnhi, domnlo
+      use mod_Fvar_def, only : domnhi, domnlo
       use mod_Fvar_def, only : ac_hist_file, cfix, changemax_control, &
                                coft_old, controlvelmax, corr, dv_control, &
                                h_control, navg_pnts, scale_control, sest, &
                                tau_control, tbase_control, V_in, v_in_old, zbase_control, &
                                pseudo_gravity
-      use probdata_module, only : standoff, pertmag, T_in, rho_bc, Y_bc, splitx
-      use probdata_module, only : flame_dir, midtanh, widthtanh, H2_enrich
+      use probdata_module, only : T_in, splitx
+      use probdata_module, only : midtanh, widthtanh, H2_enrich
       use user_defined_fcts_nd_module, only: set_Zst
       use PeleLM_F       , only : parse_composition
       use derive_PLM_nd  , only : init_mixture_fraction
@@ -57,30 +57,28 @@ contains
       
       
       implicit none
-      
-      integer :: init, namlen
-      integer :: name(namlen)
-      integer :: untin
-      REAL_T  :: problo(dim), probhi(dim)
+
+! In/Out      
+      integer, intent(in) :: init, namlen
+      integer, intent(in) :: name(namlen)
+      REAL_T, intent(in)  :: problo(dim), probhi(dim)
+
+! Local     
+      integer, parameter :: maxlen = 256
+      integer :: realnamlen,untin, isioproc
       REAL_T, dimension(nspecies) :: Yfu, Yox
-      character(len=256) :: mixfrac_fueltank, mixfrac_oxitank
+      character(len=maxlen) :: mixfrac_fueltank, mixfrac_oxitank
+      character(len=maxlen) :: probin
+      integer :: i
 
-      integer i,istemp
-      REAL_T area
-
-      namelist /fortin/ V_in, T_in, standoff, pertmag, &
-                        midtanh, widthtanh, H2_enrich, mixfrac_fueltank, mixfrac_oxitank
+! Namelists
+      namelist /fortin/ V_in, T_in, midtanh, widthtanh, H2_enrich, &
+                        mixfrac_fueltank, mixfrac_oxitank
       namelist /heattransin/ pamb
 
       namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
-          zbase_control, pseudo_gravity, istemp,corr,controlVelMax,navg_pnts
+          zbase_control, pseudo_gravity, corr,controlVelMax,navg_pnts
 
-!
-!      Build `probin' filename -- the name of file containing fortin namelist.
-!
-      integer maxlen, isioproc
-      parameter (maxlen=256)
-      character probin*(maxlen)
 
       call bl_pd_is_ioproc(isioproc)
 
@@ -88,36 +86,37 @@ contains
 !         call bl_abort('probinit called with init ne 1')
       end if
 
+!------------------------------------------      
+!     Convert probin file name from C++ -> fortran
+!------------------------------------------      
       if (namlen .gt. maxlen) then
-         call bl_abort('probin file name too long')
+         call amrex_abort('probin file name too long')
       end if
 
       if (namlen .eq. 0) then
-         namlen = 6
-         probin(1:namlen) = 'probin'
+         realnamlen = 6
+         probin(1:realnamlen) = 'probin'
       else
+         realnamlen = namlen
          do i = 1, namlen
             probin(i:i) = char(name(i))
          end do
       endif
 
-      untin = 9
-      open(untin,file=probin(1:namlen),form='formatted',status='old')
-      
+!------------------------------------------      
 !     Set defaults
+!------------------------------------------      
       pamb = pphys_getP1atm_MKS()
 
+!     Inflow/initial conditions parameters      
+      T_in = 300.0d0                         ! Inflow temperature
+      H2_enrich = 0.0d0                      ! Level of H2 enrichment on the fuel side
+      midtanh = 0.6*(domnhi(1)+domnlo(1))    ! Mixing layer position: default around middomain
+      widthtanh = 0.05*(domnhi(1)-domnlo(1)) ! Mixing layer thickness: default is 1/20th of domain width in x 
+      splitx = 0.5d0*(domnhi(1)+ domnlo(1))  ! Half width position (in x direction)
+
+!     Initialize inflow velocity control variables
       zbase_control = 0.d0
-
-!     Note: for setup with no coflow, set Ro=Rf+wallth
-      standoff = zero
-      pertmag = 0.d0
-      H2_enrich = 0.0d0
-      T_in = 300.0d0
-      midtanh = 0.6*(domnhi(1)+domnlo(1))    ! Default is middomain in x
-      widthtanh = 0.05*(domnhi(1)-domnlo(1))  ! Default is 1/10th of domain width in x 
-
-!     Initialize control variables
       tau_control = one
       sest = zero
       corr = one
@@ -130,20 +129,27 @@ contains
       tbase_control = zero
       h_control = -one
       pseudo_gravity = 0
-      istemp = 0
       navg_pnts = 10
-      mixfrac_fueltank = ""
-      mixfrac_oxitank = ""
 
+!     Derive variable definitions      
+      mixfrac_fueltank = ""                  ! Fuel tank composition: mandatory if mixfrac is dumped in plt
+      mixfrac_oxitank = ""                   ! Oxi tank composition: mandatory if mixfrac is dumped in plt
+
+!------------------------------------------      
+!     Read probin file 
+!------------------------------------------      
+      untin = 9
+      open(untin,file=probin(1:realnamlen),form='formatted',status='old')
       read(untin,fortin)
-      
-!     Initialize control variables that depend on fortin variables
-      V_in_old = V_in
-      
       read(untin,heattransin)
- 
       read(untin,control)
       close(unit=untin)
+
+!------------------------------------------      
+!     Initialize module data 
+!------------------------------------------      
+!     Initialize control variables that depend on fortin variables
+      V_in_old = V_in
 
 !     Set Zst
       call set_Zst()
@@ -154,32 +160,23 @@ contains
 !     Set mixture fraction data if asked
       if ( ( LEN_TRIM(TRIM(mixfrac_fueltank)) /= 0 ) .and. &
            ( LEN_TRIM(TRIM(mixfrac_oxitank)) /= 0 ) ) then
-!           Get composition of fuel and oxi tank as specified in probin
-!           Format is for example 'CH4:1.0'
-            if (isioproc.eq.1) write(6,'(2x,a)') 'mixtfrac -- Parse fueltank ...'
-               call parse_composition(mixfrac_fueltank, Yfu)
-            if (isioproc.eq.1) write(6,'(2x,a)') 'mixtfrac -- Parse oxitank ...'
-               call parse_composition(mixfrac_oxitank, Yox)
-!           Initialize mixture fraction variables
-            call init_mixture_fraction(Yfu, Yox)
+!        Get composition of fuel and oxi tank as specified in probin
+!        Format is for example 'CH4:1.0'
+         if (isioproc.eq.1) write(6,'(2x,a)') 'mixtfrac -- Parse fueltank ...'
+            call parse_composition(mixfrac_fueltank, Yfu)
+         if (isioproc.eq.1) write(6,'(2x,a)') 'mixtfrac -- Parse oxitank ...'
+            call parse_composition(mixfrac_oxitank, Yox)
+!        Initialize mixture fraction variables
+         call init_mixture_fraction(Yfu, Yox)
       end if
 
-      splitx = 0.5d0 * (domnhi(1) + domnlo(1))
-      
-      area = 1.d0
-      do i=1,dim
-        if (flame_dir /= i) then
-         area = area*(domnhi(i)-domnlo(i))
-        endif
-      enddo
-      !scale_control = (Y_bc(fuelID-1,1)*rho_bc(1,1)+Y_bc(fuelID-1,2)*rho_bc(1,2)) * 0.5 * area
+!     Pass inflow velocity control variables
       scale_control = 1.0
-
       if (h_control .gt. zero) then
-         !cfix = scale_control * h_control
          cfix = h_control
       endif
 
+!     Dump read data on screen for debug purposes
       if (isioproc.eq.1) then
          write(6,fortin)
          write(6,heattransin)
@@ -192,53 +189,16 @@ contains
   
   subroutine setupbc()bind(C, name="setupbc")
 
-    use network,   only: nspecies
-    use PeleLM_F, only: pphys_getP1atm_MKS
-    use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-    use mod_Fvar_def, only : pamb, domnlo, V_in
-    use probdata_module, only : standoff, Y_bc, T_bc, u_bc, v_bc, rho_bc, h_bc
+    use mod_Fvar_def, only : V_in
+    use probdata_module, only : T_bc, u_bc, v_bc
     use probdata_module, only : bcinit, T_in
-    use user_defined_fcts_nd_module, only: set_Y_from_ksi
   
     implicit none
 
-    REAL_T :: Patm
-    
-    integer n
-    integer b_lo(3), b_hi(3)
-    data  b_lo / 1, 1, 1 /
-    data  b_hi / 1, 1, 1 /
-      
-    Patm = pamb / pphys_getP1atm_MKS()
-             
-  ! Get the lean and rich mixture comp
-    
-    call set_Y_from_ksi(1.0d0,Y_bc(0:nspecies-1,1))     
-    call set_Y_from_ksi(0.0d0,Y_bc(0:nspecies-1,2))     
-
     T_bc = T_in
-    v_bc = V_in
     u_bc = zero
+    v_bc = V_in
               
-!   Set density and hmix consistent with data
-
-    call pphys_RHOfromPTY(b_lo, b_hi, &
-                         rho_bc(1,1), b_lo, b_hi, &
-                         T_bc(1),     b_lo, b_hi, &
-                         Y_bc(0,1),   b_lo, b_hi, Patm)
-    call pphys_RHOfromPTY(b_lo, b_hi, &
-                         rho_bc(1,2), b_lo, b_hi, &
-                         T_bc(1),     b_lo, b_hi, &
-                         Y_bc(0,2),   b_lo, b_hi, Patm)
-    call pphys_HMIXfromTY(b_lo, b_hi, &
-                         h_bc(1,1), b_lo, b_hi, &
-                         T_bc(1),   b_lo, b_hi, &
-                         Y_bc(0,1), b_lo, b_hi)
-    call pphys_HMIXfromTY(b_lo, b_hi, &
-                         h_bc(1,2), b_lo, b_hi, &
-                         T_bc(1),   b_lo, b_hi, &
-                         Y_bc(0,2), b_lo, b_hi)
-
     bcinit = .true.
 
   end subroutine setupbc
@@ -282,7 +242,7 @@ contains
       use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
       use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb, Trac
       use mod_Fvar_def, only : bathID, oxidID, domnhi, domnlo, V_in
-      use probdata_module, only : Y_bc, rho_bc, T_bc, midtanh, widthtanh, splitx
+      use probdata_module, only : midtanh, widthtanh, splitx, T_in
       use user_defined_fcts_nd_module, only : set_Y_from_ksi
 
       implicit none
@@ -329,12 +289,12 @@ contains
       Gauss_T_width = 0.0012d0
       Gaussian_Spec_width = 0.0012d0
 
-!      write(6,*)" made it to initdata"
+!     write(6,*)" made it to initdata"
       if (bathID.lt.1 .or. bathID.gt.nspecies) then
          call bl_pd_abort()
       endif
 
-      ! Set up hot air composition
+!     Set up hot air composition
       Yl(:,1) = 0.0d0
       Yl(bathID-1,1) = 0.767
       Yl(oxidID-1,1) = 0.233
@@ -352,13 +312,13 @@ contains
              tanhval = 0.5d0*(1.0d0+TANH((x-midtanh)/widthtanh))
              call set_Y_from_Ksi(tanhval,Yl(0:nspecies-1,2))
 
-             ! Set background T
-             scal(i,j,k,Temp) = T_bc(1)
+             ! Set background (inflow) T
+             scal(i,j,k,Temp) = T_in
 
              ! Setup hot air region in the mixing layer
              rad = SQRT((x-splitx)**2.0+(MIN(y,y_lo)-y_lo)**2.0)
              Gaussian_T = EXP(-(rad)**2.0/(2.0*(Gauss_T_width + Gauss_T_width * (y-y_lo)/0.03)**2.0))
-             scal(i,j,k,Temp) = T_bc(1) + (Gauss_maxT-T_bc(1)) * Gaussian_T
+             scal(i,j,k,Temp) = T_in + (Gauss_maxT-T_in) * Gaussian_T
 
              Gaussian_spec = EXP(-(rad)**2.0/(2.0*(Gaussian_Spec_width + Gaussian_Spec_width * (y-y_lo)/0.03)**2.0))
              do n = 0, nspecies-1
@@ -383,6 +343,7 @@ contains
          end do
       end do
 
+!     Compute rho and h from prescribed composition, temperature and pression
       call pphys_RHOfromPTY(lo,hi, &
                             scal(:,:,:,Density),   s_lo, s_hi, &
                             scal(:,:,:,Temp),      s_lo, s_hi, &
@@ -393,6 +354,7 @@ contains
                             scal(:,:,:,Temp),      s_lo, s_hi, &
                             scal(:,:,:,FirstSpec), s_lo, s_hi)
 
+!     Yl -> rhoYl, h -> rhoYl
       do k = lo(3), hi(3)
          do j = lo(2), hi(2)
             do i = lo(1), hi(1)
