@@ -1,0 +1,22 @@
+ &fortin
+  V_in = 0.64
+  T_in = 300.0d0
+  H2_enrich = 0.2d0 
+  mixfrac_fueltank = "CH4:0.9695422407 H2:0.0304577593"
+!  mixfrac_fueltank = "CH4:1.0"
+  mixfrac_oxitank  = "O2:0.233 N2:0.767"
+ /
+ &heattransin
+  pamb = 101325.
+ /
+ &control
+  tau_control = 5.0e-3
+  sest = .2
+  h_control = 0.0098
+  changeMax_control = .01
+  controlVelMax = 2.0
+  pseudo_gravity = 1
+ /
+ &extern
+  new_Jacobian_each_cell = 1
+ /
