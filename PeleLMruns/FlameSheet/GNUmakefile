@@ -1,7 +1,7 @@
-PELELM_HOME ?= ../../Submodules/PeleLM
-PELE_PHYSICS_HOME ?= ../../Submodules/PelePhysics
-IAMR_HOME ?= ../../Submodules/IAMR
-AMREX_HOME ?= ../../Submodules/amrex
+TOP = ../../Submodules
+AMREX_HOME ?= ${TOP}/amrex
+IAMR_HOME ?= ${TOP}/IAMR
+PELELM_HOME ?= ${TOP}/PeleLM
 
 #
 # Build configuration
@@ -9,8 +9,8 @@ AMREX_HOME ?= ../../Submodules/amrex
 
 DIM             = 2
 COMP            = gnu
-DEBUG           = TRUE
-USE_MPI         = FALSE
+DEBUG           = FALSE
+USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
@@ -37,22 +37,22 @@ ifeq ($(DO_2S_CONVERGENCE),TRUE)
 	F90EXE_sources += 2step_Phi0.8_refined_CubicInterp.F90
 	DEFINES+=-DINTERP_PMF_AS_POINT
 else
-	# Enable the restart-from-plotfile option (ht.pltfile)
-	#  ... default this off because when on, code expects it to be used
-	# USE_NEWMECH    = FALSE
-	
-	# Choose model (from list below), and pmf file
-	Chemistry_Model = drm19
-	fEXE_sources += drm19Soln_seed_0.50.f
-	
-	#Chemistry_Model = LIDRYER
-	#fEXE_sources += LiDryer_040_01ATM.f
-	
-	#Chemistry_Model = LUDME
-	#fEXE_sources += LuDME_0700.f
-	
-	#Chemistry_Model = GRI30
-	#fEXE_sources += gri30_070.f
+ # Enable the restart-from-plotfile option (ht.pltfile)
+ #  ... default this off because when on, code expects it to be used
+ # USE_NEWMECH    = FALSE
+
+ # Choose model (from list below), and pmf file
+ Chemistry_Model = drm19
+ fEXE_sources += drm19Soln_seed_0.50.f
+
+ #Chemistry_Model = LIDRYER
+ #fEXE_sources += LiDryer_040_01ATM.f
+
+ #Chemistry_Model = LUDME
+ #fEXE_sources += LuDME_0700.f
+
+ #Chemistry_Model = GRI30
+ #fEXE_sources += gri30_070.f
 endif
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
@@ -67,7 +67,7 @@ Transport_dir := EGLib
 Blocs   := .
 
 CEXE_sources +=
-F90EXE_sources += Prob_$(DIM)d.F90 probdata.F90
+F90EXE_sources += Prob_nd.F90 probdata.F90
 CEXE_headers += 
 FEXE_headers += 
 
