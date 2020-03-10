@@ -1,0 +1,15 @@
+ &fortin
+  T_mean = 298.0
+  P_mean = 101325.
+  xblob = -0.02
+  yblob = 0.
+  radblob = 0.015
+  MeanFlow = 15.0d0
+ /
+ &heattransin
+  pamb = 101325.
+ /
+ &extern
+   new_Jacobian_each_cell=1
+ /
+
