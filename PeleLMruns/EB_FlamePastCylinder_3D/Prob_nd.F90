@@ -205,6 +205,9 @@ contains
 
                vel(i,j,k,1) = MeanFlow
                vel(i,j,k,2) = 0.0d0
+#if ( AMREX_SPACEDIM == 3 ) 
+               vel(i,j,k,3) = 0.d0
+#endif
 
             end do
          end do
