@@ -1,7 +1,7 @@
 [submodule "Submodules/PeleLM"]
 	path = Submodules/PeleLM
 	url = https://github.com/AMReX-Combustion/PeleLM.git
-        branch = master
+        branch = Emmanuel/EBization
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
 	url = https://github.com/AMReX-Combustion/PelePhysics.git
@@ -13,4 +13,4 @@
 [submodule "Submodules/IAMR"]
 	path = Submodules/IAMR
 	url = https://github.com/AMReX-Codes/IAMR.git
-        branch = master
+        branch = EBIAMR
