@@ -26,14 +26,8 @@ max_step  = 1
 stop_time = 5.0
 
 #-------------------------AMR INPUTS----------------------------
-amr.n_cell    = 64 16 
-amr.n_cell    = 256 64
-#amr.n_cell    = 512  128
-#amr.n_cell    = 1024  256
-
-amr.n_cell    = 512 512
-amr.n_cell    = 256 256
-amr.n_cell    = 512 256 128
+#amr.n_cell    = 512 256 128
+amr.n_cell    = 1024 512 256
 
 
 amr.v=1
@@ -120,7 +114,7 @@ proj.proj_tol       = 1.0e-10  # tolerence for projections
 proj.proj_abs_tol   = 1.0e-10
 proj.sync_tol       = 1.0e-10  # tolerence for projections
 proj.rho_wgt_vel_proj = 0      # 0 => const den proj, 1 => rho weighted
-proj.Pcode          = 0 
+nodal_proj.verbose          = 0 
 proj.filter_factor  = 0.0
 proj.do_outflow_bcs = 0
 proj.divu_minus_s_factor = .5
