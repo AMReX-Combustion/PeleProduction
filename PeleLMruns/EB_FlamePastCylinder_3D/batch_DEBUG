@@ -4,8 +4,7 @@
 #SBATCH -q debug
 #SBATCH -J FlameCyl
 #SBATCH -t 00:30:00
-#SNATCH -A m3406
-
+#SBATCH -A m3406
 
 #OpenMP settings:
 export OMP_NUM_THREADS=1

@@ -4,7 +4,7 @@
 #SBATCH -q premium
 #SBATCH -J FlameCyl
 #SBATCH -t 13:00:00
-#SNATCH -A m3406
+#SBATCH -A m3406
 
 
 #OpenMP settings:
