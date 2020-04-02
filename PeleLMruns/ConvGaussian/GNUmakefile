@@ -10,7 +10,7 @@ PELE_PHYSIC_HOME ?= ${TOP}/PelePhysics
 
 DIM             = 2
 COMP            = gnu
-DEBUG           = FALSE
+DEBUG           = TRUE
 USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE

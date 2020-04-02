@@ -20,6 +20,7 @@ stop_time = 0.04
 
 #-------------------------AMR INPUTS----------------------------
 amr.n_cell    = 64 64 64
+amr.n_cell    = 16 16 16
 
 amr.v=1
 amr.max_level =  0            # maximum level number allowed
@@ -149,3 +150,7 @@ cg.cg_solver=1
 fab.format = NATIVE
 
 fabarray.mfiter_tile_size = 8 8 8 
+amrex.fpe_trap_invalid = 1
+godunov.slope_order=1
+ns.init_shrink=1.0
+ns.fixed_dt=.000375

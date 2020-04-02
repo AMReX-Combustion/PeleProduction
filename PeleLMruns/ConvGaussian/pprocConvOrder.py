@@ -45,7 +45,8 @@ USAGE = """
 def pproc(args):
 
     # User data
-    vars=["rhoh","density", "Y(O2)", "Y(N2)"]
+    #vars=["rhoh","density", "Y(O2)", "Y(N2)"]
+    vars=["rhoh","density"]
     resolution = [32,64,128,256]        
     pproc_type = "fcompare"
 
