@@ -51,6 +51,7 @@ F90EXE_sources += Prob_nd.F90 probdata.F90
 CEXE_headers += 
 FEXE_headers += 
 
+VPATH_LOCATIONS += .
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
 # Available chemistry models:
 # CanuH2 chem-CH4-2step chem-H dme glar gri Hai H-CW header inert Konnov
