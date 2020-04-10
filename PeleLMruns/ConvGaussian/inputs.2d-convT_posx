@@ -76,7 +76,7 @@ ns.min_rho_divu_ceiling = .01
 
 ns.fuelName        = N2
 ns.unity_Le = 0
-ns.hack_nochem = 1
+ns.hack_nochem = 0
 ns.sdc_iterMAX = 2
 
 ns.do_active_control = 0
@@ -154,7 +154,7 @@ amrex.fpe_trap_invalid = 1
 ns.init_shrink=1.0
 ns.fixed_dt=.00021875
 ns.init_iter = 0
-ns.num_mac_sync_iter = 5
+ns.num_mac_sync_iter = 50
 
 amr.refinement_indicators = hightemp
 amr.hightemp.max_level = 2
