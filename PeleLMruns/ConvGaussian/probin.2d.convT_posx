@@ -2,6 +2,7 @@
   meanFlowMag = 50.0 
   meanFlowDir = 1
   T_mean = 298.0
+  T_mean = 400.0
   P_mean = 101325.
   rgauss  = 0.1
   xgauss  = 0.5
