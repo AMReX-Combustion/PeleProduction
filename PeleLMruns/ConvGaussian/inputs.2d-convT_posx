@@ -150,7 +150,7 @@ fab.format = NATIVE
 
 fabarray.mfiter_tile_size = 8 8 8 
 amrex.fpe_trap_invalid = 1
-godunov.slope_order=1
+#godunov.slope_order=1
 ns.init_shrink=1.0
 ns.fixed_dt=.00021875
 ns.init_iter = 0

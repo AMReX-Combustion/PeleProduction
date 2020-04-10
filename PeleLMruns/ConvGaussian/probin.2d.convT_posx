@@ -1,10 +1,9 @@
  &fortin
   meanFlowMag = 50.0 
   meanFlowDir = 1
-  T_mean = 298.0
-  T_mean = 400.0
+  T_mean = 398.0
   P_mean = 101325.
-  rgauss  = 0.1
+  rgauss  = 0.12
   xgauss  = 0.5
   ygauss  = 0.5
   ampgauss  = 0.1
