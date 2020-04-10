@@ -1,7 +1,7 @@
 [submodule "Submodules/PeleLM"]
 	path = Submodules/PeleLM
 	url = https://github.com/AMReX-Combustion/PeleLM.git
-        branch = Emmanuel/EBization
+        branch = feature_fix_TsolveSync
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
 	url = https://github.com/AMReX-Combustion/PelePhysics.git
