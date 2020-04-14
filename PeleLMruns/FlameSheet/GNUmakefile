@@ -1,6 +1,7 @@
 TOP = ../../Submodules
 AMREX_HOME ?= ${TOP}/amrex
 IAMR_HOME ?= ${TOP}/IAMR
+PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
 PELELM_HOME ?= ${TOP}/PeleLM
 PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
 
