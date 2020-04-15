@@ -1,7 +1,0 @@
-This case is a circle of H2 diffusing into ambient air. This tests the differential diffusion update and associated routines.
-
-Expected behavior: The blob of H2 should diffuse iso-thermally into its surroundings.
-
-Observed behavior (9-10-19): There are local temperature increases internal to the diffusing species for both the single level and the multi-level cases.
-
-Additional issue: Only works with periodic boundary conditions on all sides. Ideally, this would work with outflow boundary conditions.
