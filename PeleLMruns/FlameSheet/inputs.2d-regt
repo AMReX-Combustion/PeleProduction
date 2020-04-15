@@ -172,7 +172,3 @@ fab.format = NATIVE
 
 #fabarray.mfiter_tile_size = 8 8 8 
 amrex.regtest_reduction=1
-
-# Select CVODE Jacobian eval: 0=FD 1=AJ
-cvode.analytical_jacobian = 0
-cvode.solve_type = 99 
