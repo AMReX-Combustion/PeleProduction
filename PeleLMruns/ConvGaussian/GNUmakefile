@@ -16,21 +16,11 @@ USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
+TINY_PROFILE    = FALSE
 
-TINY_PROFILE = FALSE
-#USE_WBAR = TRUE
-
-DEFINES+=-DALWAYS_NEW_J
-
-#######################
-USE_SUNDIALS_3x4x = FALSE
-
-# Enable ht.velocity_plotfile option
-#USE_VELOCITY    = FALSE
-
-# Enable the restart-from-plotfile option (ht.pltfile)
-#  ... default this off because when on, code expects it to be used
-# USE_NEWMECH    = FALSE
+USE_WBAR        = FALSE
+USE_VELOCITY    = FALSE
+USE_NEWMECH     = FALSE
 
 # Choose model (from list below), and pmf file
 Chemistry_Model = air
@@ -54,6 +44,3 @@ FEXE_headers +=
 
 VPATH_LOCATIONS += .
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
-# Available chemistry models:
-# CanuH2 chem-CH4-2step chem-H dme glar gri Hai H-CW header inert Konnov
-# LiDryer Marinov prf_ethanol Roehl sandiego smooke usc
