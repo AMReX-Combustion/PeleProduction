@@ -1,0 +1,11 @@
+unset AMREX_HOME IAMR_HOME PELE_PHYSICS_HOME PELELM_HOME
+git clone git@github.com:AMReX-Combustion/PeleProduction.git
+cd PeleProduction
+git checkout marc/wip_gpu
+git submodule init
+git submodule update
+cd Submodules/PelePhysics/ThirdParty
+./get_sundials_v5dev1_CUDA.sh
+cd ../../../PeleLMruns/FlameSheet
+make -j 12 USE_MPI=FALSE
+
