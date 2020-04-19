@@ -6,7 +6,7 @@
 	url = https://github.com/AMReX-Combustion/PelePhysics.git
 [submodule "Submodules/amrex"]
 	path = Submodules/amrex
-	url = https://github.com/AMReX-Codes/amrex.git
+	url = https://github.com/AMReX-Combustion/amrex.git
 [submodule "Submodules/IAMR"]
 	path = Submodules/IAMR
 	url = https://github.com/AMReX-Codes/IAMR.git
