@@ -10,6 +10,7 @@ PELELM_HOME ?= ${TOP}/PeleLM
 DIM             = 2
 COMP            = gnu
 DEBUG           = FALSE
+DEBUG           = TRUE
 USE_MPI         = TRUE
 USE_OMP         = FALSE
 PRECISION       = DOUBLE
@@ -42,11 +43,11 @@ else
  # USE_NEWMECH    = FALSE
 
  # Choose model (from list below), and pmf file
- Chemistry_Model = drm19
- fEXE_sources += drm19Soln_seed_0.50.f
+ #Chemistry_Model = drm19
+ #fEXE_sources += drm19Soln_seed_0.50.f
 
- #Chemistry_Model = LIDRYER
- #fEXE_sources += LiDryer_040_01ATM.f
+ Chemistry_Model = LiDryer
+ fEXE_sources += LiDryer_040_01ATM.f
 
  #Chemistry_Model = LUDME
  #fEXE_sources += LuDME_0700.f
