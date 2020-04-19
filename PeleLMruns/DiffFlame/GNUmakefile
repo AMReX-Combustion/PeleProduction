@@ -21,10 +21,12 @@ COMM_PROFILE    = FALSE
 # Enable flctin namelist
 USE_FLCTS       = TRUE
 
-#Chemistry_Model = DODECANE_LU_RED
-Chemistry_Model = dodecane_wang
-#fEXE_sources += getrates.f
-fEXE_sources += wang_dodecane_phi_1000.f
+# 35-species n-dodecane mechanism (LTC/HTC)
+# Chemistry_Model = dodecane_lu_red
+# 53-species n-dodecane mechanism (LTC/HTC)
+Chemistry_Model = dodecane_lu
+# 56-species n-dodecane mechanism (HTC only)
+#Chemistry_Model = dodecane_wang
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := Fuego
