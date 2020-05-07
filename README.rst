@@ -32,7 +32,7 @@ Now, you are ready to to build one of the cases associated with this branch, for
     cd PeleLMruns/FlameSheet2D
     make
 
-As a side note, this "make" will assume that the usual environment variables pointing to ``PeleLM``, ``IAMR``, ``PelePhysics`` and ``AMReX`` have NOT been set, and will instead point to the local sub-repo folders. This keeps everything self-contained and consistent, as long as you don't accidentally subvert the process by defined those HOME variables.
+As a side note, this "make" will assume that the usual environment variables pointing to ``PeleLM``, ``IAMR``, ``PelePhysics`` and ``AMReX`` have NOT been set, and will instead point to the local sub-repo folders. This keeps everything self-contained and consistent, as long as you don't accidentally subvert the process by defining those HOME variables in your environment.
 
 
 Pulling/updating with submodules
