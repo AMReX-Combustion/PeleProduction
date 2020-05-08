@@ -8,7 +8,7 @@
         branch = master
 [submodule "Submodules/amrex"]
 	path = Submodules/amrex
-	url = https://github.com/AMReX-Combustion/amrex.git
+	url = https://github.com/AMReX-Codes/amrex.git
         branch = development
 [submodule "Submodules/IAMR"]
 	path = Submodules/IAMR
