@@ -18,9 +18,11 @@ USE_OMP         = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
 
-USE_PARTICLES = FALSE
+USE_PARTICLES = TRUE
 SPRAY_COMPONENTS = 8
+#SPRAY_FUEL_NUM = 1
 DEFINES += -DSPRAY_COMPONENTS=$(SPRAY_COMPONENTS)
+DEFINES += -DSPRAY_FUEL_NUM=1
 
 TINY_PROFILE = FALSE
 #USE_WBAR = TRUE
@@ -69,7 +71,8 @@ Eos_dir     := Fuego
 Reactions_dir := Fuego
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir := EGLib
+#Transport_dir := EGLib
+Transport_dir := Simple
 
 Blocs   := .
 
@@ -77,6 +80,11 @@ CEXE_sources +=
 F90EXE_sources += Prob_nd.F90 probdata.F90
 CEXE_headers += 
 FEXE_headers += 
+
+ifeq ($(USE_PARTICLES),TRUE)
+	CEXE_sources += SprayParticlesInitInsert.cpp
+	#CEXE_headers += prob.H
+endif
 
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
 # Available chemistry models:
