@@ -1,0 +1,17 @@
+MOLE
+/
+FUEL
+NC12H26    1.0
+END
+/
+OXID
+H2         0.056603773584906
+N2         0.801886792452830
+O2         0.141509433962264
+END
+
+
+! Mechanisms: Yao_nDodecane_AM30-H2_red
+! Oxidiser composition:
+!   O2 = 15%
+!   Phi = 0.2

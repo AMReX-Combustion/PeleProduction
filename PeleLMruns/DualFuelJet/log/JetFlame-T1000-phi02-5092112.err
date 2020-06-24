@@ -1,0 +1,222 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+Currently Loaded Modulefiles:
+  1) slurm/19.05.5-1
+  2) pawseytools/1.28
+  3) modules/3.2.10.6
+  4) Base-opts/2.4.135-6.0.7.1_5.6__g718f891.ari
+  5) intel/17.0.4.196
+  6) craype-haswell
+  7) craype-network-aries
+  8) craype/2.5.13
+  9) cray-mpich/7.7.0
+ 10) nano/2.9.1
+ 11) cray-libsci/17.12.1
+ 12) pmi/5.0.13
+ 13) atp/2.1.1
+ 14) rca/2.2.18-6.0.7.1_5.52__g2aa4f39.ari
+ 15) perftools-base/7.0.0
+ 16) PrgEnv-intel/6.0.4
+Currently Loaded Modulefiles:
+  1) slurm/19.05.5-1
+  2) pawseytools/1.28
+  3) modules/3.2.10.6
+  4) Base-opts/2.4.135-6.0.7.1_5.6__g718f891.ari
+  5) intel/17.0.4.196
+  6) craype-haswell
+  7) craype-network-aries
+  8) craype/2.5.13
+  9) cray-mpich/7.7.0
+ 10) nano/2.9.1
+ 11) cray-libsci/17.12.1
+ 12) pmi/5.0.13
+ 13) atp/2.1.1
+ 14) rca/2.2.18-6.0.7.1_5.52__g2aa4f39.ari
+ 15) perftools-base/7.0.0
+ 16) PrgEnv-intel/6.0.4
+amrex::Error::381::vode failed !!!
+SIGABRT
+amrex::Error::559::vode failed !!!
+SIGABRT
+See Backtrace.559 file for details
+amrex::Error::1425::vode failed !!!
+SIGABRT
+See Backtrace.381 file for details
+See Backtrace.1425 file for details
+amrex::Error::1217::vode failed !!!
+SIGABRT
+See Backtrace.1217 file for details
+Rank 559 [Sun Jun 14 08:34:47 2020] [c2-0c2s4n2] application called MPI_Abort(MPI_COMM_WORLD, 6) - process 559
+Rank 381 [Sun Jun 14 08:34:48 2020] [c2-0c2s2n2] application called MPI_Abort(MPI_COMM_WORLD, 6) - process 381
+Rank 1425 [Sun Jun 14 08:34:48 2020] [c7-0c0s0n3] application called MPI_Abort(MPI_COMM_WORLD, 6) - process 1425
+srun: error: nid00522: task 381: Aborted
+srun: Terminating job step 5092112.0
+slurmstepd: error: *** STEP 5092112.0 ON nid00204 CANCELLED AT 2020-06-14T06:34:48 ***
+srun: error: nid01347: tasks 1416-1419,1421-1424,1426-1433,1435-1436,1438-1439: Terminated
+srun: error: nid01347: task 1425: Aborted
+srun: error: nid01103: tasks 1224-1228,1230-1244,1246-1247: Terminated
+srun: error: nid01105: tasks 1272,1274-1276,1278-1295: Terminated
+srun: error: nid01354: tasks 1584-1595,1597-1601,1603,1605-1607: Terminated
+srun: error: nid01367: tasks 1896-1909,1911-1913,1915-1919: Terminated
+srun: error: nid01359: tasks 1704-1710,1712-1727: Terminated
+srun: error: nid01108: tasks 1344-1349,1351-1357,1359-1361,1363-1367: Terminated
+srun: error: nid01109: tasks 1368-1369,1371-1389,1391: Terminated
+srun: error: nid01358: tasks 1680-1701,1703: Terminated
+srun: error: nid01357: tasks 1656-1662,1664-1677,1679: Terminated
+srun: error: nid01356: tasks 1632-1635,1637-1638,1640-1651,1653-1655: Terminated
+srun: error: nid01363: tasks 1800-1802,1804-1823: Terminated
+srun: error: nid01104: tasks 1248,1250-1267,1271: Terminated
+srun: error: nid01355: tasks 1608-1624,1626-1631: Terminated
+srun: error: nid01350: tasks 1488-1492,1494-1507,1509-1511: Terminated
+srun: error: nid01349: tasks 1464-1467,1469-1474,1476-1478,1480,1482-1487: Terminated
+srun: error: nid01102: tasks 1200-1204,1206-1209,1211-1217,1219-1223: Terminated
+srun: error: nid01353: tasks 1560-1577,1579-1581,1583: Terminated
+srun: error: nid01366: tasks 1872-1887,1889-1893,1895: Terminated
+srun: error: nid01099: tasks 1128-1131,1133-1139,1141-1145,1147-1151: Terminated
+srun: error: nid01106: tasks 1296-1297,1299,1301-1311,1313-1319: Terminated
+srun: error: nid01107: tasks 1320-1321,1323-1343: Terminated
+srun: error: nid01360: tasks 1728,1730-1732,1734-1737,1740-1747,1749,1751: Terminated
+srun: error: nid01365: tasks 1848-1859,1861-1871: Terminated
+srun: error: nid01352: tasks 1536-1547,1549-1559: Terminated
+srun: error: nid01361: tasks 1752-1761,1763-1771,1775: Terminated
+srun: error: nid01364: tasks 1824-1833,1835-1841,1843-1845,1847: Terminated
+srun: error: nid01351: tasks 1512-1531,1534-1535: Terminated
+srun: error: nid01100: tasks 1152-1157,1160-1170,1172-1175: Terminated
+srun: error: nid01101: tasks 1176-1191,1193,1195-1199: Terminated
+srun: error: nid01348: tasks 1440-1461,1463: Terminated
+srun: error: nid01047: tasks 840-849,852-863: Terminated
+srun: error: nid01110: tasks 1392-1396,1398,1400-1411,1413-1415: Terminated
+srun: error: nid01362: tasks 1776-1792,1794,1797-1799: Terminated
+srun: error: nid01045: tasks 792-793,795-797,799-808,810-815: Terminated
+srun: error: nid01050: tasks 912-921,923-927,929-935: Terminated
+srun: error: nid00530: tasks 552-558,560-567,569,571-575: Terminated
+srun: error: nid01098: tasks 1105-1110,1112-1113,1115-1120,1122-1124,1127: Terminated
+srun: error: nid01037: tasks 600-616,618-623: Terminated
+srun: error: nid01046: tasks 816-822,824-825,827-834,836-839: Terminated
+srun: error: nid01097: tasks 1080-1099,1101-1103: Terminated
+srun: error: nid00531: tasks 576-597,599: Terminated
+srun: error: nid01041: tasks 696-712,714-717,719: Terminated
+srun: error: nid01040: tasks 672-692,695: Terminated
+srun: error: nid01043: tasks 744,746-764,766-767: Terminated
+srun: error: nid01044: tasks 768-787,789-791: Terminated
+srun: error: nid00528: tasks 504-514,516-519,522-525,527: Terminated
+srun: error: nid01054: tasks 1008-1013,1015-1023,1025-1028,1030-1031: Terminated
+srun: error: nid01095: tasks 1032-1035,1037-1040,1042,1044-1049,1051-1055: Terminated
+srun: error: nid01042: tasks 720-725,727-729,731-736,738-743: Terminated
+srun: error: nid01051: tasks 936-937,939-951,954,956-959: Terminated
+srun: error: nid00529: tasks 528-548,550-551: Terminated
+srun: error: nid01049: tasks 888-905,908-911: Terminated
+srun: error: nid01048: tasks 864-881,883-887: Terminated
+srun: error: nid01039: tasks 648-651,654-665,667-671: Terminated
+srun: error: nid01096: tasks 1056-1062,1064-1067,1069-1079: Terminated
+srun: error: nid00526: tasks 456-471,473-479: Terminated
+srun: error: nid01052: tasks 960-962,964-965,967-972,974-983: Terminated
+srun: error: nid01053: tasks 984-999,1001-1004,1006-1007: Terminated
+srun: error: nid00525: tasks 432,434-455: Terminated
+srun: error: nid01038: tasks 624-645,647: Terminated
+srun: error: nid00527: tasks 480-483,485-486,488-489,492-495,497-501,503: Terminated
+srun: error: nid01104: tasks 1249,1269-1270: Terminated
+srun: error: nid01361: tasks 1762,1773: Terminated
+srun: error: nid01360: tasks 1729,1733,1738-1739,1750: Terminated
+srun: error: nid01364: tasks 1834,1846: Terminated
+srun: error: nid00530: tasks 568,570: Terminated
+srun: error: nid00524: tasks 408-423,425-431: Terminated
+srun: error: nid00528: tasks 515,526: Terminated
+srun: error: nid01358: task 1702: Terminated
+srun: error: nid00522: tasks 360-363,365-377,379,382-383: Terminated
+srun: error: nid00523: tasks 384-388,390-405,407: Terminated
+srun: error: nid01360: task 1748: Terminated
+srun: error: nid01355: task 1625: Terminated
+srun: error: nid00520: tasks 312-316,318-330,333-335: Terminated
+srun: error: nid00519: tasks 288-309,311: Terminated
+srun: error: nid00521: tasks 336-357,359: Terminated
+srun: error: nid01359: task 1711: Terminated
+srun: error: nid01107: task 1322: Terminated
+srun: error: nid00518: tasks 264-267,269-287: Terminated
+srun: error: nid00517: tasks 240-246,248-255,257-263: Terminated
+srun: error: nid01365: task 1860: Terminated
+srun: error: nid01354: tasks 1596,1602,1604: Terminated
+srun: error: nid01348: task 1462: Terminated
+srun: error: nid01102: tasks 1205,1210,1218: Terminated
+srun: error: nid01103: tasks 1229,1245: Terminated
+srun: error: nid01364: task 1842: Terminated
+srun: error: nid01349: tasks 1468,1475,1479,1481: Terminated
+srun: error: nid01352: task 1548: Terminated
+srun: error: nid01363: task 1803: Terminated
+srun: error: nid01104: task 1268: Terminated
+srun: error: nid01101: tasks 1192,1194: Terminated
+srun: error: nid01100: tasks 1158-1159,1171: Terminated
+srun: error: nid01366: tasks 1888,1894: Terminated
+srun: error: nid01362: tasks 1793,1795-1796: Terminated
+srun: error: nid01106: tasks 1298,1300,1312: Terminated
+srun: error: nid01357: tasks 1663,1678: Terminated
+srun: error: nid01347: tasks 1420,1434,1437: Terminated
+srun: error: nid01108: tasks 1350,1358,1362: Terminated
+srun: error: nid01105: tasks 1273,1277: Terminated
+srun: error: nid01356: tasks 1636,1639,1652: Terminated
+srun: error: nid01367: tasks 1910,1914: Terminated
+srun: error: nid01109: tasks 1370,1390: Terminated
+srun: error: nid01353: tasks 1578,1582: Terminated
+srun: error: nid01350: tasks 1493,1508: Terminated
+srun: error: nid01351: tasks 1532-1533: Terminated
+srun: error: nid01110: tasks 1397,1399,1412: Terminated
+srun: error: nid00211: tasks 168-171,173-191: Terminated
+srun: error: nid00516: tasks 216-237,239: Terminated
+srun: error: nid00210: tasks 144-161,163-167: Terminated
+srun: error: nid00209: tasks 120-121,123,125-143: Terminated
+srun: error: nid00208: tasks 96,98-119: Terminated
+srun: error: nid01099: tasks 1132,1140,1146: Terminated
+srun: error: nid01361: tasks 1772,1774: Terminated
+srun: error: nid00212: tasks 193-196,199-201,204-207,209-215: Terminated
+srun: error: nid00204: tasks 0-21,23: Terminated
+srun: error: nid00207: tasks 72-73,75,77-78,80-91,93-95: Terminated
+srun: error: nid00517: task 256: Terminated
+srun: error: nid00205: tasks 24-42,44-47: Terminated
+srun: error: nid00206: tasks 48-52,54-58,60-66,68-69,71: Terminated
+srun: error: nid00525: task 433: Terminated
+srun: error: nid00531: task 598: Terminated
+srun: error: nid01098: tasks 1104,1111,1114,1121,1125-1126: Terminated
+srun: error: nid01097: task 1100: Terminated
+srun: error: nid00529: task 549: Terminated
+srun: error: nid00524: task 424: Terminated
+srun: error: nid01096: tasks 1063,1068: Terminated
+srun: error: nid01048: task 882: Terminated
+srun: error: nid01095: tasks 1036,1041,1043,1050: Terminated
+srun: error: nid00527: tasks 484,487,490-491,496,502: Terminated
+srun: error: nid01037: task 617: Terminated
+srun: error: nid01052: tasks 963,966,973: Terminated
+srun: error: nid00528: tasks 520-521: Terminated
+srun: error: nid01044: task 788: Terminated
+srun: error: nid00526: task 472: Terminated
+srun: error: nid01046: tasks 823,826,835: Terminated
+srun: error: nid01040: tasks 693-694: Terminated
+srun: error: nid01038: task 646: Terminated
+srun: error: nid01054: tasks 1014,1024,1029: Terminated
+srun: error: nid01042: tasks 726,730,737: Terminated
+srun: error: nid01045: tasks 794,798,809: Terminated
+srun: error: nid01049: tasks 906-907: Terminated
+srun: error: nid01051: tasks 938,952-953,955: Terminated
+srun: error: nid01047: tasks 850-851: Terminated
+srun: error: nid01041: tasks 713,718: Terminated
+srun: error: nid01050: tasks 922,928: Terminated
+srun: error: nid01043: tasks 745,765: Terminated
+srun: error: nid00522: tasks 364,378,380: Terminated
+srun: error: nid00518: task 268: Terminated
+srun: error: nid01039: tasks 652-653,666: Terminated
+srun: error: nid00521: task 358: Terminated
+srun: error: nid01053: tasks 1000,1005: Terminated
+srun: error: nid00523: tasks 389,406: Terminated
+srun: error: nid00520: tasks 317,331-332: Terminated
+srun: error: nid00519: task 310: Terminated
+srun: error: nid00517: task 247: Terminated
+srun: error: nid00212: tasks 192,197-198,202-203,208: Terminated
+srun: error: nid00516: task 238: Terminated
+srun: error: nid00205: task 43: Terminated
+srun: error: nid00210: task 162: Terminated
+srun: error: nid00211: task 172: Terminated
+srun: error: nid00207: tasks 74,76,79,92: Terminated
+srun: error: nid00208: task 97: Terminated
+srun: error: nid00209: tasks 122,124: Terminated
+srun: error: nid00206: tasks 53,59,67,70: Terminated
+srun: error: nid00204: task 22: Terminated
+srun: error: nid00530: task 559: Aborted (core dumped)
+srun: Force Terminated job step 5092112.0

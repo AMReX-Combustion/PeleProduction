@@ -1,0 +1,73 @@
+#!/bin/bash --login
+
+#SBATCH --job-name=JetFlame-T1000-phi02
+#SBATCH --output=%x-%j.out
+#SBATCH --error=%x-%j.err
+#SBATCH --account=w47
+
+### Debugging
+##SBATCH --partition=debugq
+##SBATCH --nodes=6
+##SBATCH --ntasks=144
+##SBATCH --time=00:02:00
+
+### Production
+##SBATCH --nodes=20
+##SBATCH --ntasks=480
+##SBATCH --nodes=40
+##SBATCH --ntasks=960
+##SBATCH --nodes=50
+##SBATCH --ntasks=1200
+#SBATCH --nodes=80
+#SBATCH --ntasks=1920
+##SBATCH --nodes=100
+##SBATCH --ntasks=2400
+##SBATCH --nodes=200
+##SBATCH --ntasks=4800
+##SBATCH --nodes=300
+##SBATCH --ntasks=7200
+##SBATCH --nodes=400
+##SBATCH --ntasks=9600
+##SBATCH --nodes=500
+##SBATCH --ntasks=12000
+##SBATCH --nodes=600
+##SBATCH --ntasks=14400
+#SBATCH --partition=workq
+#SBATCH --time=12:00:00
+
+#SBATCH --ntasks-per-node=24
+#SBATCH --cpus-per-task=1
+#SBATCH --exclusive
+
+#SBATCH --no-requeue
+
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=armin.wehrfritz.unsw@gmail.com
+
+
+echo "SLURM_JOB_NAME          = $SLURM_JOB_NAME"
+echo "SLURM_JOB_ID            = $SLURM_JOB_ID"
+echo "SLURM_JOB_NODES         = $SLURM_JOB_NODES"
+echo "SLURM_JOB_NODELIST      = $SLURM_JOB_NODELIST"
+echo "SLURM_JOB_NUM_NODES     = $SLURM_JOB_NUM_NODES"
+echo "SLURM_JOB_PARTITION     = $SLURM_JOB_PARTITION"
+echo "SLURM_CPUS_ON_NODE      = $SLURM_CPUS_ON_NODE"
+echo "SLURM_CPUS_PER_TASK     = $SLURM_CPUS_PER_TASK"
+echo "SLURM_NTASKS            = $SLURM_NTASKS"
+echo "SLURM_NTASKS_PER_CORE   = $SLURM_NTASKS_PER_CORE"
+echo "SLURM_NTASKS_PER_NODE   = $SLURM_NTASKS_PER_NODE"
+echo "SLURM_NTASKS_PER_SOCKET = $SLURM_NTASKS_PER_SOCKET"
+module list
+
+export OMP_NUM_THREADS=1
+
+RESTART_FILE=$(ls -d1 chk????? 2> /dev/null | tail -n 1)
+if [ -n "${RESTART_FILE}" ]; then
+  echo "Restart file: ${RESTART_FILE=}"
+  RESTART="amr.restart=${RESTART_FILE}"
+else
+  echo "No restart file found!"
+  RESTART=
+fi
+
+srun ./PeleLM3d.intel.haswell.MPI.WBAR.ex inputs-1000 "${RESTART}"

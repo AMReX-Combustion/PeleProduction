@@ -1,0 +1,53 @@
+ &fortin
+  ! Jet/co-flow velocity
+  V_in = 40.0
+  V_co = 0.0
+
+  ! Fuel/oxidiser properties
+  streamsin_file = "streams.in"
+  mixfrac_in = 0.33
+  T_ox = 1000.0
+  T_fu = 363.0
+
+  ! Inlet profile
+  splitx  = 85.0e-06
+  xfrontw =  8.5e-06
+  blobr   = 85.0e-06
+  Tfrontw =  8.5e-06
+
+  ! Unclear what these are used for - if at all
+  max_vort_lev = 4
+  vorterr = 5.e4
+  refine_nozzle = 1
+  flametracval = 1.e-8
+  max_trac_lev = 4
+  max_temp_lev = 3
+  tempgrad = 80.
+ /
+
+ &heattransin
+  pamb = 6079500.
+ /
+
+ &flctin
+  flct_file = "../../Turb_s3d_1E4"
+  do_flct = .TRUE.
+  turb_scale = 1.4
+ /
+
+ &control
+ /
+
+ &CMA
+  jet_mixfrac        = 1e-5
+  jet_hrr            = 1e9
+  jet_zmax           = 1
+  jet_core_mixfrac   = 0.2
+  jet_core_zmax      = 1700e-6
+  ltc_RO2            = 1e-4
+  edge_flame_OH      = 1e-4
+  edge_flame_zmax    = 1
+  prmx_flame_HO2     = 1e-4
+  prmx_flame_mixfrac = 1e-2
+  prmx_flame_zmax    = 1
+ /

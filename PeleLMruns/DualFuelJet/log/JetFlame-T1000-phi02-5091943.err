@@ -1,0 +1,40 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+Currently Loaded Modulefiles:
+  1) slurm/19.05.5-1
+  2) pawseytools/1.28
+  3) modules/3.2.10.6
+  4) Base-opts/2.4.135-6.0.7.1_5.6__g718f891.ari
+  5) intel/17.0.4.196
+  6) craype-haswell
+  7) craype-network-aries
+  8) craype/2.5.13
+  9) cray-mpich/7.7.0
+ 10) nano/2.9.1
+ 11) cray-libsci/17.12.1
+ 12) pmi/5.0.13
+ 13) atp/2.1.1
+ 14) rca/2.2.18-6.0.7.1_5.52__g2aa4f39.ari
+ 15) perftools-base/7.0.0
+ 16) PrgEnv-intel/6.0.4
+Currently Loaded Modulefiles:
+  1) slurm/19.05.5-1
+  2) pawseytools/1.28
+  3) modules/3.2.10.6
+  4) Base-opts/2.4.135-6.0.7.1_5.6__g718f891.ari
+  5) intel/17.0.4.196
+  6) craype-haswell
+  7) craype-network-aries
+  8) craype/2.5.13
+  9) cray-mpich/7.7.0
+ 10) nano/2.9.1
+ 11) cray-libsci/17.12.1
+ 12) pmi/5.0.13
+ 13) atp/2.1.1
+ 14) rca/2.2.18-6.0.7.1_5.52__g2aa4f39.ari
+ 15) perftools-base/7.0.0
+ 16) PrgEnv-intel/6.0.4
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 5091943.0 ON nid00024 CANCELLED AT 2020-06-14T06:33:30 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 5091943 ON nid00024 CANCELLED AT 2020-06-14T06:33:30 DUE TO TIME LIMIT ***
+srun: got SIGCONT
+srun: forcing job termination
