@@ -363,6 +363,7 @@ contains
 
   subroutine setupbc() bind(C, name="setupbc")
     use PeleLM_nd, only: pphys_RHOfromPTY, pphys_HMIXfromTY, pphys_TfromHY
+    use PeleLM_F, only: pphys_getP1atm_MKS
     use amrex_paralleldescriptor_module, only : amrex_pd_ioprocessor
     use mod_Fvar_def, only : pamb
     use probdata_module, only : V_in, Y_ox, Y_fu
@@ -468,6 +469,7 @@ contains
                           Ttol, NiterMAX, Tres)
 
     ! Density
+    Patm = pamb / pphys_getP1atm_MKS()
     call pphys_RHOfromPTY(b_lo, b_hi, &
                           rho_bc(BL_FUELPIPE),            b_lo, b_hi, &
                           T_bc(BL_FUELPIPE),              b_lo, b_hi, &
