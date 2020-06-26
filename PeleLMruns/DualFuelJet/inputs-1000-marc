@@ -176,4 +176,5 @@ amr.nozzle.in_box_hi =  100e-6  100e-6 100e-6
 amr.max_level = 2
 ns.init_iter=0
 max_step=0
+ns.do_init_proj=0
 
