@@ -47,13 +47,9 @@ amr.n_cell          = 320 320 400
 amr.n_cell          = 32 32 64
 geometry.prob_lo    = -.00034 -.00034 0.0
 geometry.prob_hi    =  .00034  .00034 0.00136
-#amr.n_cell          = 64 64 128
-#geometry.prob_lo    = -.00068 -.00068 0.0
-#geometry.prob_hi    =  .00068  .00068 0.00272
-#amr.blocking_factor = 8
 amr.blocking_factor = 16
 max_step            = 20000
-amr.max_grid_size   = 48
+amr.max_grid_size   = 32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 1
@@ -174,11 +170,11 @@ cvode.solve_type = sparse
 ode.analytical_jacobian = 1
 
 amr.refinement_indicators = nozzle
-amr.nozzle.max_level = 1
+amr.nozzle.max_level = 2
 amr.nozzle.in_box_lo = -100e-6 -100e-6 0
 amr.nozzle.in_box_hi =  100e-6  100e-6 100e-6
 
-amr.max_level = 1
-#ns.init_iter=0
-#max_step=0
+amr.max_level = 2
+ns.init_iter=0
+max_step=0
 
