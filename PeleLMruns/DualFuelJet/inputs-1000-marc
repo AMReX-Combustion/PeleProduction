@@ -72,7 +72,6 @@ amr.max_level       = 0
 amr.ref_ratio       = 2 2 2 2 2 # refinement ratio
 amr.regrid_int      = 5         # how often to regrid
 amr.n_error_buf     = 2 2 2 2 1 # number of buffer cells in error est
-amr.n_error_buf_z   = 3 3 3 1 1 # number of buffer cells in error est
 amr.grid_eff        = 0.7       # what constitutes an efficient grid
 amr.grid_log        = grdlog    # name of grid logging file
 
@@ -102,7 +101,7 @@ ns.do_divu_sync = 0
 ns.divu_relax_factor   = 0.0
 
 ns.be_cn_theta = 0.5
-ns.S_in_vel_diffusion = 1
+ns.S_in_vel_diffusion = 0
 
 ns.do_temp = 1
 
