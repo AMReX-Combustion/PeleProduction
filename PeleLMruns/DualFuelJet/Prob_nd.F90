@@ -555,7 +555,8 @@ contains
     use PeleLM_nd, only: pphys_RHOfromPTY, pphys_HMIXfromTY
     use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb
     use mod_Fvar_def, only : domnlo, domnhi
-    use probdata_module, only : Y_bc, T_bc, blobr, Tfrontw, BL_COFLOW
+    use probdata_module, only : Y_bc, T_bc, blobr, Tfrontw, BL_COFLOW, splitx, xfrontw
+    use user_defined_fcts_nd_module, only : bcfunction
 
     implicit none
 
@@ -576,6 +577,8 @@ contains
     REAL_T pmf_vals(nspecies+3), z1, z2, dx, Ly
     REAL_T pert,Lx,FORT_P1ATMMKS,eta,u,v,w,rho,T,h
 
+    REAL_T xv(3),velv(3),TT,hh,eta1
+
     do k = lo(3), hi(3)
       z = (float(k)+.5)*delta(3)+domnlo(3)
       eta = 0.5d0*(1.d0 - TANH(2.d0*(z-blobr)/Tfrontw))
@@ -587,9 +590,26 @@ contains
             scal(i,j,k,FirstSpec+n-1) = Y_bc(n-1,BL_COFLOW)
           end do
           scal(i,j,k,Temp) = T_bc(BL_COFLOW)
+
           vel(i,j,k,1) = zero
           vel(i,j,k,2) = zero
           vel(i,j,k,3) = zero
+
+          xv(1) = x
+          xv(2) = y
+          xv(3) = z
+          call bcfunction(xv,delta,3,1,time,.true.,velv,rho,Yl,TT,hh)
+
+          eta1 = 0.5d0*(1.d0 - TANH(2.d0*(z-blobr)/Tfrontw))
+          do n = 1,nspecies
+            scal(i,j,k,FirstSpec+n-1) = eta1*Yl(n) + (1.d0-eta1)*scal(i,j,k,FirstSpec+n-1)
+          end do
+          scal(i,j,k,Temp) = eta1*TT + (1.d0-eta1)*scal(i,j,k,Temp)
+
+          do n=1,3
+            vel(i,j,k,n) = eta1*velv(n) + (1.d0-eta1)*vel(i,j,k,n)
+          enddo
+          
         enddo
       enddo
     enddo

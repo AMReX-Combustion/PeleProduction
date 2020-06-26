@@ -23,6 +23,12 @@ TINY_PROFILE    = FALSE
 # Enable flctin namelist
 USE_FLCTS       = TRUE
 
+USE_SUNDIALS_PP = TRUE
+ifeq ($(USE_SUNDIALS_PP), TRUE)
+  USE_KLU_PP = TRUE
+  USE_CUDA_SUNDIALS_PP = FALSE
+endif
+
 # 35-species n-dodecane mechanism (LTC/HTC) with the AM30 H2 sub-mech
 #Chemistry_Model = dodecane_lu_AM30-H2_red
 # 59-species n-dodecane mechanism (LTC/HTC) with NOx and the AM30 H2 sub-mech

@@ -32,6 +32,7 @@
  &flctin
   flct_file = "../../Turb_s3d_1E4"
   do_flct = .TRUE.
+  do_flct = .FALSE.
   turb_scale = 1.4
  /
 
