@@ -3,6 +3,11 @@ PELE_PHYSICS_HOME ?= ../../Submodules/PelePhysics
 IAMR_HOME ?= ../../Submodules/IAMR
 AMREX_HOME ?= ../../Submodules/amrex
 
+PELELM_HOME       := $(realpath $(PELELM_HOME))
+PELE_PHYSICS_HOME := $(realpath $(PELE_PHYSICS_HOME))
+IAMR_HOME         := $(realpath $(IAMR_HOME))
+AMREX_HOME        := $(realpath $(AMREX_HOME))
+
 #
 # Build configuration
 #
