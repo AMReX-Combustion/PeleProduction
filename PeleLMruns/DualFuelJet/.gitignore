@@ -1,0 +1,23 @@
+# PeleLM output and binaries
+chk[0-9]*
+plt[0-9]*
+slc[0-9]*
+PeleLM*.ex
+grdlog
+
+# Crash files
+Backtrace.*
+core
+
+# Build files
+AMReX_buildInfo.cpp
+extern.f90
+extern_parameters.H
+extern_parameters.cpp
+extern_parameters_F.H
+build*.log
+*.optrpt
+tmp_build_dir/
+
+# Python post-processing
+__pycache__
