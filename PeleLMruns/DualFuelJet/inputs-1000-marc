@@ -48,13 +48,14 @@ amr.n_cell          = 32 32 64
 geometry.prob_lo    = -.00034 -.00034 0.0
 geometry.prob_hi    =  .00034  .00034 0.00136
 amr.blocking_factor = 16
+amr.blocking_factor = 8
 max_step            = 20000
 amr.max_grid_size   = 32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 1
 amr.plot_nfiles     = 50     # Number of I/O ranks
-amr.plotfile_on_restart = 1
+amr.plotfile_on_restart = 0
 
 # Slices
 amr.plot_slice_lo  = 0  159  0 # Lower indices (level 0) for the slice box (-1 uses the maximum extent)
@@ -64,11 +65,11 @@ amr.plot_slice_int = 1
 
 amr.checkpoint_files_output = 1
 amr.check_file      = chk
-amr.check_int       = 1
+amr.check_int       = 5
 amr.checkpoint_nfiles = 50     # Number of I/O ranks
-amr.regrid_on_restart = 1
+amr.regrid_on_restart = 0
 amr.v=1
-amr.max_level       = 0
+amr.max_level       = 2
 amr.ref_ratio       = 2 2 2 2 2 # refinement ratio
 amr.regrid_int      = 5         # how often to regrid
 amr.n_error_buf     = 2 2 2 2 1 # number of buffer cells in error est
@@ -82,8 +83,7 @@ ns.cfl              = 0.7
 ns.dt_cutoff       = 5.e-14   # level 0 timestep below which we halt
 ns.visc_tol        = 1.0e-14  # tolerence for viscous solves
 ns.visc_abs_tol    = 1.0e-14  # tolerence for viscous solves
-#ns.init_dt         = 1.e-8
-ns.init_shrink    = 1.       # scale back initial timestep
+ns.init_shrink    = 1.00       # scale back initial timestep
 ns.change_max     = 1.05
 ns.vel_visc_coef   = 1.983e-5
 ns.temp_cond_coef  = 2.6091e-5
@@ -165,16 +165,19 @@ mac.do_outflow_bcs = 0
 #
 fab.format = NATIVE
 
-cvode.solve_type = sparse
+cvode.solve_type = dense
 ode.analytical_jacobian = 1
 
-amr.refinement_indicators = nozzle
+amr.refinement_indicators = nozzle lo_temp hi_temp
+
 amr.nozzle.max_level = 2
-amr.nozzle.in_box_lo = -100e-6 -100e-6 0
-amr.nozzle.in_box_hi =  100e-6  100e-6 100e-6
+amr.nozzle.in_box_lo = -1e-4 -1e-4 0
+amr.nozzle.in_box_hi =  1e-4  1e-4 1e-4
 
-amr.max_level = 2
-ns.init_iter=0
-max_step=0
-ns.do_init_proj=0
+amr.lo_temp.max_level = 4
+amr.lo_temp.value_less = 995
+amr.lo_temp.field_name = temp
 
+amr.hi_temp.max_level = 4
+amr.hi_temp.value_greater = 1005
+amr.hi_temp.field_name = temp
