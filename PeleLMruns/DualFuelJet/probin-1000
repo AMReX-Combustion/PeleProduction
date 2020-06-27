@@ -6,7 +6,7 @@
   ! Fuel/oxidiser properties
   streamsin_file = "streams.in"
   mixfrac_in = 0.33
-  T_ox = 1000.0
+  T_ox = 999.0
   T_fu = 363.0
 
   ! Inlet profile
