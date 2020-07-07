@@ -1,5 +1,5 @@
-#TOP = /ccsopen/home/lesclapez/CODES/PeleProduction/Submodules
-TOP = /gpfs/wolf/proj-shared/gen138/marcd/PeleProduction/Submodules
+TOP = /gpfs/wolf/gen138/scratch/lesclapez/PeleProduction/Submodules
+#TOP = /gpfs/wolf/proj-shared/gen138/marcd/PeleProduction/Submodules
 AMREX_HOME ?= ${TOP}/amrex
 IAMR_HOME ?= ${TOP}/IAMR
 PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
@@ -24,7 +24,7 @@ TINY_PROFILE = TRUE
 
 DO_2S_CONVERGENCE=FALSE
 
-USE_EB = FALSE
+USE_EB = TRUE
 
 USE_SUNDIALS_PP = TRUE
 ifeq ($(USE_SUNDIALS_PP), TRUE)
