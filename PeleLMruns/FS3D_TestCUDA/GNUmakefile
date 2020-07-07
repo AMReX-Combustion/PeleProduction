@@ -1,4 +1,5 @@
-TOP = /ccsopen/home/lesclapez/CODES/PeleProduction/Submodules
+#TOP = /ccsopen/home/lesclapez/CODES/PeleProduction/Submodules
+TOP = /gpfs/wolf/proj-shared/gen138/marcd/PeleProduction/Submodules
 AMREX_HOME ?= ${TOP}/amrex
 IAMR_HOME ?= ${TOP}/IAMR
 PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
@@ -18,7 +19,7 @@ VERBOSE         = FALSE
 
 USE_CUDA        = TRUE
 
-TINY_PROFILE = FALSE
+TINY_PROFILE = TRUE
 #USE_WBAR = TRUE
 
 DO_2S_CONVERGENCE=FALSE
