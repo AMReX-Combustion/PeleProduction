@@ -1,0 +1,7 @@
+palette               Palette
+initialderived        temp
+initialscale          1
+numberformat          %10.5e
+showboxes             FALSE
+windowheight          750
+windowwidth           900

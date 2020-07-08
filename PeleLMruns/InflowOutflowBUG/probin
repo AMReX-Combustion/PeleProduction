@@ -1,0 +1,24 @@
+ &fortin
+
+  V_in = .2280410684149
+  standoff = -0.03501061
+  pertmag = 0.000
+  FK_rad = 3.8E-05
+ /
+ &heattransin
+  pamb = 101325
+ /
+ &control
+  tau_control = 3.e-4
+  sest = .2
+  h_control = .00
+  changeMax_control = .2
+  controlVelMax=1
+  navg_pnts = 10
+  istemp = 0
+  corr = 1.d0
+  pseudo_gravity = 0
+ /
+ &extern
+  new_Jacobian_each_cell = 1
+ /
