@@ -5,6 +5,7 @@ geometry.coord_sys = 0  # 0 => cart, 1 => RZ
 
 geometry.prob_lo   =  0. 0. 0.
 geometry.prob_hi   = .032 .032 .016
+geometry.prob_hi   = .064 .032 .016
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
@@ -21,6 +22,7 @@ stop_time = 4.00
 amr.n_cell    = 128 128 128
 amr.n_cell    = 64 64 64
 amr.n_cell    = 64 64 32
+amr.n_cell    = 128 64 32
 
 amr.v=1
 amr.max_level =  2            # maximum level number allowed
@@ -108,8 +110,8 @@ ns.num_divu_iters =3
 #peleLM.use_typ_vals_chem = 1
 #peleLM.relative_tol_chem = 1.0e-8
 #peleLM.absolute_tol_chem = 1.0e-6
-cvode.solve_type = 99
-ode.analytical_jacobian = 0
+cvode.solve_type = sparse
+ode.analytical_jacobian = 1
 
 # ------------------  INPUTS TO GODUNOV CLASS ----------------------
 godunov.slope_order = 4
