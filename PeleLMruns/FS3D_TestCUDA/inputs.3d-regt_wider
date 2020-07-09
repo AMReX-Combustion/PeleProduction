@@ -5,6 +5,7 @@ geometry.coord_sys = 0  # 0 => cart, 1 => RZ
 
 geometry.prob_lo   =  0. 0. 0.
 geometry.prob_hi   = .032 .032 .016
+geometry.prob_hi   = .064 .032 .016
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
@@ -21,6 +22,7 @@ stop_time = 4.00
 amr.n_cell    = 128 128 128
 amr.n_cell    = 64 64 64
 amr.n_cell    = 64 64 32
+amr.n_cell    = 128 64 32
 
 amr.v=1
 amr.max_level =  2            # maximum level number allowed
