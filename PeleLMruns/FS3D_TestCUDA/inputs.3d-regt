@@ -9,17 +9,17 @@ geometry.prob_hi   = .016 .016 .016
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
 # SlipWallAdiab, NoSlipWallAdiab, SlipWallIsotherm, NoSlipWallIsotherm
-peleLM.lo_bc = Interior Interior  Inflow
-peleLM.hi_bc = Interior Interior  Outflow
+peleLM.lo_bc = Interior  Interior  Inflow
+peleLM.hi_bc = Interior  Interior  Outflow
 
 #----------------------------TOP LEVEL INPUTS----------------------
 max_step  =  10000
-max_step  =  1
+max_step  =  2
 stop_time = 4.00
 
 #-------------------------AMR INPUTS----------------------------
-amr.n_cell    = 128 128 128
 amr.n_cell    = 64 64 64
+amr.n_cell    = 128 128 128
 amr.n_cell    = 32 32 32
 
 amr.v=1
@@ -29,20 +29,23 @@ amr.regrid_int      = 2       # how often to regrid
 amr.n_error_buf     = 1 1 1 2 # number of buffer cells in error est
 amr.grid_eff        = 0.9     # what constitutes an efficient grid
 amr.grid_eff        = 0.7     # what constitutes an efficient grid
-amr.blocking_factor = 16      # block factor in grid generation
+amr.blocking_factor = 16       # block factor in grid generation
 
 amr.checkpoint_files_output = 0
 amr.check_file      = chk     # root name of checkpoint file
-amr.check_int       = 5       # number of timesteps between checkpoints
+amr.check_int       = 1       # number of timesteps between checkpoints
 
-amr.plot_file       = plt
+amr.plot_file       = plt_wide_
 amr.plot_int        = 100
-amr.derive_plot_vars=rhoRT mag_vort avg_pressure gradpx gradpy diveru mass_fractions molweight rhominsumrhoY cc_transport_coeffs cpmix enthalpy 
+amr.derive_plot_vars= sumRhoYdot rhoY rho_temp rhoRT mag_vort avg_pressure gradpx gradpy gradpz diveru mass_fractions molweight rhominsumrhoY cc_transport_coeffs cpmix enthalpy
 
 amr.grid_log        = grdlog  # name of grid logging file
 amr.max_grid_size   = 64
 
-amr.probin_file = probin.3d.test # This will default to file "probin" if not set
+prob.P_mean = 101325.0
+prob.standoff = -.022
+prob.pertmag = 0.0004
+prob.pmf_datafile = "drm19_pmf.dat"
 
 # Refinement according to a species tracer
 amr.refinement_indicators = flame_tracer 
@@ -63,7 +66,8 @@ amr.flame_tracer.field_name = Y(H)
 # Refinement according to the vorticity, no field_name needed
 #amr.refinement_indicators = magvort
 #amr.magvort.max_level = 3
-#amr.magvort.vorticity_greater = 300
+#amr.magvort.vorticity_greater = 1000
+
 
 # ------------------  INPUTS TO PHYSICS CLASS -------------------
 ns.dt_cutoff       = 5.e-10   # level 0 timestep below which we halt
@@ -102,7 +106,7 @@ ns.do_active_control = 0
 
 ns.do_fillPatchUMAC=1
 ns.zeroBndryVisc=1
-ns.num_divu_iters =3
+ns.num_divu_iters =0
 
 # ------------------  INPUTS TO CVODE CHEMISTRY ----------------------
 #peleLM.use_typ_vals_chem = 1
@@ -142,7 +146,6 @@ mac.use_cg_solve   = 0
 mac.do_outflow_bcs = 0
 
 #--------------------------MISC/UNSORTED INPUTS-----------------------------
-
 mg.smooth_on_cg_unstable=1
 
 # multigrid class
@@ -160,11 +163,13 @@ cg.unstable_criterion = 100
 ns.htt_tempmin=1.0
 ns.htt_tempmax=2.5
 ns.v = 1
-mac.v = 2
+mac.v = 1
 proj.v = 1
 ns.do_group_bndry_fills = 1
 
 cg.cg_solver=1
+
+eb2.geom_type    =  all_regular
 
 #
 # Select form of FAB output: default is NATIVE
@@ -175,8 +180,9 @@ cg.cg_solver=1
 #   8BIT   (eight-bit run-length-encoded)
 #
 fab.format = NATIVE
-
-eb2.geom_type    =  all_regular
-
-#fabarray.mfiter_tile_size = 8 8 8 
+#fabarray.mfiter_tile_size = 8 8 8
 amrex.regtest_reduction=1
+amrex.abort_on_out_of_gpu_memory=1
+amrex.fpe_trap_overflow = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_invalid = 1
