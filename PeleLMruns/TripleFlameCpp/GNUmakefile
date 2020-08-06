@@ -1,4 +1,4 @@
-TOP = ../../
+TOP = /home/lake/users/amfelden/CCSE/0_CODES/PeleProduction/
 PELELM_HOME = $(TOP)/Submodules/PeleLM
 PELE_PHYSICS_HOME = $(TOP)/Submodules/PelePhysics
 IAMR_HOME = $(TOP)/Submodules/IAMR
@@ -18,6 +18,8 @@ VERBOSE         = FALSE
 TINY_PROFILE = FALSE
 #USE_WBAR = TRUE
 
+DEFINES+=-DBL_USE_NEWMECH
+
 #######################
 USE_SUNDIALS_PP = TRUE
 ifeq ($(USE_SUNDIALS_PP), TRUE)
@@ -29,7 +31,7 @@ endif
 #######################
 
 # Choose model (from list below), and pmf file
-Chemistry_Model = drm19
+Chemistry_Model = heptane_fc
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := Fuego

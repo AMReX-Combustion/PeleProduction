@@ -141,8 +141,8 @@ set_Y_from_Phi(const amrex::Real phi_in,
 {   
    amrex::Real Xt[NUM_SPECIES] = {0.0};   
    amrex::Real a = 0.0;   
-   if ( ProbParm::fuelID == CH4_ID ) {   
-      a = 2.0;
+   if ( ProbParm::fuelID == NXC7H16_ID ) {   
+      a = 11.0;
    }      
    Xt[ProbParm::oxidID] = 1.0 / ( 1.0 + phi_in / a + 0.79 / 0.21 );
    Xt[ProbParm::fuelID] = phi_in * Xt[ProbParm::oxidID] / a;   
@@ -160,6 +160,33 @@ set_Y_from_Ksi(const amrex::Real ksi_in,
    amrex::Real phi = ksi_in / ( 1.0 - amrex::min(ksi_in,0.999999) ) * (1.0 - ProbParm::Zst ) / ProbParm::Zst;   
 
    set_Y_from_Phi(phi,Y);
+}
+
+AMREX_GPU_DEVICE
+inline
+void
+pelelm_initdata_newmech (int i, int j, int k, 
+                 amrex::Array4<amrex::Real> const& state,
+                 amrex::GeometryData const& geomdata)
+{
+
+    amrex::Real massfrac[NUM_SPECIES] = {0.0};
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      massfrac[n] = state(i,j,k,DEF_first_spec+n);
+    }
+
+    amrex::Real rho_cgs, P_cgs;
+    P_cgs = ProbParm::P_mean * 10.0;
+
+    EOS::PYT2R(P_cgs, massfrac, state(i,j,k,DEF_Temp), rho_cgs);
+    state(i,j,k,Density) = rho_cgs * 1.0e3;            // CGS -> MKS conversion
+
+    EOS::TY2H(state(i,j,k,DEF_Temp), massfrac, state(i,j,k,DEF_RhoH));
+    state(i,j,k,DEF_RhoH) = state(i,j,k,DEF_RhoH) * 1.0e-4 * state(i,j,k,Density);   // CGS -> MKS conversion
+
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      state(i,j,k,DEF_first_spec+n) = massfrac[n] * state(i,j,k,Density);
+    }
 }
 
 AMREX_GPU_DEVICE
