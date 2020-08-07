@@ -98,6 +98,13 @@ main (int   argc,
     int max_grid_size = 16;
     pp.query("max_grid_size",max_grid_size);
 
+    std::string pltfile;
+    bool do_plt = false;
+    if (pp.countval("plotfile")>0) {
+      pp.get("plotfile",pltfile);
+      do_plt = true;
+    }
+
     /* ODE inputs */
     ParmParse ppode("ode");
     int ode_ncells = 1;
@@ -120,10 +127,6 @@ main (int   argc,
 
     int use_typ_vals = 0;
     ppode.query("use_typ_vals",use_typ_vals);
-
-    ParmParse ppa("amr");
-    std::string pltfile("plt");
-    ppa.query("plot_file",pltfile);
 
     Print() << "ODE solver: " << ODE_SOLVER << std::endl;
     Print() << "Type of reactor: " << (ode_iE == 1 ? "e (PeleC)" : "h (PeleLM)") << std::endl; // <---- FIXME
@@ -255,10 +258,14 @@ main (int   argc,
 #endif
     }
 
-    BL_PROFILE_VAR("main::PlotFileFromMF()", PlotFile);
-    std::string outfile = Concatenate(pltfile,0);
-    PlotFileFromMF(mf,outfile);
-    BL_PROFILE_VAR_STOP(PlotFile);
+    BL_PROFILE_VAR("PlotFile",PlotFile);
+    if (do_plt) {
+      BL_PROFILE_VAR_START(PlotFile);
+      BL_PROFILE_VAR("main::PlotFileFromMF()", PlotFile);
+      std::string outfile = Concatenate(pltfile,0);
+      PlotFileFromMF(mf,outfile);
+      BL_PROFILE_VAR_STOP(PlotFile);
+    }
 
     Print() << " \n STARTING THE ADVANCE \n";
 
@@ -296,11 +303,12 @@ main (int   argc,
 
 #ifndef CVODE_BOXINTEG
       BL_PROFILE_VAR("Allocs",Allocs);
-      Real *tmp_vect            =  new Real[(nc+extra_cells)*(NUM_SPECIES+1)];
-      Real *tmp_src_vect        =  new Real[(nc+extra_cells)*(NUM_SPECIES)];
-      Real *tmp_vect_energy     =  new Real[(nc+extra_cells)];
-      Real *tmp_src_vect_energy =  new Real[(nc+extra_cells)];
-      Real *tmp_fc              =  new Real[(nc+extra_cells)];
+      int nCells = nc+extra_cells;
+      auto tmp_vect            =  new Real(nCells * (NUM_SPECIES+1));
+      auto tmp_src_vect        =  new Real(nCells * NUM_SPECIES);
+      auto tmp_vect_energy     =  new Real(nCells);
+      auto tmp_src_vect_energy =  new Real(nCells);
+      auto tmp_fc              =  new Real(nCells);
       BL_PROFILE_VAR_STOP(Allocs);
 
       BL_PROFILE_VAR("Flatten",mainflatten);
@@ -332,7 +340,7 @@ main (int   argc,
       /* Solve */
       BL_PROFILE_VAR("React",ReactInLoop);
 #ifndef CVODE_BOXINTEG
-      for(int i = 0; i < nc+extra_cells; i+=ode_ncells) {
+      for(int i = 0; i < nCells; i+=ode_ncells) {
         tmp_fc[i] = 0.0;
         Real time = 0.0;
         Real dt_incr = dt/ndt;
@@ -368,7 +376,7 @@ main (int   argc,
       }
 #endif
       BL_PROFILE_VAR_STOP(ReactInLoop);
-
+      
 #ifndef CVODE_BOXINTEG
       BL_PROFILE_VAR_START(mainflatten);
       ParallelFor(box,
@@ -383,12 +391,12 @@ main (int   argc,
         fc(i,j,k)               = tmp_fc[icell];
       });
       BL_PROFILE_VAR_STOP(mainflatten);
+#endif
 
       delete(tmp_vect);
       delete(tmp_src_vect);
       delete(tmp_vect_energy);
       delete(tmp_src_vect_energy);
-#endif
     }
     BL_PROFILE_VAR_STOP(Advance);
 
@@ -401,16 +409,17 @@ main (int   argc,
       Print() << std::endl;
     }
 
-    outfile = Concatenate(pltfile,1); // Need a number other than zero for reg test to pass
+    if (do_plt) {
+      BL_PROFILE_VAR_START(PlotFile);
+      MultiFab out(mf.boxArray(),mf.DistributionMap(),mf.nComp()+1,mf.nGrow());
+      MultiFab::Copy(out,mf,0,0,mf.nComp(),mf.nGrow());
+      AMREX_ALWAYS_ASSERT(fctCount.boxArray()==mf.boxArray() && fctCount.nGrow()>=mf.nGrow());
+      MultiFab::Copy(out,fctCount,0,mf.nComp(),1,mf.nGrow());
 
-    BL_PROFILE_VAR_START(PlotFile);
-    MultiFab out(mf.boxArray(),mf.DistributionMap(),mf.nComp()+1,mf.nGrow());
-    MultiFab::Copy(out,mf,0,0,mf.nComp(),mf.nGrow());
-    AMREX_ALWAYS_ASSERT(fctCount.boxArray()==mf.boxArray() && fctCount.nGrow()>=mf.nGrow());
-    MultiFab::Copy(out,fctCount,0,mf.nComp(),1,mf.nGrow());
-    PlotFileFromMF(out,outfile);
-    BL_PROFILE_VAR_STOP(PlotFile);
-
+      PlotFileFromMF(out,Concatenate(pltfile,1));
+      BL_PROFILE_VAR_STOP(PlotFile);
+    }
+    
     EOS::close();
     transport_close();
 
