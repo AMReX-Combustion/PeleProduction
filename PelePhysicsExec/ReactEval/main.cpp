@@ -248,10 +248,9 @@ main (int   argc,
       }
     }
 
-    BL_PROFILE_VAR("PlotFile",PlotFile);
+    BL_PROFILE_VAR_NS("PlotFile",PlotFile);
     if (do_plt) {
       BL_PROFILE_VAR_START(PlotFile);
-      BL_PROFILE_VAR("main::PlotFileFromMF()", PlotFile);
       std::string outfile = Concatenate(pltfile,0);
       PlotFileFromMF(mf,outfile);
       BL_PROFILE_VAR_STOP(PlotFile);
@@ -396,6 +395,8 @@ main (int   argc,
       delete[] tmp_src_vect;
       delete[] tmp_vect_energy;
       delete[] tmp_src_vect_energy;
+      delete[] tmp_fc;
+      delete[] tmp_mask;
     }
     BL_PROFILE_VAR_STOP(Advance);
 
