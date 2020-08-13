@@ -103,55 +103,6 @@ bcnormal(
   const amrex::Real time,
   amrex::GeometryData const& geomdata)
 {
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
-  amrex::Real molefrac[NUM_SPECIES] = {0.0};
-  amrex::Real massfrac[NUM_SPECIES] = {0.0};
-
-  if (sgn == 1) {
-    PMF::pmf(prob_hi[idir], prob_hi[idir], pmf_vals);
-
-    if (!ACParm::ctrl_active || time <= 0.0) {
-      s_ext[Xvel] = 0.0;
-#if ( AMREX_SPACEDIM == 2 )
-      s_ext[Yvel] = pmf_vals[1]*1e-2;
-#elif (AMREX_SPACEDIM == 3)
-      s_ext[Yvel] = 0.0;
-      s_ext[Zvel] = pmf_vals[1]*1e-2;
-#endif
-    } else {
-      s_ext[Xvel] = 0.0;
-#if ( AMREX_SPACEDIM == 2 )
-      s_ext[Yvel] = ACParm::ctrl_V_in + (time - ACParm::ctrl_tBase) * ACParm::ctrl_dV;
-#elif (AMREX_SPACEDIM == 3)
-      s_ext[Yvel] = 0.0;
-      s_ext[Zvel] = ACParm::ctrl_V_in + (time - ACParm::ctrl_tBase) * ACParm::ctrl_dV;
-#endif
-    }
-
-    s_ext[DEF_Temp] = pmf_vals[0];
-
-    for (int n = 0; n < NUM_SPECIES; n++){
-      molefrac[n] = pmf_vals[3 + n];
-    }
-    EOS::X2Y(molefrac, massfrac);
-
-    amrex::Real rho_cgs, P_cgs, RhoH_temp;
-    P_cgs = ProbParm::P_mean * 10.0;
-
-    EOS::PYT2R(P_cgs, massfrac, s_ext[DEF_Temp], rho_cgs);
-    s_ext[Density] = rho_cgs * 1.0e3;
-
-
-    EOS::TY2H(s_ext[DEF_Temp], massfrac, RhoH_temp);
-    s_ext[DEF_RhoH] = RhoH_temp * 1.0e-4 * s_ext[Density];   // CGS -> MKS conversion
-
-    for (int n = 0; n < NUM_SPECIES; n++) {
-      s_ext[DEF_first_spec+n] = massfrac[n] * s_ext[Density];
-    }
-  }
-
 }
 
 AMREX_GPU_DEVICE
