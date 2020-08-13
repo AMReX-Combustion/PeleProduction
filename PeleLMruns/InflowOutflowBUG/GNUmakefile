@@ -2,7 +2,7 @@ TOP = ../../Submodules
 AMREX_HOME ?= ${TOP}/amrex
 IAMR_HOME ?= ${TOP}/IAMR
 PELELM_HOME ?= ${TOP}/PeleLM
-PELE_PHYSICS_HOME ?= ${TOP}/PeleLM
+PELE_PHYSICS_HOME ?= ${TOP}/PelePhysics
 
 #
 # Build configuration
@@ -25,7 +25,7 @@ USE_VELOCITY    = TRUE
 #DEFINES+=-DALWAYS_NEW_J
 
 ifeq ($(USE_CUDA), TRUE)
-  USE_KLU_PP = TRUE
+  USE_KLU_PP = FALSE
 endif
 
 
