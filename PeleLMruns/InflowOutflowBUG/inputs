@@ -2,7 +2,7 @@ prob.standoff = -0.03501061
 prob.pertmag = 0.000
 prob.FK_rad = 3.8e-05
 prob.pamb = 101325
-prob.pmf_datafile=drm19_pmf.dat
+prob.pmf_datafile=drm19-p01atm-T298K-phi1.dat
 cvode.solve_type = GMRES
 
 # ----------------  PROBLEM DEPENDENT INPUTS
@@ -180,5 +180,5 @@ ns.do_group_bndry_fills = 1
 cg.cg_solver=1
 
 #ns.fixed_dt = 1e-9
-#ht.velocity_plotfile = init_vel
+ht.velocity_plotfile = init_vel
 ns.hack_nochem=1
