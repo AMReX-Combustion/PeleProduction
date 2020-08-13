@@ -1,3 +1,10 @@
+prob.standoff = -0.03501061
+prob.pertmag = 0.000
+prob.FK_rad = 3.8e-05
+prob.pamb = 101325
+prob.pmf_datafile=drm19_pmf.dat
+cvode.solve_type = GMRES
+
 # ----------------  PROBLEM DEPENDENT INPUTS
 geometry.is_periodic = 0 0
 
@@ -133,7 +140,7 @@ proj.proj_tol       = 1.0e-1  # tolerence for projections
 proj.proj_tol       = 1.0e-11  # tolerence for projections
 proj.sync_tol       = 1.0e-8  # tolerence for projections
 proj.rho_wgt_vel_proj = 0      # 0 => const den proj, 1 => rho weighted
-proj.Pcode          = 0
+nodal_proj.verbose  = 0
 proj.filter_factor  = 0.0
 proj.do_outflow_bcs = 0
 proj.divu_minus_s_factor = .5
@@ -172,31 +179,6 @@ ns.do_group_bndry_fills = 1
 
 cg.cg_solver=1
 
-#
-# Select form of FAB output: default is NATIVE
-#
-#   ASCII  (this is very slow)
-#   NATIVE (native binary form on machine -- the default)
-#   IEEE32 (useful if you want 32bit files when running in double precision)
-#   8BIT   (eight-bit run-length-encoded)
-#
-fab.format = NATIVE
-
-#fabarray.mfiter_tile_size = 8 8 8 
-#amrex.regtest_reduction=1
-
-# for getting things started with eb skip some steps
-#ns.init_iter = 0
-#ns.do_mac_proj = 0
-# to turn off initial projections set to 0
-#ns.do_init_proj = 0
-#ns.do_sync_proj = 0
-#ns.do_MLsync_proj = 0
-
 #ns.fixed_dt = 1e-9
-ht.velocity_plotfile = init_vel
-
-#amr.restart=chk00500
-
-#proj.proj_tol       = 1.0e-8  # tolerence for projections
-#max_step  =  0
+#ht.velocity_plotfile = init_vel
+ns.hack_nochem=1
