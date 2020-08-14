@@ -3,7 +3,15 @@ prob.pertmag = 0.000
 prob.FK_rad = 3.8e-05
 prob.pamb = 101325
 prob.pmf_datafile=drm19-p01atm-T298K-phi1.dat
+cvode.solve_type = sparse_custom
 cvode.solve_type = GMRES
+ode.verbose = 0
+ode.rtol = 1e-8
+ode.atol = 1e-8
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_overflow = 1
+ht.velocity_plotfile = init_vel
 
 # ----------------  PROBLEM DEPENDENT INPUTS
 geometry.is_periodic = 0 0
@@ -180,5 +188,3 @@ ns.do_group_bndry_fills = 1
 cg.cg_solver=1
 
 #ns.fixed_dt = 1e-9
-ht.velocity_plotfile = init_vel
-ns.hack_nochem=1
