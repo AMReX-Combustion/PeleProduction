@@ -6,6 +6,7 @@
 #include <AMReX_ParmParse.H>
 
 #include <pelelm_prob_parm.H>
+#include <PeleLM_parm.H>
 
 #include <NavierStokesBase.H>
 #include <IndexDefines.H>
@@ -185,9 +186,9 @@ pelelm_initdata (int i, int j, int k,
 
     // Hot gaussian properties
     amrex::Real y_lo = 0.01;
-    amrex::Real Gauss_maxT = 1900.0;
+    amrex::Real Gauss_maxT = 1740.0;
     amrex::Real Gauss_T_width = 0.0012;
-    amrex::Real Gauss_Spec_width = 0.0012;
+    amrex::Real Gauss_Spec_width = 0.0020;
 
     // Define air
     amrex::Real air_Y[NUM_SPECIES] = {0.0};
@@ -246,8 +247,23 @@ bcnormal(
 
   if (sgn == 1) {
 
-    s_ext[Xvel] = 0.0;
-    s_ext[Yvel] = ProbParm::V_in;
+    if (!ACParm::ctrl_active || time <= 0.0) {
+       s_ext[Xvel] = 0.0;
+#if ( AMREX_SPACEDIM == 2 )
+       s_ext[Yvel] = ProbParm::V_in;
+#elif (AMREX_SPACEDIM == 3)
+       s_ext[Yvel] = 0.0;
+       s_ext[Zvel] = ProbParm::V_in;
+#endif
+    } else {
+       s_ext[Xvel] = 0.0;
+#if ( AMREX_SPACEDIM == 2 )
+       s_ext[Yvel] = ACParm::ctrl_V_in + (time - ACParm::ctrl_tBase) * ACParm::ctrl_dV;
+#elif (AMREX_SPACEDIM == 3)
+       s_ext[Yvel] = 0.0;
+       s_ext[Zvel] = ACParm::ctrl_V_in + (time - ACParm::ctrl_tBase) * ACParm::ctrl_dV;
+#endif
+    }
 
     s_ext[DEF_Temp] = ProbParm::T_in;
       
@@ -271,4 +287,23 @@ bcnormal(
 
 }
 
+AMREX_GPU_DEVICE
+inline
+void
+zero_visc (int i, int j, int k,
+           amrex::Array4<amrex::Real> const& beta,
+           amrex::GeometryData const& geomdata,
+           amrex::Box const& dBox,
+           const int  dir,
+           const int  state_comp,
+           const int  nComp)
+{
+
+    const amrex::Real* prob_lo = geomdata.ProbLo();
+    const amrex::Real* dx      = geomdata.CellSize();
+    const amrex::Real z = prob_lo[2] + (k+0.5)*dx[2];
+    const amrex::Real y = prob_lo[1] + (j+0.5)*dx[1];
+    const amrex::Real x = prob_lo[0] + (i+0.5)*dx[0];
+
+}
 #endif
