@@ -28,8 +28,9 @@ contains
                           bind(C, name="bcfunction")
 
       use mod_Fvar_def, only : dv_control, tbase_control, V_in, f_flag_active_control
-      use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, v_bc, w_bc
-
+      use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, u_bc, v_bc, w_bc
+      use probdata_module, only : splitx, xfrontw
+      
       implicit none
 
 ! In/Out      
@@ -44,34 +45,17 @@ contains
       REAL_T, intent(out) :: T
       REAL_T, intent(out) :: h
 
-! Local
+      ! Local
+      REAL_T :: eta
       integer :: n
 
       if (.not. bcinit) then
          call amrex_abort('Need to initialize boundary condition function')
       end if
-
-      if ( (dir == 2) .and. (norm == 1) ) then
-        rho = rho_bc(1)
-        do n = 0, NUM_SPECIES-1
-          Yl(n) = Y_bc(n)
-        end do
-        T = T_bc(1)
-        h = h_bc(1)
-         
-        if (getuvw) then
-            
-          vel(1) = zero
-          if (f_flag_active_control == 1) then               
-            vel(2) =  V_in + (time-tbase_control)*dV_control
-          else 
-            vel(2) = v_bc
-          endif
-          vel(3) = zero
-        endif
-      endif  
-
+      
       if ((dir == 3).and.(norm == 1)) then
+        eta = 0.5d0*(1.d0 - TANH(2.d0*(sqrt(x(1)**2+x(2)**2)-splitx)/xfrontw))
+         
         rho = rho_bc(1)
         do n = 0, NUM_SPECIES-1
           Yl(n) = Y_bc(n)
@@ -81,14 +65,11 @@ contains
          
         if (getuvw .eqv. .TRUE.) then
             
-          vel(1) = zero
-          vel(2) = zero
-          if (f_flag_active_control == 1) then                
-            vel(3) =  V_in + (time-tbase_control)*dV_control
-          else 
-            vel(3) = w_bc
-          endif
-        endif
+          vel(1) = u_bc
+          vel(2) = v_bc
+          vel(3) = w_bc * eta
+
+       endif
       endif
 
    end subroutine bcfunction

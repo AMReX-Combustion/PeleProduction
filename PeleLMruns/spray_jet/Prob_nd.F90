@@ -6,18 +6,20 @@
 
 #include <Prob_F.H>
 #include <PeleLM_F.H>
+#include "mechanism.h"
+
 
 module prob_nd_module
 
-  use amrex_fort_module, only : dim=>amrex_spacedim
-
   use fuego_chemistry
+  use amrex_fort_module, only : dim=>amrex_spacedim
+  use amrex_error_module, only : amrex_abort
 
   implicit none
 
   private
   
-  public :: amrex_probinit, init_data
+  public :: amrex_probinit, setupbc, init_data
 
 contains
 
@@ -41,27 +43,35 @@ contains
 
    subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
-
       use PeleLM_F,  only: pphys_getP1atm_MKS
 
-      use mod_Fvar_def, only : pamb
+      use mod_Fvar_def, only : pamb, fuelID, domnhi, domnlo
 
-      use probdata_module, only: meanFlowDir, meanFlowMag, &
-                                 T_mean, P_mean, &
-                                 xgauss, ygauss, rgauss, ampgauss, gauss_type
+      use mod_Fvar_def, only : ac_hist_file, cfix, changemax_control, &
+                               coft_old, controlvelmax, corr, dv_control, &
+                               h_control, navg_pnts, scale_control, sest, &
+                               tau_control, tbase_control, V_in, v_in_old, zbase_control, &
+                               pseudo_gravity
+      use probdata_module, only : rho_bc, Y_bc
+      use probdata_module, only : X_O2_oxid, T_in, splitx, xfrontw
+
 
       implicit none
+
       integer init, namlen
       integer name(namlen)
       integer untin
       REAL_T problo(dim), probhi(dim)
 
-      integer i
+      integer i,istemp
+      REAL_T area
 
-      namelist /fortin/ meanFlowMag, meanFlowDir, T_mean, P_mean, &
-                        xgauss, ygauss, rgauss, ampgauss, gauss_type
+      namelist /fortin/ V_in, &
+                        X_O2_oxid, T_in, splitx, xfrontw
       namelist /heattransin/ pamb
 
+      namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
+          zbase_control, pseudo_gravity, istemp,corr,controlVelMax,navg_pnts
 
 !
 !      Build `probin' filename -- the name of file containing fortin namelist.
@@ -95,40 +105,115 @@ contains
 !     Set defaults
       pamb = pphys_getP1atm_MKS()
 
-      meanFlowDir = 1.0
-      meanFlowMag = 1.0d0
-      T_mean = 298.0d0
-      P_mean = pamb
-      xgauss = 0.5
-      ygauss = 0.5
-      rgauss = 0.1
-      ampgauss = 0.1
-      gauss_type = "Spec"
+      X_O2_oxid = 0.d0
+      T_in = 0.d0
+      splitx = 0.d0
+      xfrontw = 0.d0
+      
+      zbase_control = 0.d0
+
+!     Initialize control variables
+      tau_control = one
+      sest = zero
+      corr = one
+      changeMax_control = .05
+      coft_old = -one
+      cfix = zero
+      ac_hist_file = 'AC_History'
+      h_control = -one
+      dV_control = zero
+      tbase_control = zero
+      h_control = -one
+      pseudo_gravity = 0
+      istemp = 0
+      navg_pnts = 10
 
       read(untin,fortin)
-      
+
+!     Initialize control variables that depend on fortin variables
+      V_in_old = V_in
+
       read(untin,heattransin)
- 
+
+      read(untin,control)
       close(unit=untin)
 
-!     Do some checks on COVO params     
-      IF (       meanFlowDir /= 1 .AND. meanFlowDir /= -1 &
-           .AND. meanFlowDir /= 2 .AND. meanFlowDir /= -2 &
-           .AND. meanFlowDir /= 3 .AND. meanFlowDir /= -3  ) THEN
-          WRITE(*,*) " meanFlowDir should be either: "
-          WRITE(*,*) " +/-1 for x direction" 
-          WRITE(*,*) " +/-2 for y direction" 
-          WRITE(*,*) " +/-3 for diagonal direction" 
-          WRITE(*,*) " Note: the mean flow direction(s) must be periodic "
-          CALL bl_abort('Correct meanFlowDir value !')
-      END IF
-      
+!     Set up boundary functions
+      call setupbc()
+
       if (isioproc.eq.1) then
          write(6,fortin)
          write(6,heattransin)
+         write(6,control)
       end if
 
-  end subroutine amrex_probinit
+   end subroutine amrex_probinit
+
+!------------------------------------
+
+   subroutine setupbc() bind(C, name="setupbc")
+
+      use PeleLM_F, only: pphys_getP1atm_MKS, pphys_get_spec_name2
+      use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
+      use mod_Fvar_def, only : pamb, domnlo, V_in
+      use probdata_module, only : Y_bc, T_bc, u_bc, v_bc, w_bc, rho_bc, h_bc
+      use probdata_module, only : bcinit, X_O2_oxid, T_in
+
+      implicit none
+
+      REAL_T  :: Patm, pmf_vals(NUM_SPECIES+3)
+      REAL_T  :: Xt(NUM_SPECIES), Yt(NUM_SPECIES), loc
+      integer :: n, b_lo(3), b_hi(3)
+      data  b_lo(:) / 1, 1, 1 /
+      data  b_hi(:) / 1, 1, 1 /
+      integer :: iO2, iN2
+      character*(16) name
+
+      Patm = pamb / pphys_getP1atm_MKS()
+
+!     Set up species indices
+      do n=1,Nspecies
+         call pphys_get_spec_name2(name,n)
+         if (name .eq. 'N2' ) iN2 = n
+         if (name .eq. 'O2' ) iO2 = n
+      enddo
+
+      
+      Xt = 0.d0
+      Xt(iO2) = X_O2_oxid
+      Xt(iN2) = 1.d0 - Xt(iO2)
+      
+      CALL CKXTY (Xt, Yt)
+
+      do n = 1, NUM_SPECIES
+        Y_bc(n-1) = Yt(n)
+      end do
+      T_bc = T_in
+
+#if ( AMREX_SPACEDIM == 2 )
+      u_bc = zero
+      w_bc = zero
+      v_bc = V_in
+#elif ( AMREX_SPACEDIM == 3 )
+      u_bc = zero
+      v_bc = zero
+      w_bc = V_in
+#endif
+
+!     Set density and hmix consistent with data
+
+      call pphys_RHOfromPTY(b_lo, b_hi, &
+                            rho_bc(1), b_lo, b_hi, &
+                            T_bc(1),   b_lo, b_hi, &
+                            Y_bc(0),   b_lo, b_hi, Patm)
+      call pphys_HMIXfromTY(b_lo, b_hi, &
+                            h_bc(1), b_lo, b_hi, &
+                            T_bc(1), b_lo, b_hi, &
+                            Y_bc(0), b_lo, b_hi)
+
+      bcinit = .true.
+
+   end subroutine setupbc
 
 ! ::: -----------------------------------------------------------
 ! ::: This routine is called at problem setup time and is used
@@ -163,15 +248,12 @@ contains
                         delta, xlo, xhi) &
                         bind(C, name="init_data")
 
-      use network,   only: nspecies
       use PeleLM_F,  only: pphys_getP1atm_MKS, pphys_get_spec_name2
       use PeleLM_nD, only: pphys_RHOfromPTY, pphys_HMIXfromTY
-      use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, domnlo
-
-
-      use probdata_module, only: meanFlowDir, meanFlowMag, &
-                                 T_mean, P_mean, &
-                                 xgauss, ygauss, rgauss, ampgauss, gauss_type
+      use mod_Fvar_def, only : Density, Temp, FirstSpec, RhoH, pamb
+      use mod_Fvar_def, only : domnhi, domnlo
+      use probdata_module, only : T_bc, Y_bc, u_bc, v_bc, w_bc
+      use mod_Fvar_def, only : V_in
 
       implicit none
 
@@ -187,10 +269,10 @@ contains
       REAL_T, dimension(p_lo(1):p_hi(1),p_lo(2):p_hi(2),p_lo(3):p_hi(3)), intent(out) :: press
 
 ! Local
-      REAL_T :: dy, d_sq, r_sq
-      REAL_T :: x, y, z, Yl(nspecies), Patm
-      REAL_T :: dx
-      integer :: i, j, k, n
+      REAL_T  :: x, y, z, Yl(NUM_SPECIES), Xl(NUM_SPECIES), Patm
+      REAL_T  :: pmf_vals(NUM_SPECIES+3), y1, y2
+      REAL_T  :: pert,Lx,Ly
+      integer :: i, j, k, n, nPMF
 
       do k = lo(3), hi(3)
          z = (float(k)+.5d0)*delta(3)+domnlo(3)
@@ -198,56 +280,25 @@ contains
             y = (float(j)+.5d0)*delta(2)+domnlo(2)
             do i = lo(1), hi(1)
                x = (float(i)+.5d0)*delta(1)+domnlo(1)
-
-               scal(i,j,k,Temp) = T_mean
-               Yl(1) = 0.233d0
-               Yl(2) = 0.767d0
-
-               dx = x - xgauss
-               dy = y - ygauss
-               d_sq = dx*dx + dy*dy
-               r_sq = rgauss*rgauss
-
-               IF ( gauss_type == "Spec" ) THEN
-                  Yl(1) = Yl(1) + Yl(1) * ampgauss * exp(-d_sq/r_sq)
-                  Yl(2) = 1.0d0 - Yl(1)
-               ELSE IF ( gauss_type == "Temp" ) THEN
-                  scal(i,j,k,Temp) = T_mean + T_mean * ampgauss * exp(-d_sq/r_sq)
-               ELSE
-                  call bl_abort('gauss_type should be Spec or Temp')
-               END IF
-
-               do n = 1,nspecies
-                  scal(i,j,k,FirstSpec+n-1) = Yl(n)
+                  
+               scal(i,j,k,Temp) = T_bc(1)
+                  
+               do n = 1,NUM_SPECIES
+                  scal(i,j,k,FirstSpec+n-1) = Y_bc(n-1)
                end do
-
-               SELECT CASE ( meanFlowDir )
-                  CASE (1)
-                     vel(i,j,k,1) = meanFlowMag
-                     vel(i,j,k,2) = 0.0d0
-                  CASE (-1)
-                     vel(i,j,k,1) = -meanFlowMag
-                     vel(i,j,k,2) = 0.0d0
-                  CASE (2)
-                     vel(i,j,k,1) = 0.0d0
-                     vel(i,j,k,2) = meanFlowMag
-                  CASE (-2)
-                     vel(i,j,k,1) = 0.0d0
-                     vel(i,j,k,2) = -meanFlowMag
-                  CASE (3)
-                     vel(i,j,k,1) = meanFlowMag
-                     vel(i,j,k,2) = meanFlowMag
-                  CASE (-3)
-                     vel(i,j,k,1) = -meanFlowMag
-                     vel(i,j,k,2) = -meanFlowMag
-               END SELECT
-
+                  
+               vel(i,j,k,1) = u_bc
+#if ( AMREX_SPACEDIM == 2 ) 
+               vel(i,j,k,2) = v_bc
+#elif ( AMREX_SPACEDIM == 3 ) 
+               vel(i,j,k,2) = v_bc
+               vel(i,j,k,3) = w_bc
+#endif
             end do
-
          end do
       end do
-
-      Patm = P_mean / pphys_getP1atm_MKS()
+         
+      Patm = pamb / pphys_getP1atm_MKS()
 
       call pphys_RHOfromPTY(lo,hi, &
                             scal(:,:,:,Density),   s_lo, s_hi, &
@@ -262,7 +313,7 @@ contains
       do k = lo(3), hi(3)
          do j = lo(2), hi(2)
             do i = lo(1), hi(1)
-               do n = 0,nspecies-1
+               do n = 0,NUM_SPECIES-1
                   scal(i,j,k,FirstSpec+n) = scal(i,j,k,FirstSpec+n)*scal(i,j,k,Density)
                enddo
                scal(i,j,k,RhoH) = scal(i,j,k,RhoH)*scal(i,j,k,Density)

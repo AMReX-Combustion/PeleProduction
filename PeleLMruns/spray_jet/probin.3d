@@ -1,11 +1,14 @@
  &fortin
-  V_in = 0.01
-  standoff = -.028
-  pertmag = -0.0004
+  X_O2_oxid    = .15
+  T_in = 900.
+  V_in = 28.0
+
+  splitx  = .000085
+  xfrontw = .0000085
  /
  &heattransin
-  pamb = 101325.
- /
+  pamb = 6079500.
+/
  &control
   tau_control = 3.e-4
   sest = .2
