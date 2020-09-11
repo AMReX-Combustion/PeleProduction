@@ -257,9 +257,3 @@ SprayParticleContainer::InitSprayParticles(AmrLevel* pelec, const int& lev, cons
   // Start without any particles
   return;
 }
-
-void
-SprayParticleContainer::InitParticlesUniform(AmrLevel* pelelm, const int& lev, const int& num_ppc)
-{
-  return;
-}
