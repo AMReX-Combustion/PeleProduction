@@ -27,7 +27,7 @@ contains
                           vel, rho, Yl, T, h)&
                           bind(C, name="bcfunction")
 
-      use mod_Fvar_def, only : dv_control, tbase_control, V_in, f_flag_active_control
+      use mod_Fvar_def, only : V_in, pamb
       use probdata_module, only : bcinit, rho_bc, Y_bc, T_bc, h_bc, u_bc, v_bc, w_bc
       use probdata_module, only : splitx, xfrontw
       
@@ -62,11 +62,11 @@ contains
         end do
         T = T_bc(1)
         h = h_bc(1)
-         
+        
         if (getuvw .eqv. .TRUE.) then
             
-          vel(1) = u_bc
-          vel(2) = v_bc
+          vel(1) = u_bc * eta
+          vel(2) = v_bc * eta
           vel(3) = w_bc * eta
 
        endif

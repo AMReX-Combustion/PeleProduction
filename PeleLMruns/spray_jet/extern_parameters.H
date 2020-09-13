@@ -25,5 +25,11 @@
 
   extern AMREX_GPU_MANAGED int use_bulk_viscosity;
 
+  extern AMREX_GPU_MANAGED int do_flct;
+
+  extern AMREX_GPU_MANAGED int flct_dir;
+
+  extern std::string flct_in;
+
 
 #endif

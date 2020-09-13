@@ -31,6 +31,14 @@ extern "C"
 
   void get_f90_use_bulk_viscosity(int* use_bulk_viscosity);
 
+  void get_f90_do_flct(int* do_flct);
+
+  void get_f90_flct_dir(int* flct_dir);
+
+  void get_f90_flct_in(char* flct_in);
+
+  void get_f90_flct_in_len(int& slen);
+
 
 #ifdef __cplusplus
 }

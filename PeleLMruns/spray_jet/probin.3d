@@ -17,4 +17,6 @@
  /
  &extern
   new_Jacobian_each_cell = 1
+  do_flct = 1
+  flct_in = 'Turb.test2'
  /

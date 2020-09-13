@@ -21,6 +21,12 @@
 
   AMREX_GPU_MANAGED int use_bulk_viscosity;
 
+  AMREX_GPU_MANAGED int do_flct;
+
+  AMREX_GPU_MANAGED int flct_dir;
+
+  std::string flct_in;
+
 
   void init_extern_parameters() {
     int slen = 0;
@@ -47,5 +53,14 @@
     get_f90_new_Jacobian_each_cell(&new_Jacobian_each_cell);
 
     get_f90_use_bulk_viscosity(&use_bulk_viscosity);
+
+    get_f90_do_flct(&do_flct);
+
+    get_f90_flct_dir(&flct_dir);
+
+    get_f90_flct_in_len(slen);
+    char _flct_in[slen+1];
+    get_f90_flct_in(_flct_in);
+    flct_in = std::string(_flct_in);
 
   }

@@ -53,8 +53,11 @@ contains
                                tau_control, tbase_control, V_in, v_in_old, zbase_control, &
                                pseudo_gravity
       use probdata_module, only : rho_bc, Y_bc
-      use probdata_module, only : X_O2_oxid, T_in, splitx, xfrontw
-
+      use probdata_module, only : X_O2_oxid, T_in, splitx, xfrontw, turb_scale
+#if defined(BL_DO_FLCT)
+      use extern_probin_module, only : do_flct, flct_in
+      use turbinflow_module
+#endif
 
       implicit none
 
@@ -67,7 +70,8 @@ contains
       REAL_T area
 
       namelist /fortin/ V_in, &
-                        X_O2_oxid, T_in, splitx, xfrontw
+                        X_O2_oxid, T_in, splitx, xfrontw, &
+                        turb_scale
       namelist /heattransin/ pamb
 
       namelist /control/ tau_control, sest, cfix, changeMax_control, h_control, &
@@ -140,6 +144,15 @@ contains
 
 !     Set up boundary functions
       call setupbc()
+
+#if defined(BL_DO_FLCT)
+      if (do_flct.eq.1) then
+         !$omp parallel
+         call init_turbinflow(flct_in, .false.)
+         !$omp end parallel
+      endif
+#endif
+
 
       if (isioproc.eq.1) then
          write(6,fortin)
@@ -287,12 +300,12 @@ contains
                   scal(i,j,k,FirstSpec+n-1) = Y_bc(n-1)
                end do
                   
-               vel(i,j,k,1) = u_bc
+               vel(i,j,k,1) = 0.d0!u_bc
 #if ( AMREX_SPACEDIM == 2 ) 
-               vel(i,j,k,2) = v_bc
+               vel(i,j,k,2) = 0.d0!v_bc
 #elif ( AMREX_SPACEDIM == 3 ) 
-               vel(i,j,k,2) = v_bc
-               vel(i,j,k,3) = w_bc
+               vel(i,j,k,2) = 0.d0!v_bc
+               vel(i,j,k,3) = 0.d0!w_bc
 #endif
             end do
          end do

@@ -38,6 +38,12 @@ module extern_probin_module
   !$acc declare create(new_Jacobian_each_cell)
   logical, save, public :: use_bulk_viscosity = .true.
   !$acc declare create(use_bulk_viscosity)
+  integer, save, public :: do_flct = 0
+  !$acc declare create(do_flct)
+  integer, save, public :: flct_dir = 2
+  !$acc declare create(flct_dir)
+  character (len=256), save, public :: flct_in = 'TURB'
+  !$acc declare create(flct_in)
 
 end module extern_probin_module
 
@@ -66,6 +72,9 @@ subroutine runtime_init(name,namlen)
   namelist /extern/ react_rho_max
   namelist /extern/ new_Jacobian_each_cell
   namelist /extern/ use_bulk_viscosity
+  namelist /extern/ do_flct
+  namelist /extern/ flct_dir
+  namelist /extern/ flct_in
 
   small_massfrac = 1.d-30
   mwt_scalar = 1.0
@@ -77,6 +86,9 @@ subroutine runtime_init(name,namlen)
   react_rho_max = 1.e10
   new_Jacobian_each_cell = 0
   use_bulk_viscosity = .true.
+  do_flct = 0
+  flct_dir = 2
+  flct_in = 'TURB'
 
 
   ! create the filename
@@ -111,7 +123,8 @@ subroutine runtime_init(name,namlen)
   !$acc device(small_massfrac, mwt_scalar, numaux) &
   !$acc device(auxnamesin, react_T_min, react_T_max) &
   !$acc device(react_rho_min, react_rho_max, new_Jacobian_each_cell) &
-  !$acc device(use_bulk_viscosity)
+  !$acc device(use_bulk_viscosity, do_flct, flct_dir) &
+  !$acc device(flct_in)
 
 end subroutine runtime_init
 

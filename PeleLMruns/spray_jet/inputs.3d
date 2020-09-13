@@ -13,20 +13,19 @@ peleLM.lo_bc = SlipWallAdiab SlipWallAdiab Inflow
 peleLM.hi_bc = SlipWallAdiab SlipWallAdiab Outflow
 
 #----------------------------TOP LEVEL INPUTS----------------------
-max_step  = 600
+max_step  = 500
 stop_time = 0.008
 
 #-------------------------AMR INPUTS----------------------------
 amr.n_cell    = 64 64 64
 
 amr.v=1
-amr.max_level =  0            # maximum level number allowed
+amr.max_level =  2            # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 1       # how often to regrid
-amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+amr.regrid_int      = 2       # how often to regrid
+amr.n_error_buf     = 4 4 4 4 # number of buffer cells in error est
 amr.grid_eff        = 0.9     # what constitutes an efficient grid
-amr.grid_eff        = 0.7     # what constitutes an efficient grid
-amr.blocking_factor = 8       # block factor in grid generation
+amr.blocking_factor = 16      # block factor in grid generation
 
 amr.checkpoint_files_output = 1
 amr.check_file      = chk     # root name of checkpoint file
@@ -42,16 +41,21 @@ amr.max_grid_size   = 64
 amr.probin_file = probin.3d # This will default to file "probin" if not set
 
 # Refinement according to the vorticity, no field_name needed
-amr.refinement_indicators = gradT
-amr.gradT.max_level = 1
-amr.gradT.adjacent_difference_greater = .1
+amr.refinement_indicators = gradT magvort
+
+amr.gradT.max_level = 2
+amr.gradT.adjacent_difference_greater = 1.
 amr.gradT.field_name = temp
+
+amr.magvort.max_level = 2
+amr.magvort.vorticity_greater = 5e4
 
 # ------------------  INPUTS TO PHYSICS CLASS -------------------
 ns.dt_cutoff       = 5.e-20   # level 0 timestep below which we halt
 ns.visc_tol        = 1.0e-14  # tolerence for viscous solves
 ns.visc_abs_tol    = 1.0e-14  # tolerence for viscous solves
 ns.cfl            = 0.3       # cfl number for hyperbolic system
+ns.init_dt        = 1e-7
 ns.init_shrink    = .01       # scale back initial timestep
 ns.change_max     = 1.1       # scale back initial timestep
 ns.init_iter      = 3        # number of init iters to def pressure
@@ -109,9 +113,9 @@ proj.divu_minus_s_factor = 0.
 proj.proj_2 = 1
 
 # ------------------  INPUTS TO MACPROJ CLASS -------------------
-mac.mac_tol        = 1.0e-14  # tolerence for mac projections
-mac.mac_sync_tol   = 1.0e-14   # tolerence for mac SYNC projection
-mac.mac_abs_tol    = 1.0e-14
+mac.mac_tol        = 1.0e-12  # tolerence for mac projections
+mac.mac_sync_tol   = 1.0e-12   # tolerence for mac SYNC projection
+mac.mac_abs_tol    = 1.0e-12
 mac.use_cg_solve   = 0
 mac.do_outflow_bcs = 0
 
@@ -159,8 +163,8 @@ particles.v = 0
 particles.mom_transfer = 1
 particles.mass_transfer = 1
 particles.heat_transfer = 1
-particles.particle_init_function = 0
-particles.particle_init_file = "initspraydata"
+#particles.particle_init_function = 0
+#particles.particle_init_file = "initspraydata"
 particles.write_spray_ascii_files = 1 # Do not write ascii output files
 
 particles.fuel_species = NC10H22
@@ -175,7 +179,7 @@ particles.fuel_cp = 2.1921E7 # Cp at 298 K
 #ns.fixed_dt         = 1e-5
 ns.sdc_iterMAX = 2
 
-#ShowMF_Sets = spray mac
+#ShowMF_Sets = spray mac sdc mysdc
 #ShowMF_Dir = mfdir
 #ShowMF_Verbose = true
 
