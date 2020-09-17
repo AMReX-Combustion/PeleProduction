@@ -12,7 +12,7 @@
         branch = development
 [submodule "Submodules/IAMR"]
 	path = Submodules/IAMR
-	url = https://github.com/AMReX-Codes/IAMR.git
+	url = https://github.com/mrieth1/IAMR.git
         branch = development
         
 [submodule "Submodules/PeleC-MP"]
