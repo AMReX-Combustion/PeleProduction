@@ -11,11 +11,11 @@ DIM             = 3
 COMP            = gnu
 DEBUG           = FALSE
 USE_MPI         = TRUE
-USE_OMP         = FALSE
+USE_OMP         = TRUE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
 
-USE_CUDA        = TRUE
+USE_CUDA        = FALSE
 
 TINY_PROFILE = TRUE
 
@@ -25,7 +25,7 @@ USE_SUNDIALS_PP = TRUE
 ifeq ($(USE_SUNDIALS_PP), TRUE)
   # use KLU sparse features -- only useful if CVODE is used on CPU
   USE_KLU_PP = FALSE
-  USE_CUDA_SUNDIALS_PP=TRUE
+  USE_CUDA_SUNDIALS_PP=FALSE
 endif
 
 # Choose model (from list below), and pmf file
