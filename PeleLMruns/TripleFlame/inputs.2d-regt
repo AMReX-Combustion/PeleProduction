@@ -104,6 +104,8 @@ active_control.v = 1                   # verbose
 active_control.velMax = 1.5            # Optional: limit inlet velocity
 active_control.changeMax = 0.2         # Optional: limit inlet velocity changes (absolute)
 active_control.flameDir  = 1           # Optional: flame main direction. Default: AMREX_SPACEDIM-1
+active_control.pseudo_gravity = 1      # Optional: add density proportional force to compensate for the acceleration 
+                                       #           of the gas due to inlet velocity changes
 
 # ---------------------------------------------------------------
 # ------------------  ADVANCED USER INPUTS ----------------------
