@@ -1,7 +1,8 @@
-PELELM_HOME = ../../Submodules/PeleLM
-PELE_PHYSICS_HOME = ../../Submodules/PelePhysics
-IAMR_HOME = ../../Submodules/IAMR
-AMREX_HOME = ../../Submodules/amrex
+TOP = ../../
+PELELM_HOME ?= $(TOP)/Submodules/PeleLM
+PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
+IAMR_HOME ?= $(TOP)/Submodules/IAMR
+AMREX_HOME ?= $(TOP)/Submodules/amrex
 
 #
 # Build configuration
@@ -17,18 +18,12 @@ VERBOSE         = FALSE
 TINY_PROFILE = FALSE
 #USE_WBAR = TRUE
 
-DEFINES+=-DALWAYS_NEW_J
-
-DO_2S_CONVERGENCE=FALSE
-
 #######################
-USE_SUNDIALS_3x4x = FALSE
-
-#######################
+USE_SUNDIALS_PP = TRUE
+USE_KLU_PP = FALSE
 
 # Choose model (from list below), and pmf file
 Chemistry_Model = drm19
-fEXE_sources += drm19Soln_seed_0.50.f
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := Fuego
@@ -37,11 +32,11 @@ Eos_dir     := Fuego
 Reactions_dir := Fuego
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir := EGLib
+Transport_dir := Simple
 
 Blocs   := .
 
-F90EXE_sources += Prob_nd.F90 probdata.F90
+F90EXE_sources += 
 
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
 # Available chemistry models:

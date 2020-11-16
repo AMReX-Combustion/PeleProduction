@@ -142,8 +142,8 @@ set_Y_from_Phi(const amrex::Real phi_in,
 {   
    amrex::Real Xt[NUM_SPECIES] = {0.0};   
    amrex::Real a = 0.0;   
-   if ( ProbParm::fuelID == NXC7H16_ID ) {   
-      a = 11.0;
+   if ( ProbParm::fuelID == CH4_ID ) {   
+      a = 2.0;
    }      
    Xt[ProbParm::oxidID] = 1.0 / ( 1.0 + phi_in / a + 0.79 / 0.21 );
    Xt[ProbParm::fuelID] = phi_in * Xt[ProbParm::oxidID] / a;   
@@ -257,7 +257,7 @@ pelelm_initdata (int i, int j, int k,
 
 }
 
-AMREX_GPU_DEVICE
+AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(

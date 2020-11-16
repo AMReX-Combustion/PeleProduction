@@ -151,7 +151,7 @@ extern "C" {
         // TODO: somewhat hard coded bath, fuel and oxid IDs 
         // should exist somewhere in PeleLM.
         ProbParm::bathID = N2_ID;  
-        ProbParm::fuelID = NXC7H16_ID;  
+        ProbParm::fuelID = CH4_ID;  
         ProbParm::oxidID = O2_ID;  
 
     }
