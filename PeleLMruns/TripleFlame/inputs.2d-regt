@@ -112,7 +112,7 @@ active_control.pseudo_gravity = 1      # Optional: add density proportional forc
 # ---------------------------------------------------------------
 
 #----------------  ADV ALGORITHM CONTROL  -------------------
-ns.sum_interval      = 5               # timesteps between computing mass
+ns.sum_interval      = 1               # timesteps between computing mass
 ns.do_reflux         = 1               # 1 => do refluxing
 ns.do_mac_proj       = 1               # 1 => do MAC projection
 ns.do_sync_proj      = 1               # 1 => do Sync Project
