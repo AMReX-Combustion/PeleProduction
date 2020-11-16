@@ -1,4 +1,4 @@
-TOP = ../../
+TOP = <local_path>/PeleProduction
 PELELM_HOME ?= $(TOP)/Submodules/PeleLM
 PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
 IAMR_HOME ?= $(TOP)/Submodules/IAMR
@@ -12,6 +12,7 @@ COMP            = gnu
 DEBUG           = FALSE
 USE_MPI         = TRUE
 USE_OMP         = FALSE
+USE_CUDA        = FALSE
 PRECISION       = DOUBLE
 VERBOSE         = FALSE
 
