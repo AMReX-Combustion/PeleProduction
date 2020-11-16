@@ -21,8 +21,14 @@ amr.grid_eff        = 0.7        # what constitutes an efficient grid
 amr.blocking_factor = 16         # block factor in grid generation
 amr.max_grid_size   = 32         # maximum box size
 
+#----------------------- PROBLEM PARAMETERS --------------------
+prob.P_mean = 101325.0
+prob.T_in = 300.0
+prob.V_in = 0.85
+prob.Zst = 0.055
+
 #----------------------TIME STEPING CONTROL----------------------
-max_step       = 500             # maximum number of time steps
+max_step       = 1               # maximum number of time steps
 stop_time      = 4.00            # final physical time
 ns.cfl         = 0.1             # cfl number for hyperbolic system
 ns.init_shrink = 0.001           # scale back initial timestep
@@ -30,22 +36,15 @@ ns.change_max  = 1.1             # max timestep size increase
 ns.dt_cutoff   = 1.e-11          # level 0 timestep below which we halt
 
 #-------------------------IO CONTROL----------------------------
-#amr.restart = chk00100           # Restart from checkpoint ?
-#amr.regrid_on_restart = 1        # Perform regriding upon restart ?
-#peleLM.pltfile = plt03641 
-amr.checkpoint_files_output = 1  # Dump check file ? 0: no, 1: yes
+#amr.restart = chk00100              # Restart from checkpoint ?
+#amr.regrid_on_restart = 1           # Perform regriding upon restart ?
+amr.checkpoint_files_output = 1     # Dump check file ? 0: no, 1: yes
 amr.check_file         = chk        # root name of checkpoint file
 amr.check_int          = 200        # number of timesteps between checkpoints
 amr.plot_file          = plt        # root name of plotfiles   
 amr.plot_int           = 20         # number of timesteps between plotfiles
 amr.derive_plot_vars   = rhoRT mag_vort avg_pressure gradpx gradpy diveru mass_fractions mixfrac
 amr.grid_log           = grdlog     # name of grid logging file
-
-#----------------------- PROBLEM PARAMETERS---------------------
-prob.P_mean = 101325.0
-prob.T_in = 300.0
-prob.V_in = 0.85
-prob.Zst = 0.055
 
 #--------------------REFINEMENT CONTROL------------------------
 amr.refinement_indicators = lo_temp gradT HR
@@ -86,7 +85,7 @@ ns.gravity     = 0                     # body force  (gravity in MKS units)
 ns.num_divu_iters    = 3               # Number of DivU iteration at initialization
 ns.init_iter         = 1               # number of init iters to define pressure
 ns.sdc_iterMAX       = 1               # Number of SDC iterations
-ns.num_mac_sync_iter = 2               # Number of mac_sync iterations
+ns.num_mac_sync_iter = 1               # Number of mac_sync iterations
 
 #--------------  INPUTS TO CVODE CHEMISTRY ------------------
 #peleLM.use_typ_vals_chem  = 1         # Use typical value to scale CVODE residual
