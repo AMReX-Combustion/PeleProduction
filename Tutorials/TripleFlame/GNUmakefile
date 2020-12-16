@@ -17,7 +17,6 @@ PRECISION       = DOUBLE
 VERBOSE         = FALSE
 
 TINY_PROFILE = FALSE
-#USE_WBAR = TRUE
 
 #######################
 USE_SUNDIALS_PP = TRUE
