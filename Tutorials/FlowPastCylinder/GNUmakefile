@@ -1,8 +1,8 @@
-TOP = <local_path>/PeleProduction
-PELELM_HOME       ?= $(TOP)/Submodules/PeleLM
-PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
-IAMR_HOME         ?= $(TOP)/Submodules/IAMR
-AMREX_HOME        ?= $(TOP)/Submodules/amrex
+TOP = /home/lesclapez/CODES/PeleProduction
+PELELM_HOME       = $(TOP)/Submodules/PeleLM
+PELE_PHYSICS_HOME = $(TOP)/Submodules/PelePhysics
+IAMR_HOME         = $(TOP)/Submodules/IAMR
+AMREX_HOME        = $(TOP)/Submodules/amrex
 
 #
 # Build configuration
@@ -25,10 +25,6 @@ PRECISION       = DOUBLE
 VERBOSE         = FALSE
 TINY_PROFILE    = FALSE
 
-# CVODE
-USE_SUNDIALS_PP = TRUE
-USE_KLU_PP      = FALSE
-
 # Choose model (from list below), and pmf file
 Chemistry_Model = air
 
@@ -36,7 +32,7 @@ Chemistry_Model = air
 Eos_dir     := Fuego
 
 # This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Fuego
+Reactions_dir := Null
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
 #Transport_dir := EGLib
