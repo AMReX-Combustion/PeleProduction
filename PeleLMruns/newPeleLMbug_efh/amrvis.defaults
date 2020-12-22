@@ -1,0 +1,9 @@
+palette               Palette
+initialderived        H2_ConsumptionRate
+initialderived        temp
+initialscale          1
+numberformat          %10.5e
+maxpixmapsize         200000000
+showboxes             FALSE
+windowheight          750
+windowwidth           900
