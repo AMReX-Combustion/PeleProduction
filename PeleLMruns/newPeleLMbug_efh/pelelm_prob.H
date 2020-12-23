@@ -7,7 +7,9 @@
 
 #include <pelelm_prob_parm.H>
 #include <pmf.H>
+#include <pmf_data.H>
 #include <PeleLM_parm.H>
+
 
 #include <NavierStokesBase.H>
 #include <IndexDefines.H>
@@ -16,11 +18,13 @@
 
 
 AMREX_GPU_DEVICE
-inline
+AMREX_FORCE_INLINE
 void
 pelelm_initdata (int i, int j, int k, 
                  amrex::Array4<amrex::Real> const& state,
-                 amrex::GeometryData const& geomdata)
+                 amrex::GeometryData const& geomdata,
+                 ProbParm const& prob_parm,
+                 PmfData const *pmf_data)
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
@@ -38,14 +42,14 @@ pelelm_initdata (int i, int j, int k,
 
   amrex::Real r = std::sqrt( AMREX_D_TERM(x*x, + y*y, +z*z ));
   AMREX_ALWAYS_ASSERT(AMREX_SPACEDIM>1);
-  amrex::Real y1 = ( (ProbParm::FK_rad-r) - ProbParm::standoff - 0.5 * dx[1]) * 100.;
-  amrex::Real y2 = ( (ProbParm::FK_rad-r) - ProbParm::standoff + 0.5 * dx[1]) * 100.;
+  amrex::Real y1 = ( (prob_parm.FK_rad-r) - prob_parm.standoff - 0.5 * dx[1]) * 100.;
+  amrex::Real y2 = ( (prob_parm.FK_rad-r) - prob_parm.standoff + 0.5 * dx[1]) * 100.;
   
-  if (ProbParm::pertmag > 0.0) 
+  if (prob_parm.pertmag > 0.0) 
   {
 #if ( AMREX_SPACEDIM == 2 )
     amrex::Real theta = std::atan(y/x);
-    amrex::Real pert = ProbParm::pertmag*(1.000 * sin(4*theta)
+    amrex::Real pert = prob_parm.pertmag*(1.000 * sin(4*theta)
                                           + 1.023 * sin(2*(0.25 * 2 * Pi))
                                           + 0.945 * sin(3*(0.1 * 2 * Pi))
                                           + 1.017 * sin(5*(0.7 * 2 * Pi))
@@ -59,7 +63,7 @@ pelelm_initdata (int i, int j, int k,
 
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
 
-  PMF::pmf(y1, y2, pmf_vals);
+  PMF::pmf(pmf_data,y1, y2, pmf_vals);
 
   state(i,j,k,DEF_Temp) = pmf_vals[0];
 
@@ -78,7 +82,7 @@ pelelm_initdata (int i, int j, int k,
   state(i,j,k,Zvel) = pmf_vals[1]*1e-2;
 #endif
 
-  amrex::Real P_cgs = ProbParm::P_mean * 10.0;
+  amrex::Real P_cgs = prob_parm.P_mean * 10.0;
 
   amrex::Real rho_cgs;
   EOS::PYT2R(P_cgs, massfrac, state(i,j,k,DEF_Temp), rho_cgs);
@@ -92,7 +96,7 @@ pelelm_initdata (int i, int j, int k,
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
@@ -101,12 +105,15 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParm const& prob_parm,
+  ACParm const& ac_parm, 
+  PmfData const *pmf_data)
 {
 }
 
 AMREX_GPU_DEVICE
-inline
+AMREX_FORCE_INLINE
 void
 zero_visc (int i, int j, int k,
            amrex::Array4<amrex::Real> const& beta,

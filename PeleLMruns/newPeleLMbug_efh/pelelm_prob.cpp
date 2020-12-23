@@ -1,17 +1,6 @@
-
-#include <pelelm_prob_parm.H>
-#include <AMReX_ParmParse.H>
+#include <PeleLM.H>
+#include <pelelm_prob.H>
 #include <pmf.H>
-
-using namespace amrex;
-
-namespace ProbParm
-{
-  AMREX_GPU_DEVICE_MANAGED  amrex::Real P_mean = 101325.0;
-  AMREX_GPU_DEVICE_MANAGED  amrex::Real standoff = -0.03501061;
-  AMREX_GPU_DEVICE_MANAGED  amrex::Real pertmag = 0.0;
-  AMREX_GPU_DEVICE_MANAGED  amrex::Real FK_rad = 3.8e-05;
-}
 
 extern "C"
 {
@@ -21,17 +10,16 @@ extern "C"
                        const amrex_real* problo,
                        const amrex_real* probhi)
   {
-    ParmParse pp("prob");
+    amrex::ParmParse pp("prob");
 
-    pp.query("P_mean", ProbParm::P_mean);
-    pp.query("standoff", ProbParm::standoff);
-    pp.query("pertmag", ProbParm::pertmag);
-    pp.query("FK_rad", ProbParm::FK_rad);
+    pp.query("P_mean", PeleLM::prob_parm->P_mean);
+    pp.query("standoff", PeleLM::prob_parm->standoff);
+    pp.query("pertmag", PeleLM::prob_parm->pertmag);
+    pp.query("FK_rad", PeleLM::prob_parm->FK_rad);
 
     std::string pmf_datafile;
     pp.get("pmf_datafile", pmf_datafile);
-
-    PMF::pmf_do_average = true;
-    PMF::read_pmf(pmf_datafile);
+    int pmf_do_average = 1;
+    PMF::read_pmf(pmf_datafile,pmf_do_average);
   }
 }
