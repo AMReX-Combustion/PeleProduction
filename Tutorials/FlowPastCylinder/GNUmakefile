@@ -1,8 +1,8 @@
-TOP = /home/lesclapez/CODES/PeleProduction
-PELELM_HOME       = $(TOP)/Submodules/PeleLM
-PELE_PHYSICS_HOME = $(TOP)/Submodules/PelePhysics
-IAMR_HOME         = $(TOP)/Submodules/IAMR
-AMREX_HOME        = $(TOP)/Submodules/amrex
+TOP = <local_path>/PeleProduction
+PELELM_HOME       ?= $(TOP)/Submodules/PeleLM
+PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
+IAMR_HOME         ?= $(TOP)/Submodules/IAMR
+AMREX_HOME        ?= $(TOP)/Submodules/amrex
 
 #
 # Build configuration
