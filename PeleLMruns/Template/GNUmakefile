@@ -1,9 +1,9 @@
 # Repositories
-TOP = /home/lesclapez/PeleProduction/Submodules
-AMREX_HOME         = ${TOP}/amrex
-IAMR_HOME          = ${TOP}/IAMR
-PELELM_HOME        = ${TOP}/PeleLM
-PELE_PHYSICS_HOME  = ${TOP}/PelePhysics
+TOP = ../../Submodules/
+AMREX_HOME         ?= ${TOP}/amrex
+IAMR_HOME          ?= ${TOP}/IAMR
+PELELM_HOME        ?= ${TOP}/PeleLM
+PELE_PHYSICS_HOME  ?= ${TOP}/PelePhysics
 
 # AMREX options
 DIM             = 2
