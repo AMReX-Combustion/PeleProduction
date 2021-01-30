@@ -1,9 +1,9 @@
 # Repositories
-TOP = ../../Submodules
-AMREX_HOME         ?= ${TOP}/amrex
-IAMR_HOME          ?= ${TOP}/IAMR
-PELELM_HOME        ?= ${TOP}/PeleLM
-PELE_PHYSICS_HOME  ?= ${TOP}/PelePhysics
+TOP = /home/lesclapez/PeleProduction/Submodules
+AMREX_HOME         = ${TOP}/amrex
+IAMR_HOME          = ${TOP}/IAMR
+PELELM_HOME        = ${TOP}/PeleLM
+PELE_PHYSICS_HOME  = ${TOP}/PelePhysics
 
 # AMREX options
 DIM             = 2
@@ -20,7 +20,7 @@ USE_CUDA        = FALSE
 USE_HIP         = FALSE
 
 # CVODE
-USE_SUNDIALS_PP = TRUE
+USE_SUNDIALS_PP = FALSE
 
 # Choose model (from list below), and pmf file
 Chemistry_Model = drm19
@@ -29,7 +29,7 @@ Chemistry_Model = drm19
 Eos_dir     	:= Fuego
 
 # This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir 	:= Fuego
+Reactions_dir 	:= Null
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
 Transport_dir 	:= Simple
