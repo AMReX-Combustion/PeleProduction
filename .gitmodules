@@ -14,3 +14,6 @@
 	path = Submodules/IAMR
 	url = https://github.com/AMReX-Codes/IAMR.git
         branch = development
+[submodule "Submodules/AMReX-Hydro"]
+	path = Submodules/AMReX-Hydro
+	url = git@github.com:AMReX-Codes/AMReX-Hydro.git
