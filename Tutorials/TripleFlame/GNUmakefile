@@ -3,6 +3,7 @@ PELELM_HOME ?= $(TOP)/Submodules/PeleLM
 PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
 IAMR_HOME ?= $(TOP)/Submodules/IAMR
 AMREX_HOME ?= $(TOP)/Submodules/amrex
+AMREX_HYDRO_HOME ?= $(TOP)/Submodules/AMReX-Hydro
 
 #
 # Build configuration
