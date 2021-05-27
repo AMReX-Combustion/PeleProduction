@@ -1,4 +1,4 @@
-TOP = <local_path>/PeleProduction
+TOP = $(shell pwd)/../..
 PELELM_HOME ?= $(TOP)/Submodules/PeleLM
 PELE_PHYSICS_HOME ?= $(TOP)/Submodules/PelePhysics
 IAMR_HOME ?= $(TOP)/Submodules/IAMR
