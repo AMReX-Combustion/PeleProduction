@@ -11,6 +11,7 @@
 
 #include <NavierStokesBase.H>
 #include <IndexDefines.H>
+#include <PelePhysics.H>
 #include <EOS.H>
 #include <cmath>
 
@@ -30,7 +31,8 @@ set_Y_from_Phi(ProbParm const& prob_parm,
    Xt[prob_parm.fuelID] = phi_in * Xt[prob_parm.oxidID] / a;   
    Xt[prob_parm.bathID] = 1.0 - Xt[prob_parm.oxidID] - Xt[prob_parm.fuelID];   
 
-   EOS::X2Y(Xt,Y);
+   auto eos = pele::physics::PhysicsType::eos();
+   eos.X2Y(Xt,Y);
 }
 
 AMREX_GPU_DEVICE
@@ -102,10 +104,11 @@ pelelm_initdata (int i, int j, int k,
     amrex::Real rho_cgs, P_cgs;
     P_cgs = prob_parm.P_mean * 10.0;
 
-    EOS::PYT2R(P_cgs, massfrac, state(i,j,k,DEF_Temp), rho_cgs);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.PYT2R(P_cgs, massfrac, state(i,j,k,DEF_Temp), rho_cgs);
     state(i,j,k,Density) = rho_cgs * 1.0e3;            // CGS -> MKS conversion
 
-    EOS::TY2H(state(i,j,k,DEF_Temp), massfrac, state(i,j,k,DEF_RhoH));
+    eos.TY2H(state(i,j,k,DEF_Temp), massfrac, state(i,j,k,DEF_RhoH));
     state(i,j,k,DEF_RhoH) = state(i,j,k,DEF_RhoH) * 1.0e-4 * state(i,j,k,Density);   // CGS -> MKS conversion
 
     for (int n = 0; n < NUM_SPECIES; n++) {
@@ -161,10 +164,11 @@ bcnormal(
     amrex::Real rho_cgs, P_cgs, RhoH_temp;
     P_cgs = prob_parm.P_mean * 10.0;
 
-    EOS::PYT2R(P_cgs, massfrac, s_ext[DEF_Temp], rho_cgs);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.PYT2R(P_cgs, massfrac, s_ext[DEF_Temp], rho_cgs);
     s_ext[Density] = rho_cgs * 1.0e3;
 
-    EOS::TY2H(s_ext[DEF_Temp], massfrac, RhoH_temp);
+    eos.TY2H(s_ext[DEF_Temp], massfrac, RhoH_temp);
     s_ext[DEF_RhoH] = RhoH_temp * 1.0e-4 * s_ext[Density];   // CGS -> MKS conversion
 
     for (int n = 0; n < NUM_SPECIES; n++) {
