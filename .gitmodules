@@ -11,5 +11,5 @@
 	path = Submodules/IAMR
 	url = https://github.com/AMReX-Codes/IAMR.git
 [submodule "AMReX-Hydro"]
-	path = AMReX-Hydro
+	path = Submodules/AMReX-Hydro
 	url = git@github.com:AMReX-Codes/AMReX-Hydro

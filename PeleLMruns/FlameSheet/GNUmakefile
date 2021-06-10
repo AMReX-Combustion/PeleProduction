@@ -1,36 +1,37 @@
-PELELM_HOME ?= ../../Submodules/PeleLM
-PELE_PHYSICS_HOME ?= ../../Submodules/PelePhysics
-IAMR_HOME ?= ../../Submodules/IAMR
-AMREX_HOME ?= ../../Submodules/amrex
+# use the full path
+TOP               = $(shell pwd)/../..
+PELELM_HOME       = $(TOP)/Submodules/PeleLM
+PELE_PHYSICS_HOME = $(TOP)/Submodules/PelePhysics
+IAMR_HOME         = $(TOP)/Submodules/IAMR
+AMREX_HOME        = $(TOP)/Submodules/amrex
+AMREX_HYDRO_HOME  = $(TOP)/Submodules/AMReX-Hydro
 
 #
 # Build configuration
 #
 
+# AMREX options
 DIM             = 2
+
+# Compiler / parrallel paradigms
 COMP            = gnu
-DEBUG           = FALSE
 USE_MPI         = FALSE
 USE_OMP         = FALSE
+USE_CUDA        = FALSE
+USE_HIP         = FALSE
+
+# MISC options
+DEBUG           = FALSE
 PRECISION       = DOUBLE
-VERBOSE         = FALSE
+VERBOSE         = TRUE
+TINY_PROFILE    = FALSE
 
-TINY_PROFILE = FALSE
-#USE_WBAR = TRUE
+# CVODE
+USE_SUNDIALS_PP = TRUE
+USE_KLU_PP      = FALSE
 
-DEFINES+=-DALWAYS_NEW_J
-
+# PeleLM options
 DO_2S_CONVERGENCE=FALSE
-
-#######################
-USE_SUNDIALS_PP = FALSE
-
-USE_KLU_PP = FALSE
-
-#######################
-
-# Enable ht.velocity_plotfile option
-#USE_VELOCITY    = FALSE
 
 ifeq ($(DO_2S_CONVERGENCE),TRUE)
 	Chemistry_Model = chem-CH4-2step
@@ -40,17 +41,17 @@ else
 	# Enable the restart-from-plotfile option (ht.pltfile)
 	#  ... default this off because when on, code expects it to be used
 	# USE_NEWMECH    = FALSE
-	
+
 	# Choose model (from list below), and pmf file
 	Chemistry_Model = drm19
-	fEXE_sources += drm19Soln_seed_0.50.f
-	
+#	fEXE_sources += drm19Soln_seed_0.50.f
+
 	#Chemistry_Model = LIDRYER
 	#fEXE_sources += LiDryer_040_01ATM.f
-	
+
 	#Chemistry_Model = LUDME
 	#fEXE_sources += LuDME_0700.f
-	
+
 	#Chemistry_Model = GRI30
 	#fEXE_sources += gri30_070.f
 endif
@@ -62,16 +63,20 @@ Eos_dir     := Fuego
 Reactions_dir := Fuego
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir := EGLib
+Transport_dir := Simple
 
 Blocs   := .
 
 CEXE_sources +=
-F90EXE_sources += Prob_nd.F90 probdata.F90
+F90EXE_sources +=
 CEXE_headers += 
 FEXE_headers += 
 
 include $(PELELM_HOME)/Tools/Make/Make.PeleLM
+
+ifeq ($(USE_CUDA),TRUE)
+CXXFLAGS += -Xptxas --disable-optimizer-constants
+endif
 # Available chemistry models:
 # CanuH2 chem-CH4-2step chem-H dme glar gri Hai H-CW header inert Konnov
 # LiDryer Marinov prf_ethanol Roehl sandiego smooke usc
