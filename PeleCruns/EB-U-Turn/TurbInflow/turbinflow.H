@@ -4,7 +4,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_GpuMemory.H>
 #include <AMReX_Geometry.H>
-#include <AMReX_BCRec.H>
 
 struct TurbParmHost
 {
@@ -44,25 +43,20 @@ init_turbinflow(const std::string& turb_file,
                 TurbParm&          tp);
 
 void
-add_turb(amrex::Box const&                  bx,
-         amrex::FArrayBox&                  data,
-         const int                          dcomp,
-         const int                          numcomp,
-         amrex::Geometry const&             geom,
-         const amrex::Real                  time,
-         const amrex::Vector<amrex::BCRec>& bcr,
-         const int                          bcomp,
-         const int                          scomp,
-         const int                          dir,
-         const amrex::Orientation::Side&    side,
-         TurbParm&                          tp);
+add_turb(amrex::Box const&               bx,
+         amrex::FArrayBox&               data,
+         const int                       dcomp,
+         amrex::Geometry const&          geom,
+         const amrex::Real               time,
+         const int                       dir,
+         const amrex::Orientation::Side& side,
+         TurbParm&                       tp);
 
 void
-init_turb(amrex::Box const&      bx,
-          amrex::FArrayBox&      data,
-          const int              dcomp,
-          const int              numcomp,
-          amrex::Geometry const& geom,
-          TurbParm&              tp);
+fill_with_turb(amrex::Box const&      bx,
+               amrex::FArrayBox&      data,
+               const int              dcomp,
+               amrex::Geometry const& geom,
+               TurbParm&              tp);
 
 #endif

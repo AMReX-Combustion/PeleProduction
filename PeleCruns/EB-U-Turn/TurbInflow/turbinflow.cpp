@@ -89,7 +89,7 @@ read_one_turb_plane(int       iplane,
 
   for (int n=0; n<AMREX_SPACEDIM; ++n) {
 
-    const long offset_idx = (iplane - 1) + (n * tp.kmax);
+    const long offset_idx = (k + 1) + (n * tp.kmax);
     AMREX_ASSERT_WITH_MESSAGE(offset_idx < tp.offset_size, "Bad turb fab offset idx");
     
     const long start = tp.offset[offset_idx];
@@ -112,15 +112,19 @@ void
 read_turb_planes(amrex::Real z,
                  TurbParm&   tp)
 {
-  int izlo = z * tp.dxinv[2] - 1;
-  tp.szlo = izlo * tp.dx[2];
-  tp.szhi = tp.szlo
-    + (tp.nplane - 1) * tp.dx[2];
+  int izlo = (int)(round(z * tp.dxinv[2])) - 1;
+  int izhi = izlo+tp.nplane-1;
+  tp.szlo = izlo*tp.dx[2];
+  tp.szhi = izhi*tp.dx[2];
 
-  amrex::Print() << "Loading planes " << izlo << ":" << izlo+tp.nplane-1 << std::endl;
+#if 0
+  amrex::Print() << "read_turb_planes filling " << izlo << " to " << izhi
+                 << " covering " << tp.szlo + 0.5 * tp.dx[2]
+                 << " to "       << tp.szhi - 0.5 * tp.dx[2] << " for z = " << z << std::endl;
+#endif  
 
   for (int iplane=1; iplane<=tp.nplane; ++iplane) {
-    int k = (izlo+iplane-1 % tp.npboxcells[2]) + 1;
+    int k = (izlo+iplane-1) % (tp.npboxcells[2] - 2);
     read_one_turb_plane(iplane,k,tp);
   }
   tp.turbinflow_planes_initialized = true;
@@ -137,6 +141,15 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
       (z < tp.szlo + 0.5 * tp.dx[2])     ||
       (z > tp.szhi - 0.5 * tp.dx[2]) )
   {
+#if 0
+    if (!tp.turbinflow_planes_initialized) {
+      amrex::Print() << "Reading new data because planes uninitialized at z: " << z << std::endl;
+    }
+    else {
+      amrex::Print() << "Reading new data because z " << z << " is outside " << tp.szlo + 0.5 * tp.dx[2] << " and "
+                     << tp.szhi - 0.5 * tp.dx[2] << std::endl;
+    }
+#endif
     read_turb_planes(z,tp);
   }
 
@@ -146,7 +159,7 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
   amrex::Array<amrex::Real,3> cz;
 
   amrex::Real zz = (z - tp.szlo) * tp.dxinv[2];
-  int k0 = std::round(zz) - 1;
+  int k0 = (int)(std::round(zz)) - 1;
   zz -= amrex::Real(k0);
   cz[0] = 0.5 * (zz-1.0) * (zz - 2.0);
   cz[1] = zz * (2.0 - zz);
@@ -163,8 +176,8 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
     for (int n=0; n<3; ++n) {
       amrex::Real xx = (x[i-bx.smallEnd(0)] - tp.pboxlo[0]) * tp.dxinv[0];
       amrex::Real yy = (y[j-bx.smallEnd(1)] - tp.pboxlo[1]) * tp.dxinv[1];
-      int i0 = std::round(xx) - 1;
-      int j0 = std::round(yy) - 1;
+      int i0 = (int)(std::round(xx));
+      int j0 = (int)(std::round(yy));
       xx -= amrex::Real(i0);
       yy -= amrex::Real(j0);
       cx[0] = 0.5 * (xx - 1.0) * (xx - 2.0);
@@ -174,37 +187,37 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
       cx[2] = 0.5 * xx * (xx - 1.0);
       cy[2] = 0.5 * yy * (yy - 1.0);
 
-      i0 = (i0 % tp.npboxcells[0]) + 2;
-      j0 = (j0 % tp.npboxcells[1]) + 2;
-
-      for (int ii=0; ii<=2; ++ii) {
-        for (int jj=0; jj<=2; ++jj) {
-          zdata[ii][jj] = cz[0]*sd(i0+ii,j0+jj,k0  ,n) 
-            +             cz[1]*sd(i0+ii,j0+jj,k0+1,n)
-            +             cz[2]*sd(i0+ii,j0+jj,k0+2,n);
+      if (i0>=0 && i0<tp.npboxcells[0] && j0>=0 && j0<tp.npboxcells[1]) {
+        i0 += 2;
+        j0 += 2;
+        for (int ii=0; ii<=2; ++ii) {
+          for (int jj=0; jj<=2; ++jj) {
+            zdata[ii][jj] = cz[0]*sd(i0+ii,j0+jj,k0  ,n) 
+              +             cz[1]*sd(i0+ii,j0+jj,k0+1,n)
+              +             cz[2]*sd(i0+ii,j0+jj,k0+2,n);
+          }
         }
+        for (int ii=0; ii<=2; ++ii) {
+          ydata[ii] = cy[0]*zdata[ii][0] + cy[1]*zdata[ii][1] + cy[2]*zdata[ii][2];
+        }
+        vd(i,j,k,n) = cx[0]*ydata[0] + cx[1]*ydata[1] + cx[2]*ydata[2];
       }
-      for (int ii=0; ii<=2; ++ii) {
-        ydata[ii] = cy[0]*zdata[ii][0] + cy[1]*zdata[ii][1] + cy[2]*zdata[ii][2];
+      else {
+        vd(i,j,k,n) = 0.0;
       }
-      vd(i,j,bx.smallEnd(2),n) = cx[0]*ydata[0] + cx[1]*ydata[1] + cx[2]*ydata[2];
     }
   });
 }
 
 void
-add_turb(amrex::Box const&                  bx,
-         amrex::FArrayBox&                  data,
-         const int                          dcomp,
-         const int                          numcomp,
-         amrex::Geometry const&             geom,
-         const amrex::Real                  time,
-         const amrex::Vector<amrex::BCRec>& bcr,
-         const int                          bcomp,
-         const int                          scomp,
-         const int                          dir,
-         const amrex::Orientation::Side&    side,
-         TurbParm&                          tp)
+add_turb(amrex::Box const&               bx,
+         amrex::FArrayBox&               data,
+         const int                       dcomp,
+         amrex::Geometry const&          geom,
+         const amrex::Real               time,
+         const int                       dir,
+         const amrex::Orientation::Side& side,
+         TurbParm&                       tp)
 {
   AMREX_ASSERT_WITH_MESSAGE(dir == 2, "Sadly, the fluctuation code currently only works in the third dimension");
   AMREX_ASSERT(tp.turbinflow_initialized);
@@ -217,7 +230,6 @@ add_turb(amrex::Box const&                  bx,
   bvalsBox.setBig(  dir,planeLoc);
 
   amrex::FArrayBox v(bvalsBox,3);
-  v.setVal(0);
 
   amrex::Vector<amrex::Real> x(bvalsBox.size()[0]), y(bvalsBox.size()[1]);
   for (int i=bvalsBox.smallEnd()[0]; i<=bvalsBox.bigEnd()[0]; ++i) {
@@ -227,22 +239,20 @@ add_turb(amrex::Box const&                  bx,
     y[j-bvalsBox.smallEnd()[1]] = (geom.ProbLo()[1] + (j+0.5)*geom.CellSize(1)) * tp.turb_scale_loc;
   }
 
+  v.setVal(0);
   amrex::Real z = time / tp.turb_conv_vel;
   fill_turb_plane(x, y, z, v, tp);
   v.mult(tp.turb_scale_vel);
-  for (int n=0; n<AMREX_SPACEDIM; ++n) {
-    v.mult(data,1,n,1);
-  }
-  data.plus(v,0,1,AMREX_SPACEDIM);
+  amrex::Box ovlp = bvalsBox & data.box();
+  data.plus(v,ovlp,0,dcomp,AMREX_SPACEDIM);
 }
 
 void
-init_turb(amrex::Box const&      bx,
-          amrex::FArrayBox&      data,
-          const int              dcomp,
-          const int              numcomp,
-          amrex::Geometry const& geom,
-          TurbParm&              tp)
+fill_with_turb(amrex::Box const&      bx,
+               amrex::FArrayBox&      data,
+               const int              dcomp,
+               amrex::Geometry const& geom,
+               TurbParm&              tp)
 {
   int dir = 2;
   AMREX_ASSERT(tp.turbinflow_initialized);
@@ -263,13 +273,11 @@ init_turb(amrex::Box const&      bx,
       y[j-bvalsBox.smallEnd()[1]] = (geom.ProbLo()[1] + (j+0.5)*geom.CellSize(1)) * tp.turb_scale_loc;
     }
 
-    amrex::Real z = (geom.ProbLo()[2] + (planeloc+0.5)*geom.CellSize(2)) * tp.turb_scale_loc;;
+    amrex::Real z = (geom.ProbLo()[2] + (planeloc+0.5)*geom.CellSize(2)) * tp.turb_scale_loc;
     fill_turb_plane(x, y, z, v, tp);
     v.mult(tp.turb_scale_vel);
-    for (int n=0; n<AMREX_SPACEDIM; ++n) {
-      v.mult(data,0,n,1);
-    }
-    data.copy(v,0,1,AMREX_SPACEDIM);
+    amrex::Box ovlp = bvalsBox & data.box();
+    data.copy(v,ovlp,0,ovlp,dcomp,AMREX_SPACEDIM);
   }
 }
 

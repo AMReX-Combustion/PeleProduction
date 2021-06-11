@@ -154,15 +154,19 @@ pc_bcfill_hyp(
   if (PeleC::prob_parm_host->do_turb) {
 
     AMREX_ASSERT_WITH_MESSAGE(scomp==0 && numcomp==NVAR,"Fluctations code requires group bc filler approach");
-    for (int n=0; n<AMREX_SPACEDIM; ++n) {
-      auto isect_lo = amrex::Box(amrex::adjCellLo(geom.Domain(),n) & bx).ok();
-      if (bcr[1].lo()[n]==EXT_DIR && isect_lo) {
-        add_turb(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp, n, amrex::Orientation::low, PeleC::d_prob_parm_device->tp);
+    for (int dir=0; dir<AMREX_SPACEDIM; ++dir) {
+      auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
+      auto isect_lo = bndryBoxLO.ok();
+      if (bcr[1].lo()[dir]==EXT_DIR && isect_lo) {
+        amrex::FArrayBox vel_fluctsLO(bndryBoxLO,AMREX_SPACEDIM);
+        add_turb(bx, vel_fluctsLO, 0, geom, time, dir, amrex::Orientation::low, PeleC::d_prob_parm_device->tp);
       }
 
-      auto isect_hi = amrex::Box(amrex::adjCellHi(geom.Domain(),n) & bx).ok();
-      if (bcr[1].hi()[n]==EXT_DIR && isect_hi) {
-        add_turb(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp, n, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
+      auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
+      auto isect_hi = bndryBoxHI.ok();
+      if (bcr[1].hi()[dir]==EXT_DIR && isect_hi) {
+        amrex::FArrayBox vel_fluctsHI(bndryBoxHI,AMREX_SPACEDIM);
+        add_turb(bx, vel_fluctsHI, 0, geom, time, dir, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
       }
     }
 
