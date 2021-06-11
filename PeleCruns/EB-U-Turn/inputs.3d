@@ -8,7 +8,10 @@ geometry.is_periodic =  1  0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0     0.00   0    
 geometry.prob_hi     =  0.0625  2.0 8.0
+geometry.prob_hi     =  1.0  2.0 8.0
 amr.n_cell           =  4    128   512
+amr.n_cell           =  64   128   512
+amr.n_cell           =  16   32    128
 #geometry.prob_hi     =  1.0 2.0 8.0
 #amr.n_cell           =  128    256   1024 
 
@@ -85,9 +88,15 @@ prob.P_inlet_pert_freq = 100.
 prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
 #prob.ipmf_on = .false.
 #prob.ipmf_datafile = "autoign-H2-pelec-T_1100.0-P_101325.0-phi_0.35_ipmf.dat"
+
 prob.turb_file = Turb
-prob.turb_scale_loc = 0.01
-prob.turb_scale_vel = 100.0
+prob.turb_scale_loc = 1.0
+prob.turb_scale_vel = 1.0
+prob.turb_center = 0.5 0.5
+
+#prob.turb_file = Turb_s3d_1E4
+#prob.turb_scale_loc = 1.0
+#prob.turb_scale_vel = 1.0
 
 # TAGGING
 tagging.max_ftracerr_lev = 4

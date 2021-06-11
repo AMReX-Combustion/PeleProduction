@@ -4,6 +4,7 @@ void
 init_turbinflow(const std::string& turb_file,
                 amrex::Real        turb_scale_loc,
                 amrex::Real        turb_scale_vel,
+                const amrex::Vector<amrex::Real>& turb_center,
                 TurbParm&          tp)
 {
   amrex::Print() << "Initializing turbulence file: " << turb_file
@@ -38,8 +39,9 @@ init_turbinflow(const std::string& turb_file,
   tp.npboxcells[1] = npts[1] - 3;
   tp.npboxcells[2] = npts[2];
 
-  tp.pboxlo[0] = -0.5 * tp.pboxsize[0];
-  tp.pboxlo[1] = -0.5 * tp.pboxsize[1];
+  // Center the turbulence)
+  tp.pboxlo[0] = turb_center[0] - 0.5 * tp.pboxsize[0];
+  tp.pboxlo[1] = turb_center[1] - 0.5 * tp.pboxsize[1];
   tp.pboxlo[2] = 0.;
 
   amrex::Box sbx(amrex::IntVect(AMREX_D_DECL(1,1,1)),
@@ -85,8 +87,6 @@ read_one_turb_plane(int       iplane,
   dstBox.setSmall(2,iplane);
   dstBox.setBig(  2,iplane);
 
-  amrex::Print() << "Loading plane " << k << " into slot " << iplane << std::endl;
-    
   for (int n=0; n<AMREX_SPACEDIM; ++n) {
 
     const long offset_idx = (iplane - 1) + (n * tp.kmax);
@@ -117,6 +117,8 @@ read_turb_planes(amrex::Real z,
   tp.szhi = tp.szlo
     + (tp.nplane - 1) * tp.dx[2];
 
+  amrex::Print() << "Loading planes " << izlo << ":" << izlo+tp.nplane-1 << std::endl;
+
   for (int iplane=1; iplane<=tp.nplane; ++iplane) {
     int k = (izlo+iplane-1 % tp.npboxcells[2]) + 1;
     read_one_turb_plane(iplane,k,tp);
@@ -138,9 +140,6 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
     read_turb_planes(z,tp);
   }
 
-  v.setVal(0);
-  return;
-
   const auto& bx = v.box();
   const auto& vd = v.array();
   const auto& sd = tp.sdata->array();
@@ -152,18 +151,18 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
   cz[0] = 0.5 * (zz-1.0) * (zz - 2.0);
   cz[1] = zz * (2.0 - zz);
   cz[2] = 0.5 * zz * (zz - 1.0);
-  k0 += 1; // because the plane numbering is 1-based
+  k0 += 2;
   k0 = amrex::min(amrex::max(k0,1),tp.nplane-2);
 
-  amrex::ParallelFor(bx, [x, y, sd, vd, tp, zz, k0, cz]
+  amrex::ParallelFor(bx, [x, y, sd, vd, tp, zz, k0, cz, bx]
   AMREX_GPU_DEVICE(int i, int j, int k) noexcept
   {
     amrex::Array<amrex::Real,3> cx, cy, ydata;
     amrex::Array<amrex::Array<amrex::Real,3>,3> zdata;
 
     for (int n=0; n<3; ++n) {
-      amrex::Real xx = (x[i] - tp.pboxlo[0]) * tp.dxinv[0];
-      amrex::Real yy = (y[j] - tp.pboxlo[1]) * tp.dxinv[1];
+      amrex::Real xx = (x[i-bx.smallEnd(0)] - tp.pboxlo[0]) * tp.dxinv[0];
+      amrex::Real yy = (y[j-bx.smallEnd(1)] - tp.pboxlo[1]) * tp.dxinv[1];
       int i0 = std::round(xx) - 1;
       int j0 = std::round(yy) - 1;
       xx -= amrex::Real(i0);
@@ -175,8 +174,8 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
       cx[2] = 0.5 * xx * (xx - 1.0);
       cy[2] = 0.5 * yy * (yy - 1.0);
 
-      i0 = (i0 % tp.npboxcells[0]) + 2; // ! +2 as j0
-      j0 = (j0 % 2) + 2;                //+2 because sdataindex starts with 1 and there is a ghost point <---------- FIXME
+      i0 = (i0 % tp.npboxcells[0]) + 2;
+      j0 = (j0 % tp.npboxcells[1]) + 2;
 
       for (int ii=0; ii<=2; ++ii) {
         for (int jj=0; jj<=2; ++jj) {
@@ -188,25 +187,24 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
       for (int ii=0; ii<=2; ++ii) {
         ydata[ii] = cy[0]*zdata[ii][0] + cy[1]*zdata[ii][1] + cy[2]*zdata[ii][2];
       }
-      vd(i,j,n) = cx[0]*ydata[0] + cx[1]*ydata[1] + cx[2]*ydata[2];
+      vd(i,j,bx.smallEnd(2),n) = cx[0]*ydata[0] + cx[1]*ydata[1] + cx[2]*ydata[2];
     }
   });
 }
 
 void
-add_turb(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp,
-  const int dir,
-  const amrex::Orientation::Side& side,
-  TurbParm& tp)
+add_turb(amrex::Box const&                  bx,
+         amrex::FArrayBox&                  data,
+         const int                          dcomp,
+         const int                          numcomp,
+         amrex::Geometry const&             geom,
+         const amrex::Real                  time,
+         const amrex::Vector<amrex::BCRec>& bcr,
+         const int                          bcomp,
+         const int                          scomp,
+         const int                          dir,
+         const amrex::Orientation::Side&    side,
+         TurbParm&                          tp)
 {
   AMREX_ASSERT_WITH_MESSAGE(dir == 2, "Sadly, the fluctuation code currently only works in the third dimension");
   AMREX_ASSERT(tp.turbinflow_initialized);
@@ -232,5 +230,46 @@ add_turb(
   amrex::Real z = time / tp.turb_conv_vel;
   fill_turb_plane(x, y, z, v, tp);
   v.mult(tp.turb_scale_vel);
+  for (int n=0; n<AMREX_SPACEDIM; ++n) {
+    v.mult(data,1,n,1);
+  }
+  data.plus(v,0,1,AMREX_SPACEDIM);
+}
+
+void
+init_turb(amrex::Box const&      bx,
+          amrex::FArrayBox&      data,
+          const int              dcomp,
+          const int              numcomp,
+          amrex::Geometry const& geom,
+          TurbParm&              tp)
+{
+  int dir = 2;
+  AMREX_ASSERT(tp.turbinflow_initialized);
+
+  for (int planeloc = bx.smallEnd()[2]; planeloc<=bx.bigEnd()[2]; ++planeloc) {
+    amrex::Box bvalsBox = bx;
+    bvalsBox.setSmall(dir,planeloc);
+    bvalsBox.setBig(  dir,planeloc);
+
+    amrex::FArrayBox v(bvalsBox,3);
+    v.setVal(0);
+
+    amrex::Vector<amrex::Real> x(bvalsBox.size()[0]), y(bvalsBox.size()[1]);
+    for (int i=bvalsBox.smallEnd()[0]; i<=bvalsBox.bigEnd()[0]; ++i) {
+      x[i-bvalsBox.smallEnd()[0]] = (geom.ProbLo()[0] + (i+0.5)*geom.CellSize(0)) * tp.turb_scale_loc;
+    }
+    for (int j=bvalsBox.smallEnd()[1]; j<=bvalsBox.bigEnd()[1]; ++j) {
+      y[j-bvalsBox.smallEnd()[1]] = (geom.ProbLo()[1] + (j+0.5)*geom.CellSize(1)) * tp.turb_scale_loc;
+    }
+
+    amrex::Real z = (geom.ProbLo()[2] + (planeloc+0.5)*geom.CellSize(2)) * tp.turb_scale_loc;;
+    fill_turb_plane(x, y, z, v, tp);
+    v.mult(tp.turb_scale_vel);
+    for (int n=0; n<AMREX_SPACEDIM; ++n) {
+      v.mult(data,0,n,1);
+    }
+    data.copy(v,0,1,AMREX_SPACEDIM);
+  }
 }
 

@@ -165,6 +165,8 @@ pc_bcfill_hyp(
         add_turb(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp, n, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
       }
     }
+
+    // Fix E to see new velocities
   }
 }
 

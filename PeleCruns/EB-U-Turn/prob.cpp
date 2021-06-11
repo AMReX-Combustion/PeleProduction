@@ -219,6 +219,7 @@ amrex_probinit(
  
   read_pmf(pmf_datafile);
 
+  PeleC::prob_parm_host->do_turb = false;
   if (pp.countval("turb_file") > 0) {
     std::string turb_file = "";
     pp.query("turb_file", turb_file);
@@ -227,12 +228,16 @@ amrex_probinit(
     amrex::Real turb_scale_vel = 1.0;
     pp.query("turb_scale_vel", turb_scale_vel);
 
-    PeleC::prob_parm_host->do_turb= true;
+    PeleC::prob_parm_host->do_turb = true;
 
     // Hold nose here - required because of dynamically allocated data in tp
     AMREX_ASSERT_WITH_MESSAGE(PeleC::h_prob_parm_device->tp.tph==nullptr, "Can only be one TurbParmHost");
     PeleC::h_prob_parm_device->tp.tph = new TurbParmHost;
-    init_turbinflow(turb_file,turb_scale_loc,turb_scale_vel,PeleC::h_prob_parm_device->tp);
+
+    amrex::Vector<amrex::Real> turb_center = {{0.5 * (probhi[0] + problo[0]), 0.5 * (probhi[1] + problo[1])}};
+    pp.queryarr("turb_center",turb_center);
+    AMREX_ASSERT_WITH_MESSAGE(turb_center.size()==2,"turb_center must have two elements");
+    init_turbinflow(turb_file,turb_scale_loc,turb_scale_vel,turb_center,PeleC::h_prob_parm_device->tp);
   }
 
   init_bc();
