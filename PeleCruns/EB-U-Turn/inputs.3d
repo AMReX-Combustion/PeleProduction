@@ -87,7 +87,7 @@ prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
 #prob.ipmf_datafile = "autoign-H2-pelec-T_1100.0-P_101325.0-phi_0.35_ipmf.dat"
 prob.turb_file = Turb
 prob.turb_scale_loc = 0.01
-prob.turb_scale_vol = 100.0
+prob.turb_scale_vel = 100.0
 
 # TAGGING
 tagging.max_ftracerr_lev = 4

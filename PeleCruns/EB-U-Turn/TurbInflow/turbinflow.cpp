@@ -6,11 +6,14 @@ init_turbinflow(const std::string& turb_file,
                 amrex::Real        turb_scale_vel,
                 TurbParm&          tp)
 {
-  tp.tph->turb_file = turb_file;
-
   amrex::Print() << "Initializing turbulence file: " << turb_file
                  << " (location coordinates in will be scaled by " << turb_scale_loc
                  << " and velocity out to be scaled by " << turb_scale_vel << ")" << std::endl;
+
+  tp.tph->turb_file = turb_file;
+  tp.nplane = 32;
+  tp.turb_scale_loc = turb_scale_loc;
+  tp.turb_scale_vel = turb_scale_vel;
 
   std::string turb_header = tp.tph->turb_file + "/HDR";
   std::ifstream is(turb_header.c_str());
@@ -19,11 +22,7 @@ init_turbinflow(const std::string& turb_file,
   amrex::Array<int, AMREX_SPACEDIM> iper = {{0}};
   is >> npts[0] >> npts[1] >> npts[2];
   is >> probsize[0] >> probsize[1] >> probsize[2];
-  is >> iper[0] >> iper[1] >> iper[2];
-
-  tp.nplane = 32;
-  tp.turb_scale_loc = turb_scale_loc;
-  tp.turb_scale_vel = turb_scale_vel;
+  is >> iper[0] >> iper[1] >> iper[2]; // Unused - we assume it is always fully periodic
 
   for (int n=0; n<AMREX_SPACEDIM; ++n) {
     tp.dx[n] = probsize[n] / amrex::Real(npts[n]-1);
@@ -53,7 +52,7 @@ init_turbinflow(const std::string& turb_file,
   amrex::Real rdummy;
   if (tp.isswirltype) {
     for (int i = 0; i < tp.kmax; i++) {
-      is >> rdummy; // Time for each plane
+      is >> rdummy; // Time for each plane - unused at the moment
     }
   }
   tp.tph->offset_dv.resize(tp.kmax*AMREX_SPACEDIM);
