@@ -17,3 +17,6 @@
 [submodule "Submodules/AMReX-Hydro"]
 	path = Submodules/AMReX-Hydro
 	url = git@github.com:AMReX-Codes/AMReX-Hydro.git
+[submodule "Submodules/PeleC"]
+	path = Submodules/PeleC
+	url = https://github.com/AMReX-Combustion/PeleC.git
