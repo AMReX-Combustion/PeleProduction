@@ -303,11 +303,14 @@ main (int   argc,
       }
     }
 
-#if 0    
     // Now that turbulence file written, read from it to fill the result
+    Real loc_scale = 1;
+    Real vel_scale = 1;
+    pp.query("loc_scale",loc_scale);
+    pp.query("vel_scale",vel_scale);
     TurbParm tp;
     tp.tph = new TurbParmHost();
-    init_turbinflow(TurbDir,1.0,1.0,{{0.,0.}},tp);
+    init_turbinflow(TurbDir,loc_scale,vel_scale,{{0.,0.}},tp);
 
     Box box_res(IntVect(D_DECL(0,0,0)),
                 IntVect(D_DECL(255,255,127)));
@@ -340,8 +343,6 @@ main (int   argc,
 
     std::string outfile = Concatenate(pltfile,1); // Need a number other than zero for reg test to pass
     PlotFileFromMF(mf_res,geom_res,outfile);
-
-#endif
   }
   Finalize();
 }
