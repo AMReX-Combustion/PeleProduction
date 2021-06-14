@@ -3,9 +3,9 @@ SUBMODS = ${TOP}/Submodules
 AMREX_HOME ?= ${SUBMODS}/amrex
 
 DEBUG	= FALSE
-DEBUG	= TRUE
 DIM	= 3
 COMP    = gcc
+COMP    = intel
 PRECISION = DOUBLE
 USE_MPI   = TRUE
 USE_OMP   = FALSE
