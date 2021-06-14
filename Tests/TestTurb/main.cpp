@@ -4,6 +4,7 @@
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_DataServices.H>
 #include <WritePlotFile.H>
+#include <AMReX_AmrData.H>
 
 #include <turbinflow.H>
 
@@ -66,7 +67,92 @@ Extend (FArrayBox& xfab,
   if (vfab.box() != orig_box) Abort("Oops, something bad happened");
 }
 
+void
+WriteTurb(const std::string& turbfile,
+          const MultiFab& data,
+          const Box& box_turb,
+          const RealBox& rb_turb)
+{
+  if (ParallelDescriptor::IOProcessor())
+    if (!UtilCreateDirectory(turbfile, 0755))
+      CreateDirectoryFailed(turbfile);
+  
+  std::string Hdr = turbfile; Hdr += "/HDR";
+  std::string Dat = turbfile; Dat += "/DAT";
 
+  std::ofstream ifsd, ifsh;
+
+  if (ParallelDescriptor::IOProcessor()) {
+    ifsh.open(Hdr.c_str(), std::ios::out|std::ios::trunc);
+    if (!ifsh.good())
+      FileOpenFailed(Hdr);
+
+    ifsd.open(Dat.c_str(), std::ios::out|std::ios::trunc);
+    if (!ifsd.good())
+      FileOpenFailed(Dat);
+
+    int coord_turb(0);
+    Array<int,BL_SPACEDIM> per_turb = {D_DECL(1,1,1)};
+    Geometry geom_turb(box_turb,rb_turb,coord_turb,per_turb);
+    const Real* dx_turb = geom_turb.CellSize();
+
+    //
+    // Write the first part of the Turb header.
+    // Note that this is solely for periodic style inflow files.
+    //
+    Box box_turb_io(box_turb);
+    box_turb_io.setBig(0, box_turb.bigEnd(0) + 3);
+    box_turb_io.setBig(1, box_turb.bigEnd(1) + 3);
+    box_turb_io.setBig(2, box_turb.bigEnd(2) + 1);
+
+    ifsh << box_turb_io.length(0) << ' '
+         << box_turb_io.length(1) << ' '
+         << box_turb_io.length(2) << '\n';
+
+    ifsh << rb_turb.length(0) + 2*dx_turb[0] << ' '
+         << rb_turb.length(1) + 2*dx_turb[1] << ' '
+         << rb_turb.length(2)                << '\n';
+
+    ifsh << per_turb[0] << ' ' << per_turb[1] << ' ' << per_turb[2] << '\n';
+  }
+
+  IntVect sm = box_turb.smallEnd();
+  IntVect bg = box_turb.bigEnd();
+  int dir = BL_SPACEDIM - 1;
+  FArrayBox xfab,TMP;
+  //
+  // We work on one cell wide Z-planes.
+  // We first do the lo BL_SPACEDIM plane.
+  // And then all the other planes in xhi -> xlo order.
+  //
+  for (int d = 0; d < BL_SPACEDIM; ++d)
+  {
+    bg[dir] = sm[dir];
+    {
+      Box bx(sm,bg);
+      TMP.resize(bx,1);
+      data.copyTo(TMP,d,0,1);
+      Extend(xfab, TMP, box_turb);
+      if (ParallelDescriptor::IOProcessor()) {
+        ifsh << ifsd.tellp() << std::endl;
+        xfab.writeOn(ifsd);
+      }
+    }
+    for (int i = box_turb.bigEnd(dir); i >= box_turb.smallEnd(dir); i--)
+    {
+      sm[dir] = i;
+      bg[dir] = i;
+      Box bx(sm,bg);
+      TMP.resize(bx,1);
+      data.copyTo(TMP,d,0,1);
+      Extend(xfab, TMP, box_turb);
+      if (ParallelDescriptor::IOProcessor()) {
+        ifsh << ifsd.tellp() << std::endl;
+        xfab.writeOn(ifsd);
+      }
+    }
+  }
+}
 
 int
 main (int   argc,
@@ -83,7 +169,30 @@ main (int   argc,
     if (pp.countval("TurbDir")>0) {
        pp.query("TurbDir",TurbDir);
     }
-    else
+    else if (pp.countval("turb_pltfile")) {
+      std::string turb_pltfile;
+      pp.get("turb_pltfile",turb_pltfile);
+      
+      DataServices dataServices(turb_pltfile, Amrvis::NEWPLT);
+      if( ! dataServices.AmrDataOk()) {
+        DataServices::Dispatch(DataServices::ExitRequest, NULL);
+        // ^^^ this calls ParallelDescriptor::EndParallel() and exit()
+      }
+      AmrData& amrData = dataServices.AmrDataRef();
+
+      int idV = amrData.StateNumber("x_velocity");
+      int finestLevel = amrData.FinestLevel();
+      const auto& xvel = amrData.GetGrids(finestLevel,idV);
+      MultiFab pltvel(xvel.boxArray(),xvel.DistributionMap(),AMREX_SPACEDIM,0);
+      MultiFab::Copy(pltvel,xvel,0,0,1,0);
+      for (int i=1; i<AMREX_SPACEDIM; ++i) {
+        MultiFab::Copy(pltvel,amrData.GetGrids(finestLevel,idV+i),0,i,1,0);
+      }
+      
+      WriteTurb(TurbDir,pltvel,amrData.ProbDomain()[finestLevel],
+                RealBox(&(amrData.ProbLo()[0]),&(amrData.ProbHi()[0])));
+
+    } else
     { 
       if (ParallelDescriptor::IOProcessor())
         if (!UtilCreateDirectory(TurbDir, 0755))
@@ -194,7 +303,7 @@ main (int   argc,
       }
     }
 
-    
+#if 0    
     // Now that turbulence file written, read from it to fill the result
     TurbParm tp;
     tp.tph = new TurbParmHost();
@@ -231,6 +340,8 @@ main (int   argc,
 
     std::string outfile = Concatenate(pltfile,1); // Need a number other than zero for reg test to pass
     PlotFileFromMF(mf_res,geom_res,outfile);
+
+#endif
   }
   Finalize();
 }
