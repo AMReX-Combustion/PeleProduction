@@ -2,8 +2,8 @@ TOP = $(shell pwd)/../..
 SUBMODS = ${TOP}/Submodules
 AMREX_HOME ?= ${SUBMODS}/amrex
 
-DEBUG	= FALSE
 DEBUG	= TRUE
+DEBUG	= FALSE
 DIM	= 3
 COMP    = gcc
 PRECISION = DOUBLE
