@@ -310,7 +310,9 @@ main (int   argc,
     pp.query("vel_scale",vel_scale);
     TurbParm tp;
     tp.tph = new TurbParmHost();
-    init_turbinflow(TurbDir,loc_scale,vel_scale,{{0.,0.}},tp);
+    Real conv_vel = 1;
+    int nplanes = 32;
+    init_turbinflow(TurbDir,loc_scale,vel_scale,{{0.,0.}},conv_vel,nplanes,tp);
 
     Box box_res(IntVect(D_DECL(0,0,0)),
                 IntVect(D_DECL(255,255,127)));

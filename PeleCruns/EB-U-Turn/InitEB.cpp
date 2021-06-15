@@ -561,6 +561,53 @@ initialize_EB2(
     //
     //
     //
+  } else if (geom_type == "u_turn-flipped"){
+    // Under arbeid. Fiks parametrisering og input.
+    amrex::ParmParse pp("exp_chan");
+    amrex::Real p1_y, p2_y, cen_y;
+    pp.get("exp_y_lo", p1_y);
+    pp.get("exp_y_hi", p2_y);
+
+    cen_y = 0.5*(p2_y-p1_y);
+    amrex::Real dx = geom.CellSize(0); // remember dx = dy = dz
+    
+    // Main part: Box with half cylinder added to the left
+    amrex::EB2::BoxIF box1({-1.0,0.0+0.8*dx,-0.3*dx}, {20.0,p2_y,8.0-cen_y}, true);
+    //    EB2::CylinderIF cyl(Real a_radius, int a_direction,
+    //            const RealArray& a_center, bool a_inside)
+    //    direction == 0 for x osv.
+    amrex::EB2::CylinderIF cyl(cen_y-0.8*dx, 0, {0.0,cen_y,8.0-cen_y}, true);
+    auto channel = amrex::EB2::makeIntersection(cyl, box1);
+    // The upper 'extension' of the channel
+    // Straight part
+    amrex::EB2::BoxIF box2({-1.0,p2_y,-0.3*dx}, {20.0,2.0-0.8*dx,3.8}, true);
+    auto channel2 = amrex::EB2::makeIntersection(channel, box2);
+    // The tip.  Construct triangle from planes:
+    amrex::EB2::PlaneIF plane1({0.0, p2_y, 3.8}, {0.0, -1.0, 0.0});
+    amrex::EB2::PlaneIF plane2({0.0, p2_y, 3.8}, {0.0, 0.0, -1.0});
+    amrex::EB2::PlaneIF plane3({0.0, p2_y, 4.2}, {0.0, 2.0, 1.0});
+    auto triangle = amrex::EB2::makeUnion(plane1,plane2,plane3);
+    // Jeg faar ikke lov til aa si triangle = amrex::EB2::makeComplement(triangle);
+    // auto triangle4 = amrex::EB2::makeComplement(triangle3);
+    auto channel3 = amrex::EB2::makeIntersection(channel2,triangle);
+
+    // The separation wall
+    // Straight part
+    amrex::EB2::BoxIF box3({-1.0,cen_y-0.01,0.0}, {20.0,0.96,6.8}, false);
+    auto channel4 = amrex::EB2::makeUnion(channel3, box3);
+    // The tip. Construct triangle from planes:
+    amrex::EB2::PlaneIF plane4({0.0, cen_y-0.01, 6.8}, {0.0, -1.0, 0.0});
+    amrex::EB2::PlaneIF plane5({0.0, cen_y-0.01, 6.8}, {0.0, 0.0, -1.0});
+    amrex::EB2::PlaneIF plane6({0.0, cen_y-0.01, 6.94}, {0.0, 2.0, 1.0});
+    auto triangle3 = amrex::EB2::makeUnion(plane4,plane5,plane6);
+    auto triangle4 = amrex::EB2::makeComplement(triangle3);
+    auto channel5 = amrex::EB2::makeUnion(channel4,triangle4);
+
+    auto gshop = amrex::EB2::makeShop(channel5);
+    amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+    //
+    //
+    //
   } else if (geom_type == "combustor") {
     amrex::ParmParse pp("combustor");
 

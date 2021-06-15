@@ -4,8 +4,8 @@ AMREX_HOME ?= ${SUBMODS}/amrex
 
 DEBUG	= FALSE
 DIM	= 3
-COMP    = gcc
 COMP    = intel
+COMP    = gnu
 PRECISION = DOUBLE
 USE_MPI   = TRUE
 USE_OMP   = FALSE

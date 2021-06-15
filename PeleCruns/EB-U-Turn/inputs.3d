@@ -11,7 +11,8 @@ geometry.prob_hi     =  0.0625  2.0 8.0
 geometry.prob_hi     =  1.0  2.0 8.0
 amr.n_cell           =  4    128   512
 amr.n_cell           =  64   128   512
-amr.n_cell           =  16   32    128
+amr.n_cell           =  32    64   256
+#amr.n_cell           =  16   32    128
 #geometry.prob_hi     =  1.0 2.0 8.0
 #amr.n_cell           =  128    256   1024 
 
@@ -58,7 +59,7 @@ amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 #2 2 2 2       # how often to regrid
 amr.blocking_factor = 2       # block factor in grid generation
-amr.max_grid_size   = 128
+amr.max_grid_size   = 16
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
@@ -89,14 +90,21 @@ prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
 #prob.ipmf_on = .false.
 #prob.ipmf_datafile = "autoign-H2-pelec-T_1100.0-P_101325.0-phi_0.35_ipmf.dat"
 
-prob.turb_file = Turb
-prob.turb_scale_loc = 1.0
-prob.turb_scale_vel = 1.0
-prob.turb_center = 0.5 0.5
+#prob.turb_file = Turb
+#prob.turb_scale_loc = 1.0
+#prob.turb_scale_vel = 1.0
+#prob.turb_center = 0.5 0.5
 
 #prob.turb_file = Turb_s3d_1E4
 #prob.turb_scale_loc = 1.0
 #prob.turb_scale_vel = 1.0
+
+prob.turb_file = Turb_AJA
+prob.turb_scale_loc = .01
+prob.turb_scale_vel = 10.0
+prob.turb_center = 0.5 1.5
+prob.turb_conv_vel = 2000.
+prob.turb_nplane = 32
 
 # TAGGING
 tagging.max_ftracerr_lev = 4
@@ -104,6 +112,7 @@ tagging.ftracerr = 200e-7
 
 eb2.use_eb2 = 1
 eb2.geom_type = u_turn
+eb2.geom_type = u_turn-flipped
 exp_chan.b1_corner_lo = -0.60  -0.30  -0.60  
 exp_chan.b1_corner_hi =  0.60   0.50   1.60   
 exp_chan.b2_corner_lo = -0.60   1.50  -0.80  
