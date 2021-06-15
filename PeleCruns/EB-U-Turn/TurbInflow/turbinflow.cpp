@@ -5,6 +5,8 @@ init_turbinflow(const std::string& turb_file,
                 amrex::Real        turb_scale_loc,
                 amrex::Real        turb_scale_vel,
                 const amrex::Vector<amrex::Real>& turb_center,
+                amrex::Real        turb_conv_vel,
+                int                nplane,
                 TurbParm&          tp)
 {
   amrex::Print() << "Initializing turbulence file: " << turb_file
@@ -12,7 +14,8 @@ init_turbinflow(const std::string& turb_file,
                  << " and velocity out to be scaled by " << turb_scale_vel << ")" << std::endl;
 
   tp.tph->turb_file = turb_file;
-  tp.nplane = 32;
+  tp.nplane = nplane;
+  tp.turb_conv_vel = turb_conv_vel;
   tp.turb_scale_loc = turb_scale_loc;
   tp.turb_scale_vel = turb_scale_vel;
 
@@ -242,7 +245,11 @@ add_turb(amrex::Box const&               bx,
   v.setVal(0);
   amrex::Real z = time / tp.turb_conv_vel;
   fill_turb_plane(x, y, z, v, tp);
-  v.mult(tp.turb_scale_vel);
+  if (side == amrex::Orientation::high) {
+    v.mult(-tp.turb_scale_vel);
+  } else {
+    v.mult( tp.turb_scale_vel);
+  }
   amrex::Box ovlp = bvalsBox & data.box();
   data.plus(v,ovlp,0,dcomp,AMREX_SPACEDIM);
 }

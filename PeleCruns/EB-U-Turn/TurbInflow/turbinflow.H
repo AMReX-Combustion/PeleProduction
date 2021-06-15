@@ -40,6 +40,8 @@ init_turbinflow(const std::string& turb_file,
                 amrex::Real        turb_scale_loc,
                 amrex::Real        turb_scale_vel,
                 const amrex::Vector<amrex::Real>& turb_center,
+                amrex::Real        turb_conv_vel,
+                int                nplane,
                 TurbParm&          tp);
 
 void
