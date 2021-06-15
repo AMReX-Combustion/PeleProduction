@@ -283,8 +283,9 @@ pc_bcfill_hyp(
       if (bcr[1].lo()[dir]==EXT_DIR && isect_lo) {
         amrex::FArrayBox vel_fluctsLO(bndryBoxLO,QVAR);
         StateToPrim(data,bndryBoxLO,vel_fluctsLO,clean_massfrac);
-        add_turb(bx, vel_fluctsLO, 0, geom, time, dir, amrex::Orientation::low, PeleC::d_prob_parm_device->tp);
+        add_turb(bx, vel_fluctsLO, QU, geom, time, dir, amrex::Orientation::low, PeleC::d_prob_parm_device->tp);
         PrimToState(vel_fluctsLO,bndryBoxLO,data,clean_massfrac);
+        data.copy(vel_fluctsLO, 0, UMX, AMREX_SPACEDIM);
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
@@ -292,8 +293,9 @@ pc_bcfill_hyp(
       if (bcr[1].hi()[dir]==EXT_DIR && isect_hi) {
         amrex::FArrayBox vel_fluctsHI(bndryBoxHI,QVAR);
         StateToPrim(data,bndryBoxHI,vel_fluctsHI,clean_massfrac);
-        add_turb(bx, vel_fluctsHI, 0, geom, time, dir, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
+        add_turb(bx, vel_fluctsHI, QU, geom, time, dir, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
         PrimToState(vel_fluctsHI,bndryBoxHI,data,clean_massfrac);
+        data.copy(vel_fluctsHI, 0, UMX, AMREX_SPACEDIM);
       }
     }
   }
