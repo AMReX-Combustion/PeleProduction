@@ -237,7 +237,16 @@ amrex_probinit(
     amrex::Vector<amrex::Real> turb_center = {{0.5 * (probhi[0] + problo[0]), 0.5 * (probhi[1] + problo[1])}};
     pp.queryarr("turb_center",turb_center);
     AMREX_ASSERT_WITH_MESSAGE(turb_center.size()==2,"turb_center must have two elements");
-    init_turbinflow(turb_file,turb_scale_loc,turb_scale_vel,turb_center,PeleC::h_prob_parm_device->tp);
+    for (int n=0; n<turb_center.size(); ++n) {
+      turb_center[n] *= turb_scale_loc;
+    }
+    int turb_nplane = 32;
+    pp.query("turb_nplane",turb_nplane);
+    AMREX_ASSERT(turb_nplane > 0);
+    amrex::Real turb_conv_vel = 1;
+    pp.query("turb_conv_vel",turb_conv_vel);
+    AMREX_ASSERT(turb_conv_vel > 0);
+    init_turbinflow(turb_file,turb_scale_loc,turb_scale_vel,turb_center,turb_conv_vel,turb_nplane,PeleC::h_prob_parm_device->tp);
   }
 
   init_bc();
