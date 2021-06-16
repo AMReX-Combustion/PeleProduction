@@ -192,7 +192,7 @@ pc_initdata(
       for (int n = 0; n < NUM_SPECIES; n++)
 	massfrac[n] = prob_parm.fuel_state[UFS + n - 1]/prob_parm.fuel_state[URHO];
 
-      u[AMREX_SPACEDIM - 1] = pmf_vals[1]*tanh(-10.0*(y-0.5*prob_hi[1]+0.1));
+      u[AMREX_SPACEDIM - 1] = - pmf_vals[1]*tanh(-10.0*(y-0.5*prob_hi[1]+0.1));
       
       auto eos = pele::physics::PhysicsType::eos();
       //eos.X2Y(molefrac, massfrac);
@@ -240,7 +240,7 @@ bcnormal(
   amrex::Real /* pert, */ rho, energy, T, pres;
 
   auto eos = pele::physics::PhysicsType::eos();
-  if (sgn == -1) {
+  if (sgn == -1 || sgn == +1) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals, prob_parm);
     for (int n = 0; n < NUM_SPECIES; n++)
       molefrac[n] = pmf_vals[3 + n];
@@ -251,7 +251,7 @@ bcnormal(
     u[2] = 0.0;
 
     if (x[1] > 0.5*prob_hi[1]-0.1) {
-      u[AMREX_SPACEDIM - 1] = - pmf_vals[1];
+      u[AMREX_SPACEDIM - 1] = sgn * pmf_vals[1];
       eos.X2Y(molefrac, massfrac);
       eos.PYT2RE(pres, massfrac, T, rho, energy);
       s_ext[URHO] = rho;
