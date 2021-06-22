@@ -27,6 +27,8 @@ struct ProbParmDevice
   amrex::Real* d_pmf_Y = nullptr;
 
   TurbParm tp;
+  amrex::GpuArray<bool,2*AMREX_SPACEDIM> turb_ok = {{false}};
+  amrex::GpuArray<amrex::Array4<amrex::Real>,2*AMREX_SPACEDIM> turbarr;
 };
 
 struct ProbParmHost
@@ -37,6 +39,7 @@ struct ProbParmHost
   amrex::Gpu::DeviceVector<amrex::Real> pmf_Y;
   ProbParmHost() : pmf_X(0), pmf_Y(0) {}
   bool do_turb = false;
+  amrex::GpuArray<amrex::FArrayBox,2*AMREX_SPACEDIM> turbfab;
 };
 
 

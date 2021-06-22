@@ -8,13 +8,26 @@
 #include "PelePhysics.H"
 #include "IndexDefines.H"
 
+AMREX_GPU_DEVICE
+amrex::GpuArray<amrex::Real,AMREX_SPACEDIM>
+set_loc(amrex::GeometryData const& geom,
+        const amrex::IntVect&      iv)
+{
+  const amrex::Real* prob_lo = geom.ProbLo();
+  const amrex::Real* dx = geom.CellSize();
+  return {AMREX_D_DECL(
+      prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
+      prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
+      prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
+}
+
 struct PCHypFillExtDir
 {
-  ProbParmDevice const* lprobparm;
+  ProbParmDevice const* probparmDD;
 
   AMREX_GPU_HOST
   constexpr explicit PCHypFillExtDir(const ProbParmDevice* d_prob_parm)
-    : lprobparm(d_prob_parm)
+    : probparmDD(d_prob_parm)
   {
   }
 
@@ -32,90 +45,69 @@ struct PCHypFillExtDir
   {
     const int* domlo = geom.Domain().loVect();
     const int* domhi = geom.Domain().hiVect();
-    const amrex::Real* prob_lo = geom.ProbLo();
-    // const amrex::Real* prob_hi = geom.ProbHi();
-    const amrex::Real* dx = geom.CellSize();
-    const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-      prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
-      prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
-      prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
+    const auto x = set_loc(geom,iv);
 
-    const int* bc = bcr->data();
+    const auto* bc = bcr->data();
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real molefrac[NUM_SPECIES], massfrac[NUM_SPECIES], rho, T, e;
+    constexpr int dim = AMREX_SPACEDIM;
 
-    amrex::Real s_int[NVAR] = {0.0};
-    amrex::Real s_ext[NVAR] = {0.0};
+    /*
+      These are the 6 tests for whether we are on a Dirichlet boundary that needs to be filled:
+ 
+        XLO:  if (           (bc[0]     == amrex::BCType::ext_dir) && (iv[0] < domlo[0]))
+        XHI:  if (           (bc[0+dim] == amrex::BCType::ext_dir) && (iv[0] > domhi[0]))
+        YLO:  if ((dim>1) && (bc[1]     == amrex::BCType::ext_dir) && (iv[1] < domlo[1]))
+        YHI:  if ((dim>1) && (bc[1+dim] == amrex::BCType::ext_dir) && (iv[1] > domhi[1]))
+        ZLO:  if ((dim>2) && (bc[2]     == amrex::BCType::ext_dir) && (iv[2] < domlo[2]))
+        ZHI:  if ((dim>2) && (bc[2+dim] == amrex::BCType::ext_dir) && (iv[2] > domhi[2]))
+    */
 
-    // xlo and xhi
-    int idir = 0;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
+    // Here, set inflow on ZHI
+    // This is the “U-Turn” geometry, where for large y boundary is inflow and for small y boundary is outflow
+    //   (we cheat here and make outflow = FOEXTRAP)
+    if ((dim > 2) && (bc[2+dim] == amrex::BCType::ext_dir) && (iv[2] > domhi[2])) {
+      const auto* prob_hi = geom.ProbHi();
+      int dir = 2;
+      if (x[1] > 0.5*prob_hi[1]-0.1) {
+        amrex::GpuArray<amrex::Real,4+NUM_SPECIES> pmf_vals;
+        amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
+        pmf(prob_hi[2], prob_hi[2], pmf_vals, *probparmDD);
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          molefrac[n] = pmf_vals[3 + n];
+        }
+        auto T = pmf_vals[0];
+        auto pres = probparmDD->pamb;
+
+        if (x[1] > 0.5*prob_hi[1]-0.1) {
+          u[dim - 1] = pmf_vals[1];
+          eos.X2Y(molefrac, massfrac);
+          eos.PYT2RE(pres, massfrac, T, rho, e);
+
+          if (probparmDD->turb_ok[dir+dim]) {
+            for (int n=0; n<dim; ++n) {
+              u[n] += probparmDD->turbarr[dir+dim](iv[0],iv[1],iv[2],n);
+            }
+          }
+          dest(iv,URHO) = rho;
+          dest(iv,UMX) = rho * u[0];
+          dest(iv,UMY) = rho * u[1];
+          dest(iv,UMZ) = rho * u[2];
+          dest(iv,UEINT) = rho * e;
+          dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+          dest(iv,UTEMP) = T;
+          for (int n = 0; n < NUM_SPECIES; n++) {
+            dest(iv,UFS+n) = rho * massfrac[n];
+          }
+        }
+        else {
+          amrex::IntVect ivi(iv[0],iv[1],iv[2]-1);
+          for (int n = 0; n < NVAR; n++) {
+            dest(iv,n) = dest(ivi,n); // FOEXTRAP: Copy values from just inside
+          }
+        }
       }
     }
-#if AMREX_SPACEDIM > 1
-    // ylo and yhi
-    idir = 1;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    }
-#if AMREX_SPACEDIM == 3
-    // zlo and zhi
-    idir = 2;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    }
-#endif
-#endif
   }
 };
 
@@ -137,57 +129,6 @@ struct PCReactFillExtDir
 };
 
 void
-StateToPrim(const amrex::FArrayBox& state,
-            const amrex::Box&       box,
-            amrex::FArrayBox&       prim,
-            int                     clean_massfrac)
-{
-  const auto& astate = state.array();
-  const auto& aprim = prim.array();
-  amrex::ParallelFor(box, [astate, aprim, clean_massfrac]
-  AMREX_GPU_DEVICE(int i, int j, int k) noexcept
-  {
-    auto eos = pele::physics::PhysicsType::eos();
-    amrex::Real rho = astate(i,j,k,URHO);
-    amrex::Real rhoinv = 1.0 / rho;
-    aprim(i,j,k,QRHO) = rho;
-    aprim(i,j,k,QU) = astate(i,j,k,UMX) * rhoinv;
-    aprim(i,j,k,QV) = astate(i,j,k,UMY) * rhoinv;
-    aprim(i,j,k,QW) = astate(i,j,k,UMZ) * rhoinv;
-    amrex::Real kineng = 0.5 * rho * (aprim(i,j,k,QU)*aprim(i,j,k,QU)
-                                      + aprim(i,j,k,QV)*aprim(i,j,k,QV)
-                                      + aprim(i,j,k,QW)*aprim(i,j,k,QW));
-    aprim(i,j,k,QREINT) = astate(i,j,k,UEDEN) - kineng;
-  });
-}
-
-void
-PrimToState(const amrex::FArrayBox& prim,
-            const amrex::Box&       box,
-            amrex::FArrayBox&       state,
-            int                     clean_massfrac)
-{
-  const auto& aprim = prim.array();
-  const auto& astate = state.array();
-  amrex::ParallelFor(box, [aprim, astate, clean_massfrac]
-  AMREX_GPU_DEVICE(int i, int j, int k) noexcept
-  {
-    auto eos = pele::physics::PhysicsType::eos();
-    amrex::Real rho = aprim(i,j,k,URHO);
-    amrex::Real rhoinv = 1.0 / rho;
-    astate(i,j,k,QRHO) = rho;
-    astate(i,j,k,UMX) = aprim(i,j,k,QU) * rho;
-    astate(i,j,k,UMY) = aprim(i,j,k,QV) * rho;
-    astate(i,j,k,UMZ) = aprim(i,j,k,QW) * rho;
-    amrex::Real kineng = 0.5 * rho * (aprim(i,j,k,QU)*aprim(i,j,k,QU)
-                                      + aprim(i,j,k,QV)*aprim(i,j,k,QV)
-                                      + aprim(i,j,k,QW)*aprim(i,j,k,QW));
-
-    astate(i,j,k,UEDEN) = aprim(i,j,k,QREINT) + kineng;
-  });
-}
-
-void
 pc_bcfill_hyp(
   amrex::Box const& bx,
   amrex::FArrayBox& data,
@@ -199,35 +140,66 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
-  const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
-  amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
-    PCHypFillExtDir{lprobparm});
-  hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
+  ProbParmDevice* probparmDD = PeleC::d_prob_parm_device; // probparm data for device
+  ProbParmDevice* probparmDH = PeleC::h_prob_parm_device; // host copy of probparm data for device
+  ProbParmHost* probparmH = PeleC::prob_parm_host;        // probparm data for host
+  constexpr int dim = AMREX_SPACEDIM;
 
-  if (PeleC::prob_parm_host->do_turb) {
+  if (probparmH->do_turb) {
 
-    int clean_massfrac = 0; // FIXME: get this from PeleC
+    // Copy problem parameter structs to host
+    amrex::Gpu::copy(amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
 
-    AMREX_ASSERT_WITH_MESSAGE(scomp==0 && numcomp==NVAR,"Fluctations code requires group bc filler approach");
-    for (int dir=0; dir<AMREX_SPACEDIM; ++dir) {
+    for (int dir=0; dir<dim; ++dir) {
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
-      auto isect_lo = bndryBoxLO.ok();
-      if (bcr[1].lo()[dir]==EXT_DIR && isect_lo) {
-        amrex::FArrayBox vel_fluctsLO(bndryBoxLO,QVAR);
-        StateToPrim(data,bndryBoxLO,vel_fluctsLO,clean_massfrac);
-        add_turb(bx, vel_fluctsLO, QU, geom, time, dir, amrex::Orientation::low, PeleC::d_prob_parm_device->tp);
-        PrimToState(vel_fluctsLO,bndryBoxLO,data,clean_massfrac);
+      if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok()) {
+
+        probparmH->turbfab[dir].resize(bndryBoxLO,dim);
+        probparmH->turbfab[dir].setVal(0);
+        add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
+        probparmDH->turb_ok[dir] = true;
+
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
-      auto isect_hi = bndryBoxHI.ok();
-      if (bcr[1].hi()[dir]==EXT_DIR && isect_hi) {
-        amrex::FArrayBox vel_fluctsHI(bndryBoxHI,QVAR);
-        StateToPrim(data,bndryBoxHI,vel_fluctsHI,clean_massfrac);
-        add_turb(bx, vel_fluctsHI, QU, geom, time, dir, amrex::Orientation::high, PeleC::d_prob_parm_device->tp);
-        PrimToState(vel_fluctsHI,bndryBoxHI,data,clean_massfrac);
+      if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok()) {
+
+        probparmH->turbfab[dir+dim].resize(bndryBoxHI,dim);
+        probparmH->turbfab[dir+dim].setVal(0);
+        add_turb(bndryBoxHI, probparmH->turbfab[dir+dim], 0, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
+        probparmDH->turbarr[dir+dim] = probparmH->turbfab[dir].array();
+        probparmDH->turb_ok[dir+dim] = true;
+
       }
     }
+
+    // Copy problem parameter structs back to device
+    amrex::Gpu::copy(amrex::Gpu::hostToDevice, probparmDH, probparmDH + 1, probparmDD);
+  }
+
+  amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(PCHypFillExtDir{probparmDD});
+  hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
+
+  if (probparmH->do_turb) {
+
+    // Copy problem parameter structs to host
+    amrex::Gpu::copy(amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
+
+    for (int dir=0; dir<dim; ++dir) {
+      if (probparmDH->turb_ok[dir]) {
+        probparmH->turbfab[dir].clear();
+        probparmDH->turb_ok[dir] = false;
+      }
+      if (probparmDH->turb_ok[dir+dim]) {
+        probparmH->turbfab[dir+dim].clear();
+        probparmDH->turb_ok[dir+dim] = false;
+      }
+    }
+
+    // Copy problem parameter structs back to device
+    amrex::Gpu::copy(amrex::Gpu::hostToDevice, probparmDH, probparmDH + 1, probparmDD);
+    
   }
 }
 

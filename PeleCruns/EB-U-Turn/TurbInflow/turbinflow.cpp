@@ -243,7 +243,7 @@ add_turb(amrex::Box const&               bx,
   }
 
   v.setVal(0);
-  amrex::Real z = time / tp.turb_conv_vel;
+  amrex::Real z = time * tp.turb_conv_vel * tp.turb_scale_loc;
   fill_turb_plane(x, y, z, v, tp);
   if (side == amrex::Orientation::high) {
     v.mult(-tp.turb_scale_vel);

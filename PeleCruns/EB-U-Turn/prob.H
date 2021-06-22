@@ -223,7 +223,8 @@ AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Array4<amrex::Real> dest,
+  const amrex::IntVect iv,
   amrex::Real s_ext[NVAR],
   const int idir,
   const int sgn,
@@ -239,8 +240,10 @@ bcnormal(
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   amrex::Real /* pert, */ rho, energy, T, pres;
 
+  const amrex::Box& domain = geomdata.Domain();
   auto eos = pele::physics::PhysicsType::eos();
-  if (sgn == -1 || sgn == +1) {
+
+  if (iv[2] < domain.smallEnd()[2]) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals, prob_parm);
     for (int n = 0; n < NUM_SPECIES; n++)
       molefrac[n] = pmf_vals[3 + n];
@@ -267,31 +270,9 @@ bcnormal(
       }
     } else {
       for (int n=0; n<NVAR; ++n) {
-        s_ext[n] = s_int[n];
+        s_ext[n] = dest(iv[0],iv[1],iv[2],n);
       }
     }
-  } else {
-    pmf(prob_lo[idir], prob_lo[idir], pmf_vals, prob_parm);
-    for (int n = 0; n < NUM_SPECIES; n++)
-      molefrac[n] = pmf_vals[3 + n];
-    T = pmf_vals[0];
-    pres = prob_parm.pamb;
-    u[0] = 0.0;
-    u[1] = 0.0;
-    u[2] = 0.0;
-    u[AMREX_SPACEDIM - 1] = pmf_vals[1];
-    eos.X2Y(molefrac, massfrac);
-    eos.PYT2RE(pres, massfrac, T, rho, energy);
-    s_ext[URHO] = rho;
-    s_ext[UMX] = rho * u[0];
-    s_ext[UMY] = rho * u[1];
-    s_ext[UMZ] = rho * u[2];
-    s_ext[UEINT] = rho * energy;
-    s_ext[UEDEN] =
-      rho * (energy + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
-    s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
-      s_ext[UFS + n] = rho * massfrac[n];
   }
 }
 
