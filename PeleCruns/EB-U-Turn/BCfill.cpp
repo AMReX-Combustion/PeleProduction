@@ -63,13 +63,15 @@ struct PCHypFillExtDir
         ZHI:  if ((dim>2) && (bc[2+dim] == amrex::BCType::ext_dir) && (iv[2] > domhi[2]))
     */
 
-    // Here, set inflow on ZHI
+    // Here, set inflow on ZLO
     // This is the “U-Turn” geometry, where for large y boundary is inflow and for small y boundary is outflow
     //   (we cheat here and make outflow = FOEXTRAP)
-    if ((dim > 2) && (bc[2+dim] == amrex::BCType::ext_dir) && (iv[2] > domhi[2])) {
+    if ((dim > 2) && (bc[2] == amrex::BCType::ext_dir) && (iv[2] < domlo[2])) {
       const auto* prob_hi = geom.ProbHi();
       int dir = 2;
       if (x[1] > 0.5*prob_hi[1]-0.1) {
+
+        // Get mean inlet state from pmf file
         amrex::GpuArray<amrex::Real,4+NUM_SPECIES> pmf_vals;
         amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
         pmf(prob_hi[2], prob_hi[2], pmf_vals, *probparmDD);
@@ -80,13 +82,17 @@ struct PCHypFillExtDir
         auto pres = probparmDD->pamb;
 
         if (x[1] > 0.5*prob_hi[1]-0.1) {
+
           u[dim - 1] = pmf_vals[1];
           eos.X2Y(molefrac, massfrac);
           eos.PYT2RE(pres, massfrac, T, rho, e);
 
-          if (probparmDD->turb_ok[dir+dim]) {
-            for (int n=0; n<dim; ++n) {
-              u[n] += probparmDD->turbarr[dir+dim](iv[0],iv[1],iv[2],n);
+          // Add fluctuations to mean fields
+          if (probparmDD->turb_ok[dir]) {
+            if (probparmDD->turbarr[dir].contains(iv[0],iv[1],iv[2])) {
+              for (int n=0; n<dim; ++n) {
+                u[n] += probparmDD->turbarr[dir](iv[0],iv[1],iv[2],n);
+              }
             }
           }
           dest(iv,URHO) = rho;
@@ -100,11 +106,15 @@ struct PCHypFillExtDir
             dest(iv,UFS+n) = rho * massfrac[n];
           }
         }
-        else {
-          amrex::IntVect ivi(iv[0],iv[1],iv[2]-1);
-          for (int n = 0; n < NVAR; n++) {
-            dest(iv,n) = dest(ivi,n); // FOEXTRAP: Copy values from just inside
-          }
+      }
+      else {
+        //amrex::IntVect ivi(iv[0],iv[1],iv[2]+1);
+        amrex::IntVect ivi(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
+                           amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
+                           amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1)));
+        AMREX_ASSERT(dest.contains(ivi));
+        for (int n = 0; n < NVAR; n++) {
+          dest(iv,n) = dest(ivi,n); // FOEXTRAP: Copy values from just inside
         }
       }
     }
@@ -152,25 +162,23 @@ pc_bcfill_hyp(
 
     for (int dir=0; dir<dim; ++dir) {
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
-      if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok()) {
-
+      if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok())
+      {
         probparmH->turbfab[dir].resize(bndryBoxLO,dim);
         probparmH->turbfab[dir].setVal(0);
         add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
         probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
         probparmDH->turb_ok[dir] = true;
-
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
-      if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok()) {
-
+      if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok())
+      {
         probparmH->turbfab[dir+dim].resize(bndryBoxHI,dim);
         probparmH->turbfab[dir+dim].setVal(0);
         add_turb(bndryBoxHI, probparmH->turbfab[dir+dim], 0, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
         probparmDH->turbarr[dir+dim] = probparmH->turbfab[dir].array();
         probparmDH->turb_ok[dir+dim] = true;
-
       }
     }
 

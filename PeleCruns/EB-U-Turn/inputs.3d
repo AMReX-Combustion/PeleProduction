@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 #max_step = 2000000
 max_step = 300000
-stop_time = 0.004
+stop_time = 1.000
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1  0  0
@@ -10,8 +10,10 @@ geometry.prob_lo     =  0     0.00   0
 geometry.prob_hi     =  0.0625  2.0 8.0
 geometry.prob_hi     =  1.0  2.0 8.0
 amr.n_cell           =  4    128   512
-amr.n_cell           =  64   128   512
 amr.n_cell           =  32    64   256
+amr.n_cell           =  128  256   1024
+amr.n_cell           =  64   128   512
+#amr.n_cell           =  256  512   2048
 #amr.n_cell           =  16   32    128
 #geometry.prob_hi     =  1.0 2.0 8.0
 #amr.n_cell           =  128    256   1024 
@@ -20,7 +22,7 @@ amr.n_cell           =  32    64   256
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 pelec.lo_bc       =  "Interior" "NoSlipWall"  "UserBC"     
-pelec.hi_bc       =  "Interior" "NoSlipWall"  "UserBC"
+pelec.hi_bc       =  "Interior" "NoSlipWall"  "NoSlipWall"
 
 # Problem setup
 pelec.eb_boundary_T = 750.
@@ -44,7 +46,7 @@ pelec.flame_trac_name = HO2
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-pelec.cfl            = 0.4     # cfl number for hyperbolic system
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
 pelec.init_shrink    = 0.1    # scale back initial timestep
 pelec.change_max     = 1.10     # maximum increase in dt over successive steps
 
@@ -64,14 +66,14 @@ amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
 amr.check_file      = chk      # root name of checkpoint file
-amr.check_int       = 100       # number of timesteps between checkpoints
+amr.check_int       = 500       # number of timesteps between checkpoints
 #amr.check_int       = -1       # number of timesteps between checkpoints
 #amr.restart         = chk0000000100
 
 # PLOTFILES
 amr.plot_file       = plt
 #amr.plot_int        = 100
-amr.plot_per        = 1e-6
+amr.plot_per        = 1e-5
 amr.file_name_digits  = 10
 amr.derive_plot_vars=ALL
 
@@ -99,12 +101,13 @@ prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
 #prob.turb_scale_loc = 1.0
 #prob.turb_scale_vel = 1.0
 
-prob.turb_file = Turb_AJA
-prob.turb_scale_loc = .01
-prob.turb_scale_vel = 10.0
-prob.turb_center = 0.5 1.5
-prob.turb_conv_vel = 2000.
-prob.turb_nplane = 32
+#prob.turb_file = Turb_AJA
+#prob.turb_file = Turb
+#prob.turb_scale_loc = .01
+#prob.turb_scale_vel = 100.0
+#prob.turb_center = 0.5 1.5
+#prob.turb_conv_vel = 2000.
+#prob.turb_nplane = 32
 
 # TAGGING
 tagging.max_ftracerr_lev = 4
@@ -120,3 +123,7 @@ exp_chan.b2_corner_hi =  0.60   2.10   1.60
 exp_chan.exp_y_lo = 0.0
 exp_chan.exp_y_hi = 1.8
 ebd.boundary_grad_stencil_type = 0
+
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_overflow = 1
