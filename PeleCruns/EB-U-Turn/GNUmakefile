@@ -8,6 +8,7 @@ AMREX_HYDRO_HOME ?= $(TOP)/Submodules/AMReX-Hydro
 DIM = 3
 COMP = clang
 COMP = gnu
+COMP = intel
 PRECISION = DOUBLE
 
 # Profiling
@@ -19,7 +20,7 @@ MEM_PROFILE = FALSE
 USE_GPROF = FALSE
 
 # Performance
-USE_MPI = FALSE
+USE_MPI = TRUE
 USE_OMP = FALSE
 USE_CUDA = FALSE
 USE_HIP = FALSE

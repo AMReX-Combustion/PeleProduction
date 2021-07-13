@@ -72,8 +72,8 @@ amr.check_int       = 500       # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_file       = plt
-#amr.plot_int        = 100
-amr.plot_per        = 1e-5
+amr.plot_int        = 1
+#amr.plot_per        = 1e-5
 amr.file_name_digits  = 10
 amr.derive_plot_vars=ALL
 
@@ -101,14 +101,13 @@ prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
 #prob.turb_scale_loc = 1.0
 #prob.turb_scale_vel = 1.0
 
-#prob.turb_file = Turb_AJA
-#prob.turb_file = Turb
-#prob.turb_scale_loc = .01
-#prob.turb_scale_vel = 100.0
-#prob.turb_center = 0.5 1.5
-#prob.turb_conv_vel = 2000.
-#prob.turb_nplane = 32
-
+prob.turb_file = Turb_AJA
+prob.turb_scale_loc = .01
+prob.turb_scale_vel = 100.0
+prob.turb_center = 0.5 1.5
+prob.turb_conv_vel = 2000.
+prob.turb_nplane = 32
+#
 # TAGGING
 tagging.max_ftracerr_lev = 4
 tagging.ftracerr = 200e-7

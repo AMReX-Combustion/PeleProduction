@@ -112,7 +112,7 @@ struct PCHypFillExtDir
         amrex::IntVect ivi(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
                            amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
                            amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1)));
-        AMREX_ASSERT(dest.contains(ivi));
+        //AMREX_ASSERT(dest.contains(ivi));
         for (int n = 0; n < NVAR; n++) {
           dest(iv,n) = dest(ivi,n); // FOEXTRAP: Copy values from just inside
         }
