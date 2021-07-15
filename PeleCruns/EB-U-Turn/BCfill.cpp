@@ -78,7 +78,7 @@ struct PCHypFillExtDir
         for (int n = 0; n < NUM_SPECIES; n++) {
           molefrac[n] = pmf_vals[3 + n];
         }
-        auto T = pmf_vals[0];
+        T = pmf_vals[0];
         auto pres = probparmDD->pamb;
 
         if (x[1] > 0.5*prob_hi[1]-0.1) {
@@ -95,6 +95,7 @@ struct PCHypFillExtDir
               }
             }
           }
+
           dest(iv,URHO) = rho;
           dest(iv,UMX) = rho * u[0];
           dest(iv,UMY) = rho * u[1];
@@ -108,13 +109,33 @@ struct PCHypFillExtDir
         }
       }
       else {
-        //amrex::IntVect ivi(iv[0],iv[1],iv[2]+1);
         amrex::IntVect ivi(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
                            amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
-                           amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1)));
-        //AMREX_ASSERT(dest.contains(ivi));
+                           amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1))); // Find source point actually in valid domain
+        amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
+        auto pres = probparmDD->pamb;
+
+        rho = dest(ivi,URHO);
+        u[0] = dest(ivi,UMX) / rho;
+        u[1] = dest(ivi,UMY) / rho;
+        u[2] = dest(ivi,UMZ) / rho;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          massfrac[n] = dest(ivi,UFS+n) / rho;
+        }
+        T = dest(ivi,UTEMP);
+        eos.PYT2RE(pres, massfrac, T, rho, e); // enforce that p on outflow is fixed - reset e to be consistent with that
+
         for (int n = 0; n < NVAR; n++) {
-          dest(iv,n) = dest(ivi,n); // FOEXTRAP: Copy values from just inside
+          dest(iv,n) = dest(ivi,n); // Do this to grab any stray scalars not explicitly dealt with below
+        }
+        dest(iv,URHO) = rho;
+        dest(iv,UMX) = rho * u[0];
+        dest(iv,UMY) = rho * u[1];
+        dest(iv,UMZ) = rho * u[2];
+        dest(iv,UEINT) = rho * e;
+        dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          dest(iv,UFS+n) = massfrac[n] * rho;
         }
       }
     }
