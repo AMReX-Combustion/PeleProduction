@@ -186,7 +186,7 @@ pc_bcfill_hyp(
       if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok())
       {
         probparmH->turbfab[dir].resize(bndryBoxLO,dim);
-        probparmH->turbfab[dir].setVal(0);
+        probparmH->turbfab[dir].setVal<amrex::RunOn::Device>(0);
         add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
         probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
         probparmDH->turb_ok[dir] = true;
@@ -196,7 +196,7 @@ pc_bcfill_hyp(
       if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok())
       {
         probparmH->turbfab[dir+dim].resize(bndryBoxHI,dim);
-        probparmH->turbfab[dir+dim].setVal(0);
+        probparmH->turbfab[dir+dim].setVal<amrex::RunOn::Device>(0);
         add_turb(bndryBoxHI, probparmH->turbfab[dir+dim], 0, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
         probparmDH->turbarr[dir+dim] = probparmH->turbfab[dir].array();
         probparmDH->turb_ok[dir+dim] = true;

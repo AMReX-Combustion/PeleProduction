@@ -106,7 +106,7 @@ read_one_turb_plane(int       iplane,
     tmp.readFrom(ifs);
     amrex::Box srcBox = tmp.box();
 
-    tp.sdata->copy(tmp,srcBox,0,dstBox,n,1);
+    tp.sdata->copy<amrex::RunOn::Device>(tmp,srcBox,0,dstBox,n,1);
   }
   ifs.close();
 }
@@ -159,26 +159,31 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
   const auto& bx = v.box();
   const auto& vd = v.array();
   const auto& sd = tp.sdata->array();
-  amrex::Array<amrex::Real,3> cz;
 
-  amrex::Real zz = (z - tp.szlo) * tp.dxinv[2];
-  int k0 = (int)(std::round(zz)) - 1;
-  zz -= amrex::Real(k0);
-  cz[0] = 0.5 * (zz-1.0) * (zz - 2.0);
-  cz[1] = zz * (2.0 - zz);
-  cz[2] = 0.5 * zz * (zz - 1.0);
-  k0 += 2;
-  k0 = amrex::min(amrex::max(k0,1),tp.nplane-2);
-
-  amrex::ParallelFor(bx, [x, y, sd, vd, tp, zz, k0, cz, bx]
+  amrex::Gpu::DeviceVector<amrex::Real> x_dev(x.size());
+  amrex::Gpu::DeviceVector<amrex::Real> y_dev(y.size());
+  amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice, x.begin(), x.end(), x_dev.begin());
+  amrex::Gpu::copyAsync(amrex::Gpu::hostToDevice, y.begin(), y.end(), y_dev.begin());
+  amrex::Real* xd = x_dev.data();
+  amrex::Real* yd = y_dev.data();
+  amrex::ParallelFor(bx, [z, sd, vd, tp, bx, xd, yd]
   AMREX_GPU_DEVICE(int i, int j, int k) noexcept
   {
-    amrex::Array<amrex::Real,3> cx, cy, ydata;
-    amrex::Array<amrex::Array<amrex::Real,3>,3> zdata;
+    amrex::Real cx[3], cy[3], cz[3], ydata[3];
+    amrex::Real zdata[3][3];
+
+    amrex::Real zz = (z - tp.szlo) * tp.dxinv[2];
+    int k0 = (int)(std::round(zz)) - 1;
+    zz -= amrex::Real(k0);
+    cz[0] = 0.5 * (zz-1.0) * (zz - 2.0);
+    cz[1] = zz * (2.0 - zz);
+    cz[2] = 0.5 * zz * (zz - 1.0);
+    k0 += 2;
+    k0 = amrex::min(amrex::max(k0,1),tp.nplane-2);
 
     for (int n=0; n<3; ++n) {
-      amrex::Real xx = (x[i-bx.smallEnd(0)] - tp.pboxlo[0]) * tp.dxinv[0];
-      amrex::Real yy = (y[j-bx.smallEnd(1)] - tp.pboxlo[1]) * tp.dxinv[1];
+      amrex::Real xx = (xd[i-bx.smallEnd(0)] - tp.pboxlo[0]) * tp.dxinv[0];
+      amrex::Real yy = (yd[j-bx.smallEnd(1)] - tp.pboxlo[1]) * tp.dxinv[1];
       int i0 = (int)(std::round(xx));
       int j0 = (int)(std::round(yy));
       xx -= amrex::Real(i0);
@@ -210,6 +215,7 @@ fill_turb_plane(const amrex::Vector<amrex::Real>& x,
       }
     }
   });
+  amrex::Gpu::synchronize(); // Ensure that DeviceVector's don't leave scope early
 }
 
 void
@@ -242,16 +248,16 @@ add_turb(amrex::Box const&               bx,
     y[j-bvalsBox.smallEnd()[1]] = (geom.ProbLo()[1] + (j+0.5)*geom.CellSize(1)) * tp.turb_scale_loc;
   }
 
-  v.setVal(0);
+  v.setVal<amrex::RunOn::Device>(0);
   amrex::Real z = time * tp.turb_conv_vel * tp.turb_scale_loc;
   fill_turb_plane(x, y, z, v, tp);
   if (side == amrex::Orientation::high) {
-    v.mult(-tp.turb_scale_vel);
+    v.mult<amrex::RunOn::Device>(-tp.turb_scale_vel);
   } else {
-    v.mult( tp.turb_scale_vel);
+    v.mult<amrex::RunOn::Device>( tp.turb_scale_vel);
   }
   amrex::Box ovlp = bvalsBox & data.box();
-  data.plus(v,ovlp,0,dcomp,AMREX_SPACEDIM);
+  data.plus<amrex::RunOn::Device>(v,ovlp,0,dcomp,AMREX_SPACEDIM);
 }
 
 void
@@ -270,7 +276,7 @@ fill_with_turb(amrex::Box const&      bx,
     bvalsBox.setBig(  dir,planeloc);
 
     amrex::FArrayBox v(bvalsBox,3);
-    v.setVal(0);
+    v.setVal<amrex::RunOn::Device>(0);
 
     amrex::Vector<amrex::Real> x(bvalsBox.size()[0]), y(bvalsBox.size()[1]);
     for (int i=bvalsBox.smallEnd()[0]; i<=bvalsBox.bigEnd()[0]; ++i) {
@@ -282,9 +288,9 @@ fill_with_turb(amrex::Box const&      bx,
 
     amrex::Real z = (geom.ProbLo()[2] + (planeloc+0.5)*geom.CellSize(2)) * tp.turb_scale_loc;
     fill_turb_plane(x, y, z, v, tp);
-    v.mult(tp.turb_scale_vel);
+    v.mult<amrex::RunOn::Device>(tp.turb_scale_vel);
     amrex::Box ovlp = bvalsBox & data.box();
-    data.copy(v,ovlp,0,ovlp,dcomp,AMREX_SPACEDIM);
+    data.copy<amrex::RunOn::Device>(v,ovlp,0,ovlp,dcomp,AMREX_SPACEDIM);
   }
 }
 
