@@ -217,65 +217,6 @@ pc_initdata(
     }
 }
 
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Array4<amrex::Real> dest,
-  const amrex::IntVect iv,
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real /*time*/,
-  amrex::GeometryData const& geomdata,
-  ProbParmDevice const& prob_parm)
-{
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
-  amrex::Real u[3] = {0.0};
-  amrex::Real molefrac[NUM_SPECIES] = {0.0};
-  amrex::Real massfrac[NUM_SPECIES] = {0.0};
-  amrex::Real /* pert, */ rho, energy, T, pres;
-
-  const amrex::Box& domain = geomdata.Domain();
-  auto eos = pele::physics::PhysicsType::eos();
-
-  if (iv[2] < domain.smallEnd()[2]) {
-    pmf(prob_hi[idir], prob_hi[idir], pmf_vals, prob_parm);
-    for (int n = 0; n < NUM_SPECIES; n++)
-      molefrac[n] = pmf_vals[3 + n];
-    T = pmf_vals[0];
-    pres = prob_parm.pamb;
-    u[0] = 0.0;
-    u[1] = 0.0;
-    u[2] = 0.0;
-
-    if (x[1] > 0.5*prob_hi[1]-0.1) {
-      u[AMREX_SPACEDIM - 1] = sgn * pmf_vals[1];
-      eos.X2Y(molefrac, massfrac);
-      eos.PYT2RE(pres, massfrac, T, rho, energy);
-      s_ext[URHO] = rho;
-      s_ext[UMX] = rho * u[0];
-      s_ext[UMY] = rho * u[1];
-      s_ext[UMZ] = rho * u[2];
-      s_ext[UEINT] = rho * energy;
-      s_ext[UEDEN] =
-        rho * (energy + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
-      s_ext[UTEMP] = T;
-      for (int n = 0; n < NUM_SPECIES; n++) {
-        s_ext[UFS + n] = rho * massfrac[n];
-      }
-    } else {
-      for (int n=0; n<NVAR; ++n) {
-        s_ext[n] = dest(iv[0],iv[1],iv[2],n);
-      }
-    }
-  }
-}
-
 void pc_prob_close();
 
 using ProblemTags = EmptyProbTagStruct;
