@@ -112,6 +112,8 @@ struct PCHypFillExtDir
         amrex::IntVect ivi(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
                            amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
                            amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1))); // Find source point actually in valid domain
+
+#if 0
         amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
         auto pres = probparmDD->pamb;
 
@@ -137,6 +139,29 @@ struct PCHypFillExtDir
         for (int n = 0; n < NUM_SPECIES; n++) {
           dest(iv,UFS+n) = massfrac[n] * rho;
         }
+#else
+        amrex::Real rhorefinv = 1.0 / dest(ivi,URHO);
+        amrex::Real Yref[NUM_SPECIES];
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          Yref[n] = dest(ivi,UFS+n) * rhorefinv;
+        }
+        amrex::Real pref, Csref;
+        eos.RTY2P( dest(ivi,URHO), dest(ivi,UTEMP), Yref, pref);
+        eos.RTY2Cs(dest(ivi,URHO), dest(ivi,UTEMP), Yref, Csref);
+        amrex::Real Csrefinv = 1.0 / Csref;
+
+        dest(iv,URHO) = dest(ivi,URHO) + (probparmDD->pamb - pref) * Csrefinv * Csrefinv;
+        dest(iv,UMX) = dest(iv,URHO) * dest(ivi,UMX) * rhorefinv;
+        dest(iv,UMY) = dest(iv,URHO) * dest(ivi,UMY) * rhorefinv;
+        dest(iv,UMZ) = dest(iv,URHO) * dest(ivi,UMZ) * rhorefinv - (pref - probparmDD->pamb) * Csrefinv * rhorefinv;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          dest(iv,UFS+n) = dest(iv,URHO) * Yref[n] * rhorefinv;
+        }
+        dest(iv,UTEMP) = dest(ivi,UTEMP);
+        eos.PYT2RE(probparmDD->pamb, Yref, dest(iv,UTEMP), dest(iv,URHO), dest(iv,UEINT));
+        dest(iv,UEINT) *= dest(iv,URHO);
+        dest(iv,UEDEN) = dest(iv,UEINT) + 0.5 * (dest(iv,UMX)*dest(iv,UMX) + dest(iv,UMY)*dest(iv,UMY) + dest(iv,UMZ)*dest(iv,UMZ)) / dest(iv,URHO);
+#endif
       }
     }
   }
