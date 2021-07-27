@@ -81,31 +81,28 @@ struct PCHypFillExtDir
         T = pmf_vals[0];
         auto pres = probparmDD->pamb;
 
-        if (x[1] > 0.5*prob_hi[1]-0.1) {
+        u[dim - 1] = pmf_vals[1];
+        eos.X2Y(molefrac, massfrac);
+        eos.PYT2RE(pres, massfrac, T, rho, e);
 
-          u[dim - 1] = pmf_vals[1];
-          eos.X2Y(molefrac, massfrac);
-          eos.PYT2RE(pres, massfrac, T, rho, e);
-
-          // Add fluctuations to mean fields
-          if (probparmDD->turb_ok[dir]) {
-            if (probparmDD->turbarr[dir].contains(iv[0],iv[1],iv[2])) {
-              for (int n=0; n<dim; ++n) {
-                u[n] += probparmDD->turbarr[dir](iv[0],iv[1],iv[2],n);
-              }
+        // Add fluctuations to mean fields
+        if (probparmDD->turb_ok[dir]) {
+          if (probparmDD->turbarr[dir].contains(iv[0],iv[1],iv[2])) {
+            for (int n=0; n<dim; ++n) {
+              u[n] += probparmDD->turbarr[dir](iv[0],iv[1],iv[2],n);
             }
           }
+        }
 
-          dest(iv,URHO) = rho;
-          dest(iv,UMX) = rho * u[0];
-          dest(iv,UMY) = rho * u[1];
-          dest(iv,UMZ) = rho * u[2];
-          dest(iv,UEINT) = rho * e;
-          dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
-          dest(iv,UTEMP) = T;
-          for (int n = 0; n < NUM_SPECIES; n++) {
-            dest(iv,UFS+n) = rho * massfrac[n];
-          }
+        dest(iv,URHO) = rho;
+        dest(iv,UMX) = rho * u[0];
+        dest(iv,UMY) = rho * u[1];
+        dest(iv,UMZ) = rho * u[2];
+        dest(iv,UEINT) = rho * e;
+        dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+        dest(iv,UTEMP) = T;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          dest(iv,UFS+n) = rho * massfrac[n];
         }
       }
       else {
