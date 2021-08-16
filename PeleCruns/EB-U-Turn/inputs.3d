@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 #max_step = 2000000
-max_step = 300000
+max_step = 1000000
 stop_time = 1.000
 
 # PROBLEM SIZE & GEOMETRY
@@ -13,7 +13,7 @@ amr.n_cell           =  4    128   512
 amr.n_cell           =  32    64   256
 amr.n_cell           =  128  256   1024
 amr.n_cell           =  64   128   512
-#amr.n_cell           =  256  512   2048
+amr.n_cell           =  256  512   2048
 #amr.n_cell           =  16   32    128
 #geometry.prob_hi     =  1.0 2.0 8.0
 #amr.n_cell           =  128    256   1024 
@@ -61,21 +61,22 @@ amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 #2 2 2 2       # how often to regrid
 amr.blocking_factor = 2       # block factor in grid generation
-amr.max_grid_size   = 16
+amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
 amr.check_file      = chk      # root name of checkpoint file
-amr.check_int       = 500       # number of timesteps between checkpoints
+amr.check_int       = 5000       # number of timesteps between checkpoints
 #amr.check_int       = -1       # number of timesteps between checkpoints
 #amr.restart         = chk0000000100
 
 # PLOTFILES
 amr.plot_file       = plt
-amr.plot_int        = 100
+amr.plot_int        = 500
 #amr.plot_per        = 1e-5
 amr.file_name_digits  = 10
-amr.derive_plot_vars=ALL
+#amr.derive_plot_vars=ALL
+amr.derive_plot_vars= density xmom ymom zmom rho_E rho_e Temp magvort vfrac 
 
 # PROBIN FILENAME
 #amr.probin_file = probin.3d
