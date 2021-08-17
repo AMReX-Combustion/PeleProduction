@@ -255,7 +255,7 @@ PeleC::getMOLSrcTerm(
               amrex::Real y=plo[1] + (j+0.5)*dx[1];
               for (int i = lo.x; i <= hi.x; ++i) {
                 amrex::Real x=plo[0] + (i+0.5)*dx[0];
-                if (y<plo[1]+(225.5)*(phi[1]-plo[1])/255.0 && z<plo[2]+(225.5)*(phi[2]-plo[2])/255.0) coe_mu(i,j,k) *= 100;
+                if (y<plo[1]+(225.5)*(phi[1]-plo[1])/512.0 && z<plo[2]+(97.5)*(phi[2]-plo[2])/2048.0) coe_mu(i,j,k) *= 100;
               }
             }
           }          
