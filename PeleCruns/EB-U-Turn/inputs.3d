@@ -76,7 +76,7 @@ amr.plot_int        = 500
 #amr.plot_per        = 1e-5
 amr.file_name_digits  = 10
 #amr.derive_plot_vars=ALL
-amr.derive_plot_vars= density xmom ymom zmom rho_E rho_e Temp magvort vfrac 
+amr.derive_plot_vars= density xmom ymom zmom Temp magvort pressure divu massfrac logden vfrac
 
 # PROBIN FILENAME
 #amr.probin_file = probin.3d
