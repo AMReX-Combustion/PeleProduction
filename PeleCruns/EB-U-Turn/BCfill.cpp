@@ -110,7 +110,7 @@ struct PCHypFillExtDir
                            amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
                            amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1))); // Find source point actually in valid domain
 
-#if 0
+#if 1
         amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
         auto pres = probparmDD->pamb;
 
