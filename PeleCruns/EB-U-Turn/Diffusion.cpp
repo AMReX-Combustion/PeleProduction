@@ -238,8 +238,7 @@ PeleC::getMOLSrcTerm(
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
         // Get Transport coefs on GPU.
-        pele::physics::transport::TransParm const* ltransparm =
-          pele::physics::transport::trans_parm_g;
+        auto const* ltransparm = trans_parms.device_trans_parm();
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
           auto trans = pele::physics::PhysicsType::transport();
           trans.get_transport_coeffs(
@@ -661,6 +660,10 @@ PeleC::getMOLSrcTerm(
         auto ccc = fact.getCentroid().const_array(mfi);
 
         amrex::FArrayBox tmpfab(Dfab.box(), S.nComp());
+        if (redistribution_type == "FluxRedist") {
+          tmpfab.setVal<amrex::RunOn::Device>(1.0);
+        }
+
         amrex::Elixir tmpeli = tmpfab.elixir();
         amrex::Array4<amrex::Real> scratch = tmpfab.array();
 

@@ -21,6 +21,9 @@ init_turbinflow(const std::string& turb_file,
 
   std::string turb_header = tp.tph->turb_file + "/HDR";
   std::ifstream is(turb_header.c_str());
+  if (!is.is_open()) {
+    amrex::Abort("Unable to open input file " + turb_header);
+  }
   amrex::Array<int, AMREX_SPACEDIM> npts = {{0}};
   amrex::Array<amrex::Real, AMREX_SPACEDIM> probsize = {{0}};
   amrex::Array<int, AMREX_SPACEDIM> iper = {{0}};
@@ -85,6 +88,9 @@ read_one_turb_plane(int       iplane,
   //
   std::string turb_data = tp.tph->turb_file + "/DAT";
   std::ifstream ifs(turb_data.c_str());
+  if (!ifs.is_open()) {
+    amrex::Abort("Unable to open input file " + turb_data);
+  }
   
   amrex::Box dstBox = tp.sdata->box();
   dstBox.setSmall(2,iplane);
