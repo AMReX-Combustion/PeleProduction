@@ -85,14 +85,15 @@ struct PCHypFillExtDir
         eos.X2Y(molefrac, massfrac);
         eos.PYT2RE(pres, massfrac, T, rho, e);
 
-        for (int n=0; n<dim; ++n) {
-          if (probparmDD->turb_lo_ok[dir]) {
-            dest(iv,UMX+n) += rho * u[n]; // Add mean fields to fluctuations already in place
-          } else {
-            dest(iv,UMX+n) = rho * u[n];  // Set mean fields
+        if (probparmDD->turb_lo_ok[dir]) {
+          for (int n=0; n<dim; ++n) {
+            u[n] += dest(iv,UMX+n); // Add velocity fluctuations (pre-loaded in dest) to mean values
           }
         }
         dest(iv,URHO) = rho;
+        dest(iv,UMX)  = rho * u[0];
+        dest(iv,UMY)  = rho * u[1];
+        dest(iv,UMZ)  = rho * u[2];
         dest(iv,UEINT) = rho * e;
         dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
         dest(iv,UTEMP) = T;
