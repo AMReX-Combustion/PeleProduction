@@ -85,19 +85,14 @@ struct PCHypFillExtDir
         eos.X2Y(molefrac, massfrac);
         eos.PYT2RE(pres, massfrac, T, rho, e);
 
-        // Add fluctuations to mean fields
-        if (probparmDD->turb_ok[dir]) {
-          if (probparmDD->turbarr[dir].contains(iv[0],iv[1],iv[2])) {
-            for (int n=0; n<dim; ++n) {
-              u[n] += probparmDD->turbarr[dir](iv[0],iv[1],iv[2],n);
-            }
+        for (int n=0; n<dim; ++n) {
+          if (probparmDD->turb_lo_ok[dir]) {
+            dest(iv,UMX+n) += rho * u[n]; // Add mean fields to fluctuations already in place
+          } else {
+            dest(iv,UMX+n) = rho * u[n];  // Set mean fields
           }
         }
-
         dest(iv,URHO) = rho;
-        dest(iv,UMX) = rho * u[0];
-        dest(iv,UMY) = rho * u[1];
-        dest(iv,UMZ) = rho * u[2];
         dest(iv,UEINT) = rho * e;
         dest(iv,UEDEN) = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
         dest(iv,UTEMP) = T;
@@ -207,21 +202,17 @@ pc_bcfill_hyp(
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
       if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok())
       {
-        probparmH->turbfab[dir].resize(bndryBoxLO,dim);
-        probparmH->turbfab[dir].setVal<amrex::RunOn::Device>(0);
-        add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
-        probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
-        probparmDH->turb_ok[dir] = true;
+        data.setVal<amrex::RunOn::Device>(0,bndryBoxLO,UMX,dim);
+        add_turb(bndryBoxLO, data, UMX, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        probparmDH->turb_lo_ok[dir] = true; // Set bool to indicate that boundary data has been initialized
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
       if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok())
       {
-        probparmH->turbfab[dir+dim].resize(bndryBoxHI,dim);
-        probparmH->turbfab[dir+dim].setVal<amrex::RunOn::Device>(0);
-        add_turb(bndryBoxHI, probparmH->turbfab[dir+dim], 0, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
-        probparmDH->turbarr[dir+dim] = probparmH->turbfab[dir].array();
-        probparmDH->turb_ok[dir+dim] = true;
+        data.setVal<amrex::RunOn::Device>(0,bndryBoxHI,UMX,dim);
+        add_turb(bndryBoxHI, data, UMX, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        probparmDH->turb_hi_ok[dir] = true; // Set bool to indicate that boundary data has been initialized
       }
     }
 
@@ -237,20 +228,14 @@ pc_bcfill_hyp(
     // Copy problem parameter structs to host
     amrex::Gpu::copy(amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
 
+    // Clear bools for BC
     for (int dir=0; dir<dim; ++dir) {
-      if (probparmDH->turb_ok[dir]) {
-        probparmH->turbfab[dir].clear();
-        probparmDH->turb_ok[dir] = false;
-      }
-      if (probparmDH->turb_ok[dir+dim]) {
-        probparmH->turbfab[dir+dim].clear();
-        probparmDH->turb_ok[dir+dim] = false;
-      }
+      probparmDH->turb_lo_ok[dir] = false;
+      probparmDH->turb_hi_ok[dir] = false;
     }
 
     // Copy problem parameter structs back to device
-    amrex::Gpu::copy(amrex::Gpu::hostToDevice, probparmDH, probparmDH + 1, probparmDD);
-    
+    amrex::Gpu::copy(amrex::Gpu::hostToDevice, probparmDH, probparmDH + 1, probparmDD);    
   }
 }
 
