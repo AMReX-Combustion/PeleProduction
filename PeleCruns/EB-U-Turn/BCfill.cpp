@@ -211,7 +211,7 @@ pc_bcfill_hyp(
       if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok())
       {
         data.setVal<amrex::RunOn::Device>(0,bndryBoxHI,UMX,dim);
-        add_turb(bndryBoxHI, data, UMX, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        add_turb(bndryBoxHI, data, UMX, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
         probparmDH->turb_hi_ok[dir] = true; // Set bool to indicate that boundary data has been initialized
       }
     }
