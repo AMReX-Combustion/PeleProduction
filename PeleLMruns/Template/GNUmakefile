@@ -4,7 +4,7 @@ AMREX_HOME         = ${TOP}/amrex
 IAMR_HOME          = ${TOP}/IAMR
 PELELM_HOME        = ${TOP}/PeleLM
 PELE_PHYSICS_HOME  = ${TOP}/PelePhysics
-AMREX_HYDRO_HOME	 = ${TOP}/AMReX-Hydro
+AMREX_HYDRO_HOME   = ${TOP}/AMReX-Hydro
 
 # AMREX options
 DIM             = 2
@@ -27,13 +27,10 @@ USE_SUNDIALS_PP = FALSE
 Chemistry_Model = drm19
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
-Eos_dir     	:= Fuego
-
-# This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir 	:= Null
+Eos_Model       = Fuego
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir 	:= Simple
+Transport_Model = Simple
 
 Blocs   := .
 
