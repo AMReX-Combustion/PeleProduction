@@ -29,15 +29,12 @@ TINY_PROFILE    = FALSE
 # Choose model (from list below), and pmf file
 Chemistry_Model = air
 
-# This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
-Eos_dir     := Fuego
+# This sets the EOS model in $(PELE_PHYSICS_HOME)/Eos
+Eos_Model     := Fuego
 
-# This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Null
-
-# This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
+# This sets the transport model in $(PELE_PHYSICS_HOME)/Transport
 #Transport_dir := EGLib
-Transport_dir := Constant
+Transport_Model := Constant
 
 Blocs   := .
 
