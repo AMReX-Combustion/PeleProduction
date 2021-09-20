@@ -254,7 +254,6 @@ pc_bcfill_hyp(
   }
 }
 
-#ifdef PELEC_USE_REACTIONS
 void
 pc_reactfill_hyp(
   amrex::Box const& bx,
@@ -271,7 +270,6 @@ pc_reactfill_hyp(
     PCReactFillExtDir{});
   react_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
-#endif
 
 void
 pc_nullfill(

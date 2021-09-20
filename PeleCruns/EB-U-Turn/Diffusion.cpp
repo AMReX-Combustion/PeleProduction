@@ -254,10 +254,13 @@ PeleC::getMOLSrcTerm(
               amrex::Real y=plo[1] + (j+0.5)*dx[1];
               for (int i = lo.x; i <= hi.x; ++i) {
                 amrex::Real x=plo[0] + (i+0.5)*dx[0];
-                if (y<plo[1]+(225.5)*(phi[1]-plo[1])/512.0 && z<plo[2]+(97.5)*(phi[2]-plo[2])/2048.0) coe_mu(i,j,k) *= 100;
+                if (y < 0.9) {
+                  amrex::Real eta = 0.5*(1.0+tanh(-(z-0.361)/0.0195));
+                  coe_mu(i,j,k) = (1.0-eta)*coe_mu(i,j,k)+eta*100*coe_mu(i,j,k);
+                }
               }
             }
-          }          
+          }
         });
       }
 
@@ -407,7 +410,7 @@ PeleC::getMOLSrcTerm(
 #endif
           // auto const& vol = volume.array(mfi);
           pc_compute_hyp_mol_flux(
-            cbox, qar, qauxar, flx, area_arr, dx, plm_iorder
+            cbox, qar, qauxar, flx, area_arr, dx, plm_iorder, use_laxf_flux
 #ifdef PELEC_USE_EB
             ,
             flags.array(mfi), d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
