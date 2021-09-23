@@ -136,7 +136,7 @@ bcnormal(
   }
   amrex::Real P_cgs = prob_parm.P_mean * 10.0;
 
-  amrex::Real pert = 0.3*prob_parm.Vin;
+  amrex::Real pert = 0.6*prob_parm.Vin;
 
   // Time variation
   pert *= std::sin(2*Pi*time/0.006) * sin(2*Pi*(time-0.00166)/0.00033333);
