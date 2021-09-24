@@ -8,7 +8,7 @@ AMREX_HYDRO_HOME ?= $(TOP)/Submodules/AMReX-Hydro
 DIM = 3
 COMP = clang
 COMP = gnu
-COMP = intel
+#COMP = intel
 PRECISION = DOUBLE
 
 # Profiling
@@ -33,12 +33,10 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_REACT = FALSE
 USE_FORCING = FALSE
 USE_EB = TRUE
-Eos_dir := Fuego
-#Transport_dir := EGLib
-Transport_dir := Simple
+Eos_Model := Fuego
+Transport_Model := Simple
 Chemistry_Model := LiDryer
 
 # GNU Make
