@@ -15,6 +15,25 @@
 #include "ProblemDerive.H"
 #include "prob_parm.H"
 #include "Constants.H"
+#include "Geometry.H"
+
+class EBUTurn
+  : public pele::pelec::Geometry::Register<EBUTurn>
+{
+public:
+  static std::string identifier() { return "u_turn"; }
+
+  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+};
+
+class EBUTurnFlipped
+  : public pele::pelec::Geometry::Register<EBUTurnFlipped>
+{
+public:
+  static std::string identifier() { return "u_turn-flipped"; }
+
+  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+};
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
