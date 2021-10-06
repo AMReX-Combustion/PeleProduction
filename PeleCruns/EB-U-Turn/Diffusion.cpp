@@ -254,10 +254,17 @@ PeleC::getMOLSrcTerm(
               amrex::Real y=plo[1] + (j+0.5)*dx[1];
               for (int i = lo.x; i <= hi.x; ++i) {
                 amrex::Real x=plo[0] + (i+0.5)*dx[0];
-                if (y < 0.9) {
-                  amrex::Real eta = 0.5*(1.0+tanh(-(z-0.361)/0.0195));
+#if AMREX_SPACEDIM == 2
+                if (x < 0.9){
+                  const amrex::Real eta = 0.5*(1.0+tanh(-(y-0.361)/0.0195));
                   coe_mu(i,j,k) = (1.0-eta)*coe_mu(i,j,k)+eta*100*coe_mu(i,j,k);
                 }
+#elif AMREX_SPACEDIM == 3
+                if (y < 0.9) {
+                  const amrex::Real eta = 0.5*(1.0+tanh(-(z-0.361)/0.0195));
+                  coe_mu(i,j,k) = (1.0-eta)*coe_mu(i,j,k)+eta*100*coe_mu(i,j,k);
+                }
+#endif
               }
             }
           }

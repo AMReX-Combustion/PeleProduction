@@ -211,7 +211,9 @@ pc_initdata(
       for (int n = 0; n < NUM_SPECIES; n++)
 	massfrac[n] = prob_parm.fuel_state[UFS + n - 1]/prob_parm.fuel_state[URHO];
 
+#if AMREX_SPACEDIM == 3
       u[AMREX_SPACEDIM - 1] = - pmf_vals[1]*tanh(-10.0*(y-0.5*prob_hi[1]+0.1));
+#endif
       
       auto eos = pele::physics::PhysicsType::eos();
       //eos.X2Y(molefrac, massfrac);
