@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 #max_step = 2000000
-max_step = 1000000
+max_step = 1000
 stop_time = 1.000
 
 # PROBLEM SIZE & GEOMETRY
@@ -14,7 +14,7 @@ amr.n_cell           =  32    64   256
 amr.n_cell           =  128  256   1024
 amr.n_cell           =  64   128   512
 amr.n_cell           =  256  512   2048
-#amr.n_cell           =  16   32    128
+amr.n_cell           =  16   32    128
 #geometry.prob_hi     =  1.0 2.0 8.0
 #amr.n_cell           =  128    256   1024 
 
