@@ -239,8 +239,8 @@ add_turb(amrex::Box const&               bx,
   
   amrex::Box bvalsBox = bx;
   int planeLoc = ( side == amrex::Orientation::low
-                   ? geom.Domain().smallEnd()[dir]-1
-                   : geom.Domain().bigEnd()[dir]  +1 );
+                   ? geom.Domain().smallEnd()[dir]
+                   : geom.Domain().bigEnd()[dir]   );
   bvalsBox.setSmall(dir,planeLoc);
   bvalsBox.setBig(  dir,planeLoc);
 
@@ -263,8 +263,35 @@ add_turb(amrex::Box const&               bx,
     v.mult<amrex::RunOn::Device>( tp.turb_scale_vel);
   }
   amrex::Box ovlp = bvalsBox & data.box();
-  data.plus<amrex::RunOn::Device>(v,ovlp,0,dcomp,AMREX_SPACEDIM);
+  // data.plus<amrex::RunOn::Device>(v,ovlp,0,dcomp,AMREX_SPACEDIM);
+  set_turb(v,data);
 }
+
+void set_turb(amrex::FArrayBox& v,
+              amrex::FArrayBox& data)
+{
+  const auto& box   = v.box();
+  const auto& v_in  = v.array();
+  const auto& v_out = data.array();
+
+amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      v_out(i,j,k,1) =  v_in(i,j,k,0)*v_out(i,j,k,0); //UMX
+      v_out(i,j,k,2) =  v_in(i,j,k,1)*v_out(i,j,k,0); //UMY
+      v_out(i,j,k,3) =  v_in(i,j,k,2)*v_out(i,j,k,0); //UMZ
+
+      if(v_out(i,j,k,0) != v_out(i,j,k,0)){
+        amrex::Print() << v_out(i,j,k,1) << std::endl;
+        printf("%i %i %i\n", i,j,k);
+        amrex::Abort();
+      }
+      // v_out(i,j,k,1) =  34.564771; //UMX
+      // printf("v_in[UMX] = %e \n",v_out(i,j,k,0));
+      // printf("v_in[UMY] = %e \n",v_out(i,j,k,1));
+      // printf("v_in[UMZ] = %e \n",v_out(i,j,k,2));
+    });
+
+}
+
 
 void
 fill_with_turb(amrex::Box const&      bx,

@@ -238,6 +238,132 @@ pc_initdata(
     }
 }
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+bcnormal(
+  const amrex::Real x[AMREX_SPACEDIM],
+  const amrex::Real s_int[NVAR],
+  amrex::Real s_ext[NVAR],
+  const int idir,
+  const int sgn,
+  const amrex::Real time,
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
+{
+    const auto* prob_hi = geomdata.ProbHi();
+    const int* domlo = geomdata.Domain().loVect();
+    const int* domhi = geomdata.Domain().hiVect();
+    constexpr int dim = AMREX_SPACEDIM;
+    
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real molefrac[NUM_SPECIES], massfrac[NUM_SPECIES], rho, T, e;
+    int dir = 2;
+    if(idir == dim-1){
+      // Here, set inflow on ZLO
+      // This is the “U-Turn” geometry, where for large y boundary is inflow and for small y boundary is outflow
+      if (x[1] > 0.5*prob_hi[1]-0.1) {
+        // amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], iv[2]));
+        auto eos = pele::physics::PhysicsType::eos();
+
+        // Get mean inlet state from pmf file
+        amrex::GpuArray<amrex::Real,4+NUM_SPECIES> pmf_vals;
+        amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
+        pmf(prob_hi[2], prob_hi[2], pmf_vals, prob_parm);
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          molefrac[n] = pmf_vals[3 + n];
+        }
+        T = pmf_vals[0];
+        auto pres = prob_parm.pamb;
+
+        u[dim - 1] = pmf_vals[1];
+        eos.X2Y(molefrac, massfrac);
+        eos.PYT2RE(pres, massfrac, T, rho, e);
+
+        // Add fluctuations to mean fields
+        if (prob_parm.turb_ok[dir]) {
+          // if (prob_parm.turbarr[dir].contains(iv[0],iv[1],iv[2])) {
+          //   for (int n=0; n<dim; ++n) {
+          //     // u[n] += prob_parm.turbarr[dir](iv[0],iv[1],iv[2],n);
+          //     u[n] += s_ext[loc]UMX+n);
+          //   }
+          // }
+          // u[n] += prob_parm.turbarr[dir](iv[0],iv[1],iv[2],n);
+          
+          u[0] += s_int[UMX]*rho;
+          u[1] += s_int[UMY]*rho;
+          u[2] += s_int[UMZ]*rho;
+        }
+
+        s_ext[URHO] = rho;
+        s_ext[UMX] = rho * u[0];
+        s_ext[UMY] = rho * u[1];
+        s_ext[UMZ] = rho * u[2];
+        s_ext[UEINT] = rho * e;
+        s_ext[UEDEN] = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+        s_ext[UTEMP] = T;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          s_ext[UFS+n] = rho * massfrac[n];
+        }
+        // printf("inside bcnormal pmf_vals[1] = %e\n", pmf_vals[1]);
+        // printf("inside bcnormal s_int[UMZ]  = %e\n", s_int[UMZ]);
+        // printf("inside bcnormal s_ext[UMZ]  = %e\n", s_ext[UMZ]);
+      }
+      else {
+
+#if 1
+        amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
+        auto pres = prob_parm.pamb;
+
+        rho = s_int[URHO];
+        u[0] = s_int[UMX] / rho;
+        u[1] = s_int[UMY] / rho;
+        u[2] = s_int[UMZ] / rho;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          massfrac[n] = s_int[UFS+n] / rho;
+        }
+        T = s_int[UTEMP];
+        eos.PYT2RE(pres, massfrac, T, rho, e); // enforce that p on outflow is fixed - reset e to be consistent with that
+
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = s_int[n]; // Do this to grab any stray scalars not explicitly dealt with below
+        }
+        s_ext[URHO] = rho;
+        s_ext[UMX] = rho * u[0];
+        s_ext[UMY] = rho * u[1];
+        s_ext[UMZ] = rho * u[2];
+        s_ext[UEINT] = rho * e;
+        s_ext[UEDEN] = rho * (e + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          s_ext[UFS+n] = massfrac[n] * rho;
+        }
+#else
+        amrex::Real rhorefinv = 1.0 / s_ext[URHO];
+        amrex::Real Yref[NUM_SPECIES];
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          Yref[n] = s_ext[UFS+n] * rhorefinv;
+        }
+        amrex::Real pref, Csref;
+        eos.RTY2P( s_ext[URHO], s_ext[UTEMP], Yref, pref);
+        eos.RTY2Cs(s_ext[URHO], s_ext[UTEMP], Yref, Csref);
+        amrex::Real Csrefinv = 1.0 / Csref;
+
+        s_ext[URHO] = s_ext[URHO] + (prob_parm.pamb - pref) * Csrefinv * Csrefinv;
+        s_ext[UMX] = s_ext[URHO] * s_ext[UMX] * rhorefinv;
+        s_ext[UMY] = s_ext[URHO] * s_ext[UMY] * rhorefinv;
+        s_ext[UMZ] = s_ext[URHO] * s_ext[UMZ] * rhorefinv - (pref - prob_parm.pamb) * Csrefinv * rhorefinv;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          s_ext[UFS+n] = s_ext[URHO] * Yref[n] * rhorefinv;
+        }
+        s_ext[UTEMP] = s_ext[UTEMP];
+        eos.PYT2RE(prob_parm.pamb, Yref, s_ext[UTEMP], s_ext[URHO], s_ext[UEINT]);
+        s_ext[UEINT] *= s_ext[URHO];
+        s_ext[UEDEN] = s_ext[UEINT] + 0.5 * (s_ext[UMX]*s_ext[UMX] + s_ext[UMY]*s_ext[UMY] + s_ext[UMZ]*s_ext[UMZ]) / s_ext[URHO];
+#endif
+      }
+    }
+}
+
 void pc_prob_close();
 
 using ProblemTags = EmptyProbTagStruct;
