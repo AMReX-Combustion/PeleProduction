@@ -66,6 +66,7 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+        s_ext[n] = dest(domlo[idir]-1,iv[1], iv[2], n);
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -77,6 +78,7 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+        s_ext[n] = dest(domlo[idir]+1,iv[1], iv[2], n);
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -90,6 +92,7 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+        s_ext[n] = dest(iv[0], domlo[idir]-1, iv[2], n);
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -101,6 +104,7 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+        s_ext[n] = dest(iv[0], domlo[idir]+1, iv[2], n);
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -112,25 +116,10 @@ struct PCHypFillExtDir
     idir = 2;
     if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
+        s_int[n] = dest(iv[0], iv[1], domlo[idir]  , n);
+        s_ext[n] = dest(iv[0], iv[1], domlo[idir]-1, n);
       }
-
-      for (int n = 0; n < NVAR; n++) {
-        if(s_int[n] != s_int[n]){
-          printf("scalar = %i\n", n);
-          amrex::Abort("NaNs before bcnormal");
-        }
-      }
-
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-
-      for (int n = 0; n < NVAR; n++) {
-        if(s_ext[n] != s_ext[n]){
-          printf("scalar = %i\n", n);
-          amrex::Abort("NaNs in velocity after bcnormal");
-        }
-      }
-
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -138,7 +127,8 @@ struct PCHypFillExtDir
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
       (iv[idir] > domhi[idir])) {
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
+        s_int[n] = dest(iv[0], iv[1], domhi[idir]  , n);
+        s_ext[n] = dest(iv[0], iv[1], domlo[idir]+1, n);
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -334,34 +324,39 @@ pc_bcfill_hyp(
     amrex::Gpu::copy(amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
 
     for (int dir=0; dir<dim; ++dir) {
+
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
-      bndryBoxLO.shift(dir, 1);
-
-      // amrex::IntVect growVect(amrex::IntVect::TheUnitVector());
-      // for (int loc_dir=0; loc_dir<dim; ++loc_dir) {
-      //   if(loc_dir != dir){
-      //     growVect[loc_dir] = 5; //replace by ngrow
-      //   }
-      //   else{
-      //     growVect[loc_dir] = 0; 
-      //   }
-      // }
-      // amrex::Box modDom = geom.Domain();
-      // modDom.grow(growVect);
-      // auto bndryBoxLO = amrex::Box(amrex::adjCellLo(modDom,dir) & bx);
-      // bndryBoxLO.shift(dir, 1);
-      // data.setVal(0,bndryBoxLO);
-
       if (bcr[1].lo()[dir]==EXT_DIR && bndryBoxLO.ok())
       {
+        //Create box with ghost cells and set them to zero
+        amrex::IntVect growVect(amrex::IntVect::TheUnitVector());
+        int Grow = PeleC::numGrow();
+        for(int n=0;n<dim;n++)
+          growVect[n] = Grow;
+        growVect[dir] = 0;
+        amrex::Box modDom = geom.Domain();
+        modDom.grow(growVect);
+        auto bndryBoxLO_ghost = amrex::Box(amrex::adjCellLo(modDom,dir) & bx);
+        data.setVal<amrex::RunOn::Host>(0.0,bndryBoxLO_ghost,UMX,dim);
+
         add_turb(bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
         probparmDH->turb_ok[dir] = true;
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
-      bndryBoxHI.shift(dir, -1);
       if (bcr[1].hi()[dir]==EXT_DIR && bndryBoxHI.ok())
       {
+        //Create box with ghost cells and set them to zero
+        amrex::IntVect growVect(amrex::IntVect::TheUnitVector());
+        int Grow = PeleC::numGrow();
+        for(int n=0;n<dim;n++)
+          growVect[n] = Grow;
+        growVect[dir] = 0;
+        amrex::Box modDom = geom.Domain();
+        modDom.grow(growVect);
+        auto bndryBoxHI_ghost = amrex::Box(amrex::adjCellHi(modDom,dir) & bx);
+        data.setVal<amrex::RunOn::Host>(0.0,bndryBoxHI_ghost,UMX,dim);
+
         add_turb(bndryBoxHI, data, 0, geom, time, dir, amrex::Orientation::high, probparmDH->tp);
         probparmDH->turb_ok[dir+dim] = true;
       }

@@ -6,9 +6,9 @@ AMREX_HYDRO_HOME ?= $(TOP)/Submodules/AMReX-Hydro
 
 # AMReX
 DIM = 3
-COMP = clang
+#COMP = clang
 COMP = gnu
-#COMP = intel
+# COMP = intel
 PRECISION = DOUBLE
 
 # Profiling
@@ -22,7 +22,7 @@ USE_GPROF = FALSE
 # Performance
 USE_MPI = TRUE
 USE_OMP = FALSE
-USE_CUDA = FALSE
+USE_CUDA = TRUE
 USE_HIP = FALSE
 USE_DPCPP = FALSE
 
@@ -34,6 +34,7 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_FORCING = FALSE
+USE_TURBINFLOW = TRUE
 USE_EB = TRUE
 Eos_Model := Fuego
 Transport_Model := Simple

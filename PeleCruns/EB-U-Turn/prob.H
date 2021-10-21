@@ -263,7 +263,6 @@ bcnormal(
       // Here, set inflow on ZLO
       // This is the “U-Turn” geometry, where for large y boundary is inflow and for small y boundary is outflow
       if (x[1] > 0.5*prob_hi[1]-0.1) {
-        // amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], iv[2]));
         auto eos = pele::physics::PhysicsType::eos();
 
         // Get mean inlet state from pmf file
@@ -282,17 +281,9 @@ bcnormal(
 
         // Add fluctuations to mean fields
         if (prob_parm.turb_ok[dir]) {
-          // if (prob_parm.turbarr[dir].contains(iv[0],iv[1],iv[2])) {
-          //   for (int n=0; n<dim; ++n) {
-          //     // u[n] += prob_parm.turbarr[dir](iv[0],iv[1],iv[2],n);
-          //     u[n] += s_ext[loc]UMX+n);
-          //   }
-          // }
-          // u[n] += prob_parm.turbarr[dir](iv[0],iv[1],iv[2],n);
-          
-          u[0] += s_int[UMX]*rho;
-          u[1] += s_int[UMY]*rho;
-          u[2] += s_int[UMZ]*rho;
+          u[0] += s_ext[UMX];
+          u[1] += s_ext[UMY];
+          u[2] += s_ext[UMZ];
         }
 
         s_ext[URHO] = rho;
@@ -305,9 +296,6 @@ bcnormal(
         for (int n = 0; n < NUM_SPECIES; n++) {
           s_ext[UFS+n] = rho * massfrac[n];
         }
-        // printf("inside bcnormal pmf_vals[1] = %e\n", pmf_vals[1]);
-        // printf("inside bcnormal s_int[UMZ]  = %e\n", s_int[UMZ]);
-        // printf("inside bcnormal s_ext[UMZ]  = %e\n", s_ext[UMZ]);
       }
       else {
 
