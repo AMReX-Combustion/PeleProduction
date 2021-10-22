@@ -22,7 +22,7 @@ USE_GPROF = FALSE
 # Performance
 USE_MPI = TRUE
 USE_OMP = FALSE
-USE_CUDA = TRUE
+USE_CUDA = FALSE
 USE_HIP = FALSE
 USE_DPCPP = FALSE
 
@@ -41,6 +41,6 @@ Transport_Model := Simple
 Chemistry_Model := LiDryer
 
 # GNU Make
-Bpack := ./Make.package TurbInflow/Make.package
-Blocs := . TurbInflow
+Bpack := ./Make.package 
+Blocs := . 
 include $(PELEC_HOME)/Exec/Make.PeleC
