@@ -279,7 +279,7 @@ bcnormal(
         eos.X2Y(molefrac, massfrac);
         eos.PYT2RE(pres, massfrac, T, rho, e);
 
-        // Add fluctuations to mean fields
+        // Add fluctuations to mean velocity
         if (prob_parm.turb_ok[dir]) {
           u[0] += s_ext[UMX];
           u[1] += s_ext[UMY];
