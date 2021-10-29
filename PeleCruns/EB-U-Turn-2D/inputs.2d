@@ -1,0 +1,124 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 248010
+stop_time = 0.003
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0  0
+geometry.coord_sys   =  0       # 0 => cart
+geometry.prob_lo     =  0.0   0.0
+geometry.prob_hi     =  8.0 2.0
+#amr.n_cell           =  2048 512
+amr.n_cell           =  1024 256
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "UserBC" "NoSlipWall"
+pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"
+
+# Problem setup
+pelec.eb_boundary_T = 750.
+pelec.eb_isothermal = 1
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol = 1
+#pelec.do_react = 1
+pelec.do_react = 0
+#pelec.riemann_solver = 2
+#pelec.ppm_type = 3
+pelec.allow_negative_energy = 0
+pelec.diffuse_temp = 1
+pelec.diffuse_vel  = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth = 1
+pelec.flame_trac_name = HO2
+
+# TIME STEP CONTROL
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1    # scale back initial timestep
+pelec.change_max     = 1.10     # maximum increase in dt over successive steps
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC cpp files
+amr.v                = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_on_restart = 1
+amr.regrid_int      = 1000000 1000000 1000000 1000000 # how often to regrid - here: "never"
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 32
+amr.n_error_buf     = 4 4 4 4 # number of buffer cells in error est
+amr.grid_eff        = 0.95
+
+# CHECKPOINT FILES
+amr.check_file      = chk      # root name of checkpoint file
+amr.check_int       = 1000       # number of timesteps between checkpoints
+#amr.check_int       = -1       # number of timesteps between checkpoints
+#amr.restart         = chk0000000100
+
+# PLOTFILES
+amr.plot_file       = plt
+amr.plot_int        = 100
+#amr.plot_per        = 1e-5
+amr.file_name_digits  = 10
+#amr.derive_plot_vars = ALL
+amr.derive_plot_vars = x_velocity y_velocity magvel magvort pressure divu massfrac logden vfrac
+amr.plot_vars = density Temp
+pelec.plot_massfrac = 1
+pelec.plot_rhoy = 0
+
+# PROBIN FILENAME
+#amr.probin_file = probin.3d
+
+# PROBLEM PARAMETERS
+prob.pamb = 1013250.
+prob.phi_in = -.5
+prob.pertmag = .0
+prob.T_inlet_pert_mag = 0.0
+prob.T_inlet_pert_freq = 100.
+prob.P_inlet_pert_mag = 0.0
+prob.P_inlet_pert_freq = 100.
+prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
+#prob.ipmf_on = .false.
+#prob.ipmf_datafile = "autoign-H2-pelec-T_1100.0-P_101325.0-phi_0.35_ipmf.dat"
+
+#prob.turb_file = Turb
+#prob.turb_scale_loc = 1.0
+#prob.turb_scale_vel = 1.0
+#prob.turb_center = 0.5 0.5
+
+#prob.turb_file = Turb_s3d_1E4
+#prob.turb_scale_loc = 1.0
+#prob.turb_scale_vel = 1.0
+
+#prob.turb_file = Turb_AJA
+#prob.turb_scale_loc = .01
+#prob.turb_scale_vel = 100.0
+#prob.turb_center = 0.5 1.5
+#prob.turb_conv_vel = 2000.
+#prob.turb_conv_vel = 14200.
+#prob.turb_nplane = 32
+#
+# TAGGING
+#tagging.max_vorterr_lev = 4
+#tagging.vorterr = 2.5e6
+
+eb2.geom_type = u_turn
+eb2.geom_type = u_turn-flipped
+#exp_chan.b1_corner_lo = -0.60  -0.30  -0.60
+#exp_chan.b1_corner_hi =  0.60   0.50   1.60
+#exp_chan.b2_corner_lo = -0.60   1.50  -0.80
+#exp_chan.b2_corner_hi =  0.60   2.10   1.60
+exp_chan.exp_y_lo = 0.0
+exp_chan.exp_y_hi = 1.8
+ebd.boundary_grad_stencil_type = 0
+
+#amrex.fpe_trap_invalid = 1
+#amrex.fpe_trap_zero = 1
+#amrex.fpe_trap_overflow = 1
