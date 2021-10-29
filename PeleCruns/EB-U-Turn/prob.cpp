@@ -217,7 +217,10 @@ amrex_probinit(
 
   PeleC::prob_parm_host->do_turb = false;
   if (pp.countval("turb_file") > 0) {
-    std::string turb_file = "";
+#if AMREX_SPACEDIM==2
+    amrex::Abort("Turbulence inflow unsupported in 2D.");
+#endif
+  std::string turb_file = "";
     pp.query("turb_file", turb_file);
     amrex::Real turb_scale_loc = 1.0;
     pp.query("turb_scale_loc", turb_scale_loc);
@@ -270,13 +273,19 @@ PeleC::problem_post_restart()
 {
 }
 
+#if AMREX_SPACEDIM==2
+#define D_DROP_FRONT(a,b,c) b,c
+#elif AMREX_SPACEDIM==3
+#define D_DROP_FRONT(a,b,c) a,b,c
+#endif
+
 void
 EBUTurn::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   // Under arbeid. Fiks parametrisering og input.
   amrex::ParmParse pp("exp_chan");
   amrex::Vector<amrex::Real> box1lo, box1hi, box2lo, box2hi;
-  amrex::Real p1_y, p2_y, cen_y;
+  amrex::Real p1_y, p2_y;
   pp.getarr("b1_corner_lo", box1lo);
   pp.getarr("b1_corner_hi", box1hi);
   pp.getarr("b2_corner_lo", box2lo);
@@ -286,7 +295,7 @@ EBUTurn::build(const amrex::Geometry& geom, const int max_coarsening_level)
 
   // p2_y = 1.8;
   // p1_y = 0.0;
-  cen_y = 0.5 * (p2_y - p1_y);
+  const amrex::Real cen_y = 0.5 * (p2_y - p1_y);
   amrex::Real dx = geom.CellSize(0); // remember dx = dy = dz
 
   amrex::Print() << "Hellø! \n";
@@ -296,22 +305,23 @@ EBUTurn::build(const amrex::Geometry& geom, const int max_coarsening_level)
   // Put a margin of 0.3*dx to make sure the EB algorithm finds the boundaries
   // in y and not the z boundary. (Needed?)
   amrex::EB2::BoxIF box1(
-    {-1.0, 0.0 + 0.3 * dx, cen_y}, {20.0, p2_y, 8.0 + 0.3 * dx}, true);
+    {D_DROP_FRONT(-1.0, 0.0 + 0.3 * dx, cen_y)}, {D_DROP_FRONT(20.0, p2_y, 8.0 + 0.3 * dx)}, true);
   //    EB2::CylinderIF cyl(Real a_radius, int a_direction,
   //            const RealArray& a_center, bool a_inside)
   //    direction == 0 for x etc.
-  amrex::EB2::CylinderIF cyl(cen_y - 0.3 * dx, 0, {0.0, cen_y, cen_y}, true);
+  const int cyl_axis = AMREX_D_PICK(-1, 2, 0);
+  amrex::EB2::CylinderIF cyl(cen_y - 0.3 * dx, cyl_axis, {D_DROP_FRONT(0.0, cen_y, cen_y)}, true);
   auto channel = amrex::EB2::makeIntersection(cyl, box1);
 
   // The upper 'extension' of the channel
   // Straight part
   amrex::EB2::BoxIF box2(
-    {-1.0, p2_y, 4.2}, {20.0, 2.0 - 0.3 * dx, 8.0 + 0.3 * dx}, true);
+    {D_DROP_FRONT(-1.0, p2_y, 4.2)}, {D_DROP_FRONT(20.0, 2.0 - 0.3 * dx, 8.0 + 0.3 * dx)}, true);
   auto channel2 = amrex::EB2::makeIntersection(channel, box2);
   // The tip.  Construct triangle from planes:
-  amrex::EB2::PlaneIF plane1({0.0, p2_y, 4.2}, {0.0, -1.0, 0.0});
-  amrex::EB2::PlaneIF plane2({0.0, p2_y, 4.2}, {0.0, 0.0, 1.0});
-  amrex::EB2::PlaneIF plane3({0.0, p2_y, 3.8}, {0.0, 2.0, -1.0});
+  amrex::EB2::PlaneIF plane1({D_DROP_FRONT(0.0, p2_y, 4.2)}, {D_DROP_FRONT(0.0, -1.0, 0.0)});
+  amrex::EB2::PlaneIF plane2({D_DROP_FRONT(0.0, p2_y, 4.2)}, {D_DROP_FRONT(0.0, 0.0, 1.0)});
+  amrex::EB2::PlaneIF plane3({D_DROP_FRONT(0.0, p2_y, 3.8)}, {D_DROP_FRONT(0.0, 2.0, -1.0)});
   auto triangle = amrex::EB2::makeUnion(plane1, plane2, plane3);
   // I'm not allowed to say: triangle = amrex::EB2::makeComplement(triangle);
   // auto triangle4 = amrex::EB2::makeComplement(triangle3);
@@ -320,13 +330,13 @@ EBUTurn::build(const amrex::Geometry& geom, const int max_coarsening_level)
   // The separation wall
   // Straight part
   amrex::EB2::BoxIF box3(
-    {-1.0, cen_y, 1.2}, {20.0, 1.0, 8.0 + 0.3 * dx}, false);
+    {D_DROP_FRONT(-1.0, cen_y, 1.2)}, {D_DROP_FRONT(20.0, 1.0, 8.0 + 0.3 * dx)}, false);
   auto channel4 = amrex::EB2::makeUnion(channel3, box3);
   // The tip. Construct triangle from planes:
-  amrex::EB2::PlaneIF plane4({0.0, cen_y, 1.2}, {0.0, -1.0, 0.0});
-  amrex::EB2::PlaneIF plane5({0.0, cen_y, 1.2}, {0.0, 0.0, 1.0});
-  amrex::EB2::PlaneIF plane6({0.0, cen_y, 1.0}, {0.0, 2.0, -1.0});
-  amrex::EB2::PlaneIF plane7({0.0, cen_y, 1.023}, {0.0, 0.0, -1.0});
+  amrex::EB2::PlaneIF plane4({D_DROP_FRONT(0.0, cen_y, 1.2)}, {D_DROP_FRONT(0.0, -1.0, 0.0)});
+  amrex::EB2::PlaneIF plane5({D_DROP_FRONT(0.0, cen_y, 1.2)}, {D_DROP_FRONT(0.0, 0.0, 1.0)});
+  amrex::EB2::PlaneIF plane6({D_DROP_FRONT(0.0, cen_y, 1.0)}, {D_DROP_FRONT(0.0, 2.0, -1.0)});
+  amrex::EB2::PlaneIF plane7({D_DROP_FRONT(0.0, cen_y, 1.023)}, {D_DROP_FRONT(0.0, 0.0, -1.0)});
   auto triangle3 = amrex::EB2::makeUnion(plane4, plane5, plane6, plane7);
   auto triangle4 = amrex::EB2::makeComplement(triangle3);
   auto channel5 = amrex::EB2::makeUnion(channel4, triangle4);
@@ -341,34 +351,35 @@ EBUTurnFlipped::build(
 {
   // In progress. Parameterization and input to be fixed.
   amrex::ParmParse pp("exp_chan");
-  amrex::Real p1_y, p2_y, cen_y, y_sep;
+  amrex::Real p1_y, p2_y;
   pp.get("exp_y_lo", p1_y);
   pp.get("exp_y_hi", p2_y);
 
-  cen_y = 0.5 * (p2_y - p1_y);
+  const amrex::Real cen_y = 0.5 * (p2_y - p1_y);
   amrex::Real dx = geom.CellSize(0); // remember dx = dy = dz
 
   // Main part: Box with half cylinder added to the right
   // Put a margin of 0.3*dx to make sure the EB algorithm finds the boundaries
   // in y and not the z boundary. (Needed?)
   amrex::EB2::BoxIF box1(
-    {-1.0, 0.0 + 0.3 * dx, -0.3 * dx}, {20.0, p2_y, 8.0 - cen_y}, true);
+    {D_DROP_FRONT(-1.0, 0.0 + 0.3 * dx, -0.3 * dx)}, {D_DROP_FRONT(20.0, p2_y, 8.0 - cen_y)}, true);
   //    EB2::CylinderIF cyl(Real a_radius, int a_direction,
   //            const RealArray& a_center, bool a_inside)
   //    direction == 0 for x osv.
+  const int cyl_axis = AMREX_D_PICK(-1, 2, 0);
   amrex::EB2::CylinderIF cyl(
-    cen_y - 0.3 * dx, 0, {0.0, cen_y, 8.0 - cen_y}, true);
+    cen_y - 0.3 * dx, cyl_axis, {D_DROP_FRONT(0.0, cen_y, 8.0 - cen_y)}, true);
   auto channel = amrex::EB2::makeIntersection(cyl, box1);
 
   // The upper 'extension' of the channel
   // Straight part
   amrex::EB2::BoxIF box2(
-    {-1.0, p2_y, -0.3 * dx}, {20.0, 2.0 - 0.3 * dx, 3.8}, true);
+    {D_DROP_FRONT(-1.0, p2_y, -0.3 * dx)}, {D_DROP_FRONT(20.0, 2.0 - 0.3 * dx, 3.8)}, true);
   auto channel2 = amrex::EB2::makeIntersection(channel, box2);
   // The tip.  Construct triangle from planes:
-  amrex::EB2::PlaneIF plane1({0.0, p2_y, 3.8}, {0.0, -1.0, 0.0});
-  amrex::EB2::PlaneIF plane2({0.0, p2_y, 3.8}, {0.0, 0.0, -1.0});
-  amrex::EB2::PlaneIF plane3({0.0, p2_y, 4.2}, {0.0, 2.0, 1.0});
+  amrex::EB2::PlaneIF plane1({D_DROP_FRONT(0.0, p2_y, 3.8)}, {D_DROP_FRONT(0.0, -1.0, 0.0)});
+  amrex::EB2::PlaneIF plane2({D_DROP_FRONT(0.0, p2_y, 3.8)}, {D_DROP_FRONT(0.0, 0.0, -1.0)});
+  amrex::EB2::PlaneIF plane3({D_DROP_FRONT(0.0, p2_y, 4.2)}, {D_DROP_FRONT(0.0, 2.0, 1.0)});
   auto triangle = amrex::EB2::makeUnion(plane1, plane2, plane3);
   // I'm not allowed to say: triangle = amrex::EB2::makeComplement(triangle);
   // auto triangle4 = amrex::EB2::makeComplement(triangle3);
@@ -379,14 +390,14 @@ EBUTurnFlipped::build(
   //    amrex::EB2::BoxIF box3({-1.0,cen_y,-0.3*dx}, {20.0,1.0,6.8}, false);
   // make an y coordinate equal to 1.0 - 13*dx
   // for dx = 2 / 256
-  y_sep = 0.8984375;
-  amrex::EB2::BoxIF box3({-1.0, y_sep, -0.3 * dx}, {20.0, 1.0, 6.8}, false);
+  const amrex::Real y_sep = 0.8984375;
+  amrex::EB2::BoxIF box3({D_DROP_FRONT(-1.0, y_sep, -0.3 * dx)}, {D_DROP_FRONT(20.0, 1.0, 6.8)}, false);
   auto channel4 = amrex::EB2::makeUnion(channel3, box3);
   // The tip. Construct triangle from planes:
-  amrex::EB2::PlaneIF plane4({0.0, y_sep, 6.8}, {0.0, -1.0, 0.0});
-  amrex::EB2::PlaneIF plane5({0.0, y_sep, 6.8}, {0.0, 0.0, -1.0});
-  amrex::EB2::PlaneIF plane6({0.0, y_sep, 7.0}, {0.0, 2.0, 1.0});
-  amrex::EB2::PlaneIF plane7({0.0, y_sep, 6.977}, {0.0, 0.0, 1.0});
+  amrex::EB2::PlaneIF plane4({D_DROP_FRONT(0.0, y_sep, 6.8)}, {D_DROP_FRONT(0.0, -1.0, 0.0)});
+  amrex::EB2::PlaneIF plane5({D_DROP_FRONT(0.0, y_sep, 6.8)}, {D_DROP_FRONT(0.0, 0.0, -1.0)});
+  amrex::EB2::PlaneIF plane6({D_DROP_FRONT(0.0, y_sep, 7.0)}, {D_DROP_FRONT(0.0, 2.0, 1.0)});
+  amrex::EB2::PlaneIF plane7({D_DROP_FRONT(0.0, y_sep, 6.977)}, {D_DROP_FRONT(0.0, 0.0, 1.0)});
   auto triangle3 = amrex::EB2::makeUnion(plane4, plane5, plane6, plane7);
   auto triangle4 = amrex::EB2::makeComplement(triangle3);
   auto channel5 = amrex::EB2::makeUnion(channel4, triangle4);

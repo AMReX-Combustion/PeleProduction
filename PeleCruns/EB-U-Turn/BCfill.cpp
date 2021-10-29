@@ -106,9 +106,9 @@ struct PCHypFillExtDir
         }
       }
       else {
-        amrex::IntVect ivi(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
-                           amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
-                           amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1))); // Find source point actually in valid domain
+        amrex::IntVect ivi(AMREX_D_DECL(amrex::max(domlo[0],amrex::min(domhi[0],iv[0])),
+                                        amrex::max(domlo[1],amrex::min(domhi[1],iv[1])),
+                                        amrex::max(domlo[2],amrex::min(domhi[2],iv[2]+1)))); // Find source point actually in valid domain
 
 #if 1
         amrex::GpuArray<amrex::Real,dim> u = {{0.0}};
