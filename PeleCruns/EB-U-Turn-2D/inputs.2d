@@ -84,7 +84,7 @@ prob.T_inlet_pert_mag = 0.0
 prob.T_inlet_pert_freq = 100.
 prob.P_inlet_pert_mag = 0.0
 prob.P_inlet_pert_freq = 100.
-prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_700.0-P_1.0-phi_0.4.dat"
+prob.pmf_datafile = "H2-deflagration-LiDryer-pelec-T_750.0-P_1.0-phi_0.4.dat"
 #prob.ipmf_on = .false.
 #prob.ipmf_datafile = "autoign-H2-pelec-T_1100.0-P_101325.0-phi_0.35_ipmf.dat"
 
