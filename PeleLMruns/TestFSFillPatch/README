@@ -1,0 +1,15 @@
+A FlameSheet case with the 53 species dodecane Lu to test fillPatch weak scaling
+performances.
+
+Tested on Summit with:
+
+Currently Loaded Modules:
+  1) lsf-tools/2.0   3) darshan-runtime/3.3.0-lite   5) DefApps     7) nsight-compute/2021.2.1      9) cuda/11.0.3   11) spectrum-mpi/10.4.0.3-20210112
+  2) hsi/5.0.2.p5    4) xalt/1.2.1                   6) gcc/9.1.0   8) nsight-systems/2021.3.1.54  10) cmake/3.21.3  12) python/3.8-anaconda3
+
+To compile:
+make -j8 TPL
+make -j8
+
+To start weak scaling (default: 1, 64, 512, 4096 nodes):
+./weakScaling.py -n TestFPatch -e PeleLM3d.gnu.TPROF.MPI.CUDA.ex -i inputs.3d -b batch.SUMMIT  --extra_files dodecaneLu_pmf.dat
