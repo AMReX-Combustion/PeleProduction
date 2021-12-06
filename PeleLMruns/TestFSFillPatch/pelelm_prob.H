@@ -36,7 +36,7 @@ pelelm_initdata (int i, int j, int k,
     constexpr amrex::Real Pi = 3.14159265358979323846264338327950288;
     auto eos = pele::physics::PhysicsType::eos();
 
-    const amrex::Real L_x = prob_hi[0] - prob_lo[0];
+    const amrex::Real L_x = 0.008;
 
     amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
     amrex::Real molefrac[NUM_SPECIES] = {0.0};
@@ -63,7 +63,7 @@ pelelm_initdata (int i, int j, int k,
     y2 = (y - prob_parm.standoff + 0.5*dx[1] + pert)*100;
 
 #elif ( AMREX_SPACEDIM == 3 ) 
-       const amrex::Real L_y = prob_hi[1] - prob_lo[1];
+       const amrex::Real L_y = 0.008;
        pert = prob_parm.pertmag *
              (1.0 * std::sin(2 * Pi * 4 * x / L_x) *
                 std::sin(2 * Pi * 5 * y / L_y) +
