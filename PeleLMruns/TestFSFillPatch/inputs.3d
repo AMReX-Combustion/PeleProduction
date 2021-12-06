@@ -13,7 +13,7 @@ peleLM.hi_bc = Interior  Interior Outflow
 #-------------------------AMR CONTROL----------------------------
 amr.n_cell          = 32 32 64         # Level 0 number of cells in each direction   
 amr.v               = 1                # AMR verbose
-amr.max_level       = 1                # maximum level number allowed
+amr.max_level       = 2                # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2          # refinement ratio
 amr.regrid_int      = 2                # how often to regrid
 amr.n_error_buf     = 2 2 2 2          # number of buffer cells in error est
@@ -25,14 +25,16 @@ amr.max_grid_size   = 64               # max box size
 max_step            = 100               # maximum number of time steps    
 stop_time           = 0.04             # final physical time
 ns.cfl              = 0.5              # cfl number for hyperbolic system
-ns.init_shrink      = 0.0001           # scale back initial timestep
+#ns.init_shrink      = 0.0001           # scale back initial timestep
 ns.change_max       = 1.1              # max timestep size increase
 ns.dt_cutoff        = 1.e-10           # level 0 timestep below which we halt
+ns.fixed_dt         = 5.0e-7
 
 #-------------------------IO CONTROL----------------------------
 amr.checkpoint_files_output = 0
 amr.check_file          = chk          # root name of checkpoint file
 amr.check_int           = 5            # number of timesteps between checkpoints
+amr.plot_files_output   = 0
 amr.plot_file           = plt_         # root name of plot file
 amr.plot_int            = 100          # number of timesteps between plot files
 amr.derive_plot_vars    = rhoRT mag_vort avg_pressure gradpx gradpy sumRhoYdot mass_fractions rhominsumrhoY cpmix mixfrac_only enthalpy
@@ -84,12 +86,12 @@ ns.num_mac_sync_iter = 1               # Number of mac_sync iterations
 
 
 # --------------- INPUTS TO CHEMISTRY REACTOR ---------------
-peleLM.chem_integrator = "ReactorCvode"
-peleLM.use_typ_vals_chem = 1          # Use species/temp typical values in CVODE   
-ode.rtol = 1.0e-6                     # Relative tolerance of the chemical solve
-ode.atol = 1.0e-5                     # Absolute tolerance factor applied on typical values
-cvode.solve_type = GMRES              # CVODE Linear solve type (for Newton direction) 
-cvode.max_order  = 4                  # CVODE max BDF order. 
+peleLM.chem_integrator = "ReactorNull"
+#peleLM.use_typ_vals_chem = 1          # Use species/temp typical values in CVODE   
+#ode.rtol = 1.0e-6                     # Relative tolerance of the chemical solve
+#ode.atol = 1.0e-5                     # Absolute tolerance factor applied on typical values
+#cvode.solve_type = GMRES              # CVODE Linear solve type (for Newton direction) 
+#cvode.max_order  = 4                  # CVODE max BDF order. 
 
 # ------------------  INPUTS TO ACTIVE CONTROL  ----------------------
 active_control.on = 0                  # Use AC ?
