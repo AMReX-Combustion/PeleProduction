@@ -6,11 +6,10 @@
 #include <AMReX_ParmParse.H>
 
 #include "pelelm_prob_parm.H"
-#include <pmf_data.H>
+#include <PMFData.H>
 #include <PeleLM_parm.H>
 #include <IndexDefines.H>
 #include <PelePhysics.H>
-#include <EOS.H>
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -19,7 +18,7 @@ pelelm_initdata (int i, int j, int k,
                  amrex::Array4<amrex::Real> const& state,
                  amrex::GeometryData const& geomdata,
                  ProbParm const& prob_parm,
-                 PmfData const * /*pmf_data*/)
+                 pele::physics::PMF::PmfData::DataContainer const * /*pmf_data*/)
 {
 
     const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -83,7 +82,7 @@ bcnormal(
   amrex::GeometryData const& geomdata,
   ProbParm const& prob_parm,
   ACParm const& /*ac_parm*/,
-  PmfData const * /*pmf_data*/)
+  pele::physics::PMF::PmfData::DataContainer const * /*pmf_data*/)
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
