@@ -1,0 +1,9 @@
+# Run output
+plt*
+*plt*old*
+chk*
+grdlog
+Backtrace*
+
+# OSX files
+.DS_Store
