@@ -31,12 +31,12 @@ prob.Zst = 0.055
 max_step       = 1               # maximum number of time steps
 stop_time      = 4.00            # final physical time
 ns.cfl         = 0.1             # cfl number for hyperbolic system
-ns.init_shrink = 0.001           # scale back initial timestep
+ns.init_shrink = 0.01           # scale back initial timestep
 ns.change_max  = 1.1             # max timestep size increase
 ns.dt_cutoff   = 1.e-11          # level 0 timestep below which we halt
 
 #-------------------------IO CONTROL----------------------------
-#amr.restart = chk00100              # Restart from checkpoint ?
+#amr.restart = chk01000              # Restart from checkpoint ?
 #amr.regrid_on_restart = 1           # Perform regriding upon restart ?
 amr.checkpoint_files_output = 1     # Dump check file ? 0: no, 1: yes
 amr.check_file         = chk        # root name of checkpoint file
@@ -47,27 +47,27 @@ amr.derive_plot_vars   = rhoRT mag_vort avg_pressure gradpx gradpy diveru mass_f
 amr.grid_log           = grdlog     # name of grid logging file
 
 #--------------------REFINEMENT CONTROL------------------------
-amr.refinement_indicators = lo_temp gradT HR
+amr.refinement_indicators = hi_temp gradT flame_tracer
 
-amr.lo_temp.max_level = 1
-amr.lo_temp.value_greater = 800
-amr.lo_temp.field_name = temp
+amr.hi_temp.max_level = 1
+amr.hi_temp.value_greater = 800
+amr.hi_temp.field_name = temp
 
 amr.gradT.max_level = 2
 amr.gradT.adjacent_difference_greater = 200
 amr.gradT.field_name = temp
 
-amr.HR.max_level = 2 
-amr.HR.value_greater = 0.5e9
-amr.HR.field_name = HeatRelease
+#amr.HR.max_level = 2 
+#amr.HR.value_greater = 0.5e9
+#amr.HR.field_name = HeatRelease
 
 #amr.flame_tracer2.max_level = 3 
 #amr.flame_tracer2.value_greater = 2.e-4
 #amr.flame_tracer2.field_name = Y(HO2)
 
-#amr.flame_tracer.max_level = 4
-#amr.flame_tracer.value_greater = 3.0e-6
-#amr.flame_tracer.field_name = Y(HCO)
+amr.flame_tracer.max_level = 3
+amr.flame_tracer.value_greater = 1.0e-6
+amr.flame_tracer.field_name = Y(CH3O)
 
 # Refinement according to the vorticity, no field_name needed
 #amr.refinement_indicators = magvort
@@ -99,12 +99,12 @@ cvode.max_order  = 4                  # CVODE max BDF order.
 # --------------  INPUTS TO ACTIVE CONTROL  -----------------
 active_control.on = 0                  # Use AC ?
 active_control.use_temp = 1            # Default in fuel mass, rather use iso-T position ?
-active_control.temperature = 1300.0    # Value of iso-T ?
+active_control.temperature = 1400.0    # Value of iso-T ?
 active_control.tau = 1.0e-4            # Control tau (should ~ 10 dt)
-active_control.height = 0.0070         # Where is the flame held ? Default assumes coordinate along Y in 2D or Z in 3D.
+active_control.height = 0.010          # Where is the flame held ? Default assumes coordinate along Y in 2D or Z in 3D.
 active_control.v = 1                   # verbose
-active_control.velMax = 1.5            # Optional: limit inlet velocity
-active_control.changeMax = 0.2         # Optional: limit inlet velocity changes (absolute)
+active_control.velMax = 2.0            # Optional: limit inlet velocity
+active_control.changeMax = 0.1         # Optional: limit inlet velocity changes (absolute)
 active_control.flameDir  = 1           # Optional: flame main direction. Default: AMREX_SPACEDIM-1
 active_control.pseudo_gravity = 1      # Optional: add density proportional force to compensate for the acceleration 
                                        #           of the gas due to inlet velocity changes
@@ -139,22 +139,21 @@ diffuse.tensor_max_order = 4
 diffuse.v                = 0
 
 # ------------------  INPUTS TO PROJECTION CLASS -------------------
-proj.proj_tol            = 1.0e-12     # tolerence for projections
-proj.proj_abs_tol        = 1.0e-12 
-proj.sync_tol            = 1.0e-12     # tolerence for projections
-proj.rho_wgt_vel_proj    = 0           # 0 => const den proj, 1 => rho weighted
-proj.do_outflow_bcs      = 0
-proj.divu_minus_s_factor = 0.
-proj.proj_2              = 1
+nodal_proj.proj_tol            = 1.0e-12     # tolerence for projections
+nodal_proj.proj_abs_tol        = 1.0e-12 
+nodal_proj.sync_tol            = 1.0e-12     # tolerence for projections
+nodal_proj.rho_wgt_vel_proj    = 0           # 0 => const den proj, 1 => rho weighted
+nodal_proj.do_outflow_bcs      = 0
+nodal_proj.divu_minus_s_factor = 0.
+nodal_proj.proj_2              = 1
 nodal_proj.verbose       = 0
-proj.v                   = 0
 
 # ------------------  INPUTS TO MACPROJ CLASS -------------------
-mac.mac_tol              = 1.0e-12     # tolerence for mac projections
-mac.mac_sync_tol         = 1.0e-12     # tolerence for mac SYNC projection
-mac.mac_abs_tol          = 1.0e-12
-mac.do_outflow_bcs       = 0
-mac.v                    = 0
+mac_proj.mac_tol              = 1.0e-12     # tolerence for mac projections
+mac_proj.mac_sync_tol         = 1.0e-12     # tolerence for mac SYNC projection
+mac_proj.mac_abs_tol          = 1.0e-12
+mac_proj.do_outflow_bcs       = 0
+mac_proj.verbose              = 0
 
 #--------------------------OMP TILE INPUTS-----------------------------
 #fabarray.mfiter_tile_size = 8 8 8
