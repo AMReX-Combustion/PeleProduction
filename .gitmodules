@@ -1,7 +1,7 @@
 [submodule "Submodules/PeleLM"]
 	path = Submodules/PeleLM
 	url = https://github.com/AMReX-Combustion/PeleLM.git
-        branch = development
+        branch = Landon/soot_and_spray
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
 	url = https://github.com/AMReX-Combustion/PelePhysics.git
@@ -17,3 +17,9 @@
 [submodule "Submodules/AMReX-Hydro"]
 	path = Submodules/AMReX-Hydro
 	url = https://github.com/AMReX-Codes/AMReX-Hydro.git
+[submodule "Submodules/PeleMP"]
+	path = Submodules/PeleMP
+	url = https://github.com/AMReX-Combustion/PeleMP
+[submodule "Submodules/PeleLMeX"]
+	path = Submodules/PeleLMeX
+	url = https://github.com/AMReX-Combustion/PeleLMeX

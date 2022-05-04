@@ -1,0 +1,45 @@
+# Repositories
+TOP = $(shell pwd)/../../Submodules
+AMREX_HOME         := ${TOP}/amrex
+IAMR_HOME          := ${TOP}/IAMR
+PELELM_HOME        := ${TOP}/PeleLM
+PELE_PHYSICS_HOME  := ${TOP}/PelePhysics
+AMREX_HYDRO_HOME   := ${TOP}/AMReX-Hydro
+PELEMP_HOME        := ${TOP}/PeleMP
+
+# AMREX options
+DIM             = 2
+DEBUG           = FALSE
+PRECISION       = DOUBLE
+VERBOSE         = FALSE
+TINY_PROFILE    = FALSE
+
+# Compiler / parrallel paradigms
+COMP            = gnu
+USE_MPI         = TRUE
+USE_OMP         = FALSE
+USE_CUDA        = FALSE
+USE_HIP         = FALSE
+
+
+USE_SUNDIALS_PP = TRUE
+# Choose model (from list below), and pmf file
+Chemistry_Model = dodecane_lu
+
+# This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
+Eos_Model       = Fuego
+
+# This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
+Transport_Model = Simple
+
+USE_PARTICLES = TRUE
+SPRAY_FUEL_NUM = 1
+
+Blocs   := .
+
+
+include $(PELELM_HOME)/Tools/Make/Make.PeleLM
+
+# Available chemistry models:
+# CanuH2 chem-CH4-2step chem-H dme glar gri Hai H-CW header inert Konnov
+# LiDryer Marinov prf_ethanol Roehl sandiego smooke usc
