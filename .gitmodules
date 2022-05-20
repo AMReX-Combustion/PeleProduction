@@ -23,7 +23,7 @@
 [submodule "Submodules/PeleLMeX"]
 	path = Submodules/PeleLMeX
 	url = https://github.com/AMReX-Combustion/PeleLMeX
-        branch = Landon/soot_and_spray
+        branch = development
 [submodule "Submodules/PeleC"]
 	path = Submodules/PeleC
 	url = https://github.com/AMReX-Combustion/PeleC.git
