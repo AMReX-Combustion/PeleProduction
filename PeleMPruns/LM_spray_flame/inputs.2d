@@ -10,7 +10,7 @@ geometry.prob_hi   = 0.00256 0.00256 0.00064
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
 # SlipWallAdiab, NoSlipWallAdiab, SlipWallIsotherm, NoSlipWallIsotherm
-peleLM.lo_bc = SlipWallAdiab  Inflow
+peleLM.lo_bc = SlipWallAdiab  SlipWallAdiab
 peleLM.hi_bc = SlipWallAdiab  Outflow
 
 #-------------------------AMR CONTROL----------------------------
@@ -45,6 +45,7 @@ amr.derive_plot_vars    = rhoRT mag_vort avg_pressure gradpx gradpy sumRhoYdot m
 
 #----------------------- PROBLEM PARAMETERS---------------------
 prob.P_mean = 6079500.
+prob.T_gas = 900.
 # Properties of injected particles
 prob.part_temp = 363.
 # Log-normal distribution of particle diameters
@@ -75,8 +76,8 @@ particles.fuel_species = NC12H26
 particles.fuel_crit_temp = 658.2 # K (at Pc = 1.8170 MPa)
 particles.fuel_boil_temp = 489. # K (at atmospheric conditions)
 particles.fuel_ref_temp = 298.15
-particles.fuel_latent = 3.0299E5
-particles.fuel_cp = 2.207E3 # Cp at 298
+particles.fuel_latent = 3.0299E5 # Heat of vaporization at 298 K
+particles.fuel_cp = 2.207E3 # Cp at 298 K
 #particles.fuel_latent = 3.0294e9
 particles.fuel_rho = 669.43
 particles.use_splash_model = false

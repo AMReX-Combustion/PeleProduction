@@ -38,11 +38,10 @@ pelelm_initdata(
 
   auto eos = pele::physics::PhysicsType::eos();
 
-  const amrex::Real L_x = prob_hi[0] - prob_lo[0];
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac = {{0.0}};
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {{0.0}};
 
-  state(i, j, k, DEF_Temp) = prob_parm.T_ox;
+  state(i, j, k, DEF_Temp) = prob_parm.T_init;
 
   molefrac[O2_ID] = 0.21;
   molefrac[N2_ID] = 0.79;
@@ -91,9 +90,10 @@ bcnormal(
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {{0.0}};
   auto eos = pele::physics::PhysicsType::eos();
 
+  // Change this if you want a gas phase inlet as well
   if (sgn == 1) {
 
-    s_ext[DEF_Temp] = prob_parm.T_ox;
+    s_ext[DEF_Temp] = prob_parm.T_init;
 
     molefrac[O2_ID] = 0.21;
     molefrac[N2_ID] = 0.79;
@@ -102,15 +102,26 @@ bcnormal(
     amrex::Real rho_cgs, P_cgs, RhoH_temp;
     P_cgs = prob_parm.P_mean * 10.0;
 
+    state(i, j, k, Xvel) = 0;
+#if (AMREX_SPACEDIM == 2)
+    state(i, j, k, Yvel) = 0.;
+#elif (AMREX_SPACEDIM == 3)
+    state(i, j, k, Yvel) = 0;
+    state(i, j, k, Zvel) = 0.;
+#endif
+
     eos.PYT2R(P_cgs, massfrac.data(), s_ext[DEF_Temp], rho_cgs);
     s_ext[Density] = rho_cgs * 1.0e3;
 
     eos.TY2H(s_ext[DEF_Temp], massfrac.data(), RhoH_temp);
     s_ext[DEF_RhoH] =
       RhoH_temp * 1.0e-4 * s_ext[Density]; // CGS -> MKS conversion
-
     for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[DEF_first_spec + n] = massfrac[n] * s_ext[Density];
+    }
+  } else {
+    for (int n = 0; n < NVAR; n++) {
+      s_ext[n] = s_int[n];
     }
   }
 }

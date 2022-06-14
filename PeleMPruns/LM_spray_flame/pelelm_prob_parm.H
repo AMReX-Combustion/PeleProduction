@@ -9,9 +9,7 @@ using namespace amrex::literals;
 struct ProbParm
 {
   amrex::Real P_mean = 101325.0_rt;
-  amrex::Real standoff = 0.0_rt;
-  amrex::Real pertmag = 0.0004_rt;
-  amrex::Real T_ox = 900.;
+  amrex::Real T_init = 900.;
   // Spray stuff
   amrex::Real jet_vel = 50.;
   amrex::Real jet_dia = 1.E-5;

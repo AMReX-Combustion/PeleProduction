@@ -14,9 +14,7 @@ amrex_probinit(
   amrex::ParmParse pp("prob");
 
   pp.query("P_mean", PeleLM::prob_parm->P_mean);
-  pp.query("standoff", PeleLM::prob_parm->standoff);
-  pp.query("pertmag", PeleLM::prob_parm->pertmag);
-
+  pp.query("T_gas", PeleLM::prob_parm->T_init);
   pp.query("jet_vel", PeleLM::prob_parm->jet_vel);
   // The cells are divided by this value when prescribing the jet inlet
   pp.query("jet_dx_mod", PeleLM::prob_parm->jet_dx_mod);
