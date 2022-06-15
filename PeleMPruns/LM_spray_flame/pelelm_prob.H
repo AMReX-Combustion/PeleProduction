@@ -102,12 +102,10 @@ bcnormal(
     amrex::Real rho_cgs, P_cgs, RhoH_temp;
     P_cgs = prob_parm.P_mean * 10.0;
 
-    state(i, j, k, Xvel) = 0;
-#if (AMREX_SPACEDIM == 2)
-    state(i, j, k, Yvel) = 0.;
-#elif (AMREX_SPACEDIM == 3)
-    state(i, j, k, Yvel) = 0;
-    state(i, j, k, Zvel) = 0.;
+    s_ext[Xvel] = 0;
+    s_ext[Yvel] = 0.;
+#if (AMREX_SPACEDIM == 3)
+    s_ext[Zvel] = 0.;
 #endif
 
     eos.PYT2R(P_cgs, massfrac.data(), s_ext[DEF_Temp], rho_cgs);
@@ -118,10 +116,6 @@ bcnormal(
       RhoH_temp * 1.0e-4 * s_ext[Density]; // CGS -> MKS conversion
     for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[DEF_first_spec + n] = massfrac[n] * s_ext[Density];
-    }
-  } else {
-    for (int n = 0; n < NVAR; n++) {
-      s_ext[n] = s_int[n];
     }
   }
 }
