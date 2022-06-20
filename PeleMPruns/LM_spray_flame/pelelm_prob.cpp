@@ -42,8 +42,8 @@ amrex_probinit(
   amrex::Real dom_len = probhi[0] - problo[0];
   amrex::Real yloc = (probhi[1] - problo[1]) * .5;
   amrex::Real xloc = dom_len * .5;
-  AMREX_D_TERM(PeleLM::prob_parm->jet_cents[0] = xloc;,
-               PeleLM::prob_parm->jet_cents[1] = yloc;,
-               PeleLM::prob_parm->jet_cents[2] = problo[2];)
+  AMREX_D_PICK(,PeleLM::prob_parm->jet_cents[1] = problo[1];,
+               PeleLM::prob_parm->jet_cents[1] = yloc;
+               PeleLM::prob_parm->jet_cents[2] = problo[2];);
 }
 }
