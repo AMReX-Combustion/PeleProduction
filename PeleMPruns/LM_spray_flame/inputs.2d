@@ -59,7 +59,6 @@ prob.spray_angle_deg = 21.
 prob.jet_start_time = 0.
 prob.jet_end_time = 0.5E-3
 prob.jet_vel = 30.
-prob.jet_dx_mod = 42.
 prob.mass_flow_rate = 2.0349e-5
 
 #--------------------SPRAY PARTICLE DATA-----------------------

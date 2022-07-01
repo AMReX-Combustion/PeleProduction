@@ -8,16 +8,14 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo /*problo*/,
-  const amrex_real* probhi /*probhi*/)
+  const amrex_real* problo,
+  const amrex_real* probhi)
 {
   amrex::ParmParse pp("prob");
 
   pp.query("P_mean", PeleLM::prob_parm->P_mean);
   pp.query("T_gas", PeleLM::prob_parm->T_init);
   pp.query("jet_vel", PeleLM::prob_parm->jet_vel);
-  // The cells are divided by this value when prescribing the jet inlet
-  pp.query("jet_dx_mod", PeleLM::prob_parm->jet_dx_mod);
   pp.get("jet_dia", PeleLM::prob_parm->jet_dia);
   pp.get("part_mean_dia", PeleLM::prob_parm->part_mean_dia);
   pp.query("part_stdev_dia", PeleLM::prob_parm->part_stdev_dia);
@@ -37,13 +35,13 @@ amrex_probinit(
   }
   // Convert to radians
   PeleLM::prob_parm->spray_angle *= M_PI / 180.;
-  // Total number of jets
-  // unsigned int total_jets = std::pow(jets_per_dir, AMREX_SPACEDIM - 1);
   amrex::Real dom_len = probhi[0] - problo[0];
   amrex::Real yloc = (probhi[1] - problo[1]) * .5;
   amrex::Real xloc = dom_len * .5;
-  AMREX_D_PICK(,PeleLM::prob_parm->jet_cents[1] = problo[1];,
-               PeleLM::prob_parm->jet_cents[1] = yloc;
-               PeleLM::prob_parm->jet_cents[2] = problo[2];);
+  // Set jet location to lower y or z domain for 2D or 3D, respectively
+  int lowD = AMREX_SPACEDIM - 1;
+  PeleLM::prob_parm->jet_cent[0] = xloc;
+  PeleLM::prob_parm->jet_cent[1] = yloc;
+  PeleLM::prob_parm->jet_cent[lowD] = problo[lowD];
 }
 }
