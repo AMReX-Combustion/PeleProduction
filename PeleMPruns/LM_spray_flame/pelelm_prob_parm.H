@@ -21,6 +21,6 @@ struct ProbParm
   amrex::Real jet_end_time = 10000.;
   amrex::Real spray_angle = 20.;
   amrex::GpuArray<amrex::Real, SPRAY_FUEL_NUM> Y_jet = {{0.0}};
-  amrex::RealVect jet_cents = amrex::RealVector::TheZeroVector();
+  amrex::RealVect jet_cents = amrex::RealVect::TheZeroVector();
 };
 #endif
