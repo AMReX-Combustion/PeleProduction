@@ -1,8 +1,8 @@
 # Repositories
-TOP = $(shell pwd)/../../Submodules
+TOP = $(shell pwd)/../../../Submodules
 AMREX_HOME         := ${TOP}/amrex
 IAMR_HOME          := ${TOP}/IAMR
-PELELMEX_HOME        := ${TOP}/PeleLMeX
+PELELMEX_HOME      := ${TOP}/PeleLMeX
 PELE_PHYSICS_HOME  := ${TOP}/PelePhysics
 AMREX_HYDRO_HOME   := ${TOP}/AMReX-Hydro
 PELEMP_HOME        := ${TOP}/PeleMP
