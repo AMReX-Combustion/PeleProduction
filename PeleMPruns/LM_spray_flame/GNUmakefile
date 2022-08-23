@@ -14,7 +14,7 @@ PRECISION       = DOUBLE
 VERBOSE         = FALSE
 TINY_PROFILE    = FALSE
 
-# Compiler / parrallel paradigms
+# Compiler / parallel paradigms
 COMP            = gnu
 USE_MPI         = TRUE
 USE_OMP         = FALSE
@@ -22,7 +22,6 @@ USE_CUDA        = FALSE
 USE_HIP         = FALSE
 
 
-USE_SUNDIALS_PP = TRUE
 # Choose model (from list below), and pmf file
 Chemistry_Model = dodecane_lu
 
