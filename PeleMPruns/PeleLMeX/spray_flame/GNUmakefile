@@ -30,6 +30,6 @@ Eos_Model	= Fuego
 Transport_Model = Simple
 
 USE_PARTICLES = TRUE
-SPRAY_FUEL_NUM = 1
+SPRAY_FUEL_NUM = 2
 
 include $(PELELMEX_HOME)/Utils/Make.PeleLMeX
