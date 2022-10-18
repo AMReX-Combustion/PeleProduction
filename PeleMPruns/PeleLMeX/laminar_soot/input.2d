@@ -1,5 +1,5 @@
 #----------------------DOMAIN DEFINITION------------------------
-geometry.is_periodic = 0 1 1               # For each dir, 0: non-perio, 1: periodic
+geometry.is_periodic = 0 0 1               # For each dir, 0: non-perio, 1: periodic
 geometry.coord_sys   = 0                  # 0 => cart, 1 => RZ
 geometry.prob_lo     = 0.0 0.0 0.0        # x_lo y_lo (z_lo)
 geometry.prob_hi     = 0.04 0.0025 0.0025        # x_hi y_hi (z_hi)
@@ -7,8 +7,8 @@ geometry.prob_hi     = 0.04 0.0025 0.0025        # x_hi y_hi (z_hi)
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # Interior, Inflow, Outflow, Symmetry,
 # SlipWallAdiab, NoSlipWallAdiab, SlipWallIsotherm, NoSlipWallIsotherm
-peleLM.lo_bc = Inflow Interior Interior
-peleLM.hi_bc = Outflow Interior Interior
+peleLM.lo_bc = Inflow SlipWallAdiab Interior
+peleLM.hi_bc = Outflow SlipWallAdiab Interior
 
 #-------------------------AMR CONTROL----------------------------
 amr.n_cell          = 128 8 8      # Level 0 number of cells in each direction   

@@ -15,11 +15,11 @@ VERBOSE         = FALSE
 TINY_PROFILE    = TRUE
 
 # Compilation
-COMP            = hip
+COMP            = gnu
 USE_MPI         = TRUE
 USE_OMP         = FALSE
 USE_CUDA        = FALSE
-USE_HIP         = TRUE
+USE_HIP         = FALSE
 
 # PeleLMeX
 USE_EFIELD      = FALSE
@@ -31,5 +31,5 @@ Transport_Model = Simple
 
 USE_SOOT = TRUE
 NUM_SOOT_MOMENTS = 3
-HIPCC_FLAGS += -mllvm -greedy-regclass-priority-trumps-globalness
+#HIPCC_FLAGS += -mllvm -greedy-regclass-priority-trumps-globalness
 include $(PELELMEX_HOME)/Utils/Make.PeleLMeX
