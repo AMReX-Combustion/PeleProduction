@@ -1,6 +1,6 @@
 
 #include "SprayParticles.H"
-#include "SprayInjectTemplate.H"
+#include "SprayInjection.H"
 #include "pelelm_prob.H"
 
 bool
@@ -19,10 +19,9 @@ SprayParticleContainer::injectParticles(
   }
   for (int jet = 0; jet < m_sprayJets.size(); ++jet) {
     SprayJet* js = m_sprayJets[jet].get();
-    if (!js->jet_active(time)) {
-      return false;
+    if (js->jet_active(time)) {
+      sprayInjection(time, js, dt, lev);
     }
-    sprayInjection(js, dt, lev);
   }
 
   // Redistribute is done outside of this function
