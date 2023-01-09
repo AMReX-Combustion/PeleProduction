@@ -27,4 +27,4 @@
 [submodule "Submodules/PeleC"]
 	path = Submodules/PeleC
 	url = https://github.com/AMReX-Combustion/PeleC.git
-	branch = Landon/merge_soot_spray
+	branch = development

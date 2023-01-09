@@ -17,15 +17,17 @@ SprayParticleContainer::injectParticles(
   if (lev != 0) {
     return false;
   }
+  bool inject = false;
   for (int jet = 0; jet < m_sprayJets.size(); ++jet) {
     SprayJet* js = m_sprayJets[jet].get();
     if (js->jet_active(time)) {
       sprayInjection(time, js, dt, lev);
+      inject = true;
     }
   }
 
   // Redistribute is done outside of this function
-  return true;
+  return inject;
 }
 
 void
