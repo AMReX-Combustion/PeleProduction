@@ -38,7 +38,7 @@ plotnames = ["Diameter", "Temperature", "Mass fraction"]
 fig, axs = plt.subplots(numplots)
 for i in range(numplots):
     axs[i].set_title(plotnames[i])
-    axs[i].plot(pele_vals[:,0], pele_vals[:,i+1], label="Pele", color='black')
+    axs[i].plot(pele_vals[:,0], pele_vals[:,i+1], label="Pele", color='red')
     if (i == 0):
         refarr = refdvals
     elif (i == 1):
@@ -46,7 +46,7 @@ for i in range(numplots):
     elif (i == 2):
         refarr = refyvals
     if (refarr is not None):
-        axs[i].scatter(refarr[:,0], refarr[:,1], label="Ref", color='red', s = 2.)
+        axs[i].scatter(refarr[:,0], refarr[:,1], label="Ref", color='black', s = 4.)
 plt.legend()
-plt.show()
 plt.savefig(case.name + "/results.png")
+plt.show()
