@@ -9,7 +9,7 @@ class Droplet:
         else:
             self.Y = Y
         self.fixed = True
-        if (abs(sum(Y) - 1.) > 1.E-8):
+        if (abs(sum(self.Y) - 1.) > 1.E-8):
             errorstatement = "Liquid mass fractions must sum to 1"
             raise ValueError(errorstatement)
         if (vel is None):
