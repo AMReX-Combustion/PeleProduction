@@ -56,7 +56,7 @@ def ExtractData(case, outfile):
     yexp = case.yexp
     modvals = []
     with open(outfile, "w+") as new_file:
-        new_file.write("t, T, dd0, Y1, Y2\n")
+        new_file.write("t, dd0, T, Y1, Y2\n")
         csv_writer = csv.writer(new_file, delimiter=',', lineterminator='\n')
         for k, tv in enumerate(timevals):
             dia = vals[k][dcol]
@@ -64,7 +64,7 @@ def ExtractData(case, outfile):
             T = vals[k][tcol]
             Y1 = vals[k][mfcol]
             Y2 = vals[k][mfcol+1]
-            outvals = [tv*xconv, T, dd0, Y1, Y2]
+            outvals = [tv*xconv, dd0, T, Y1, Y2]
             modvals.append(outvals)
             csv_writer.writerow(outvals)
     modvals = np.array(modvals)
