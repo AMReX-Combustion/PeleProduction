@@ -117,18 +117,30 @@ nodal_proj.verbose = 0
 #--------------------SPRAY PARTICLE DATA-----------------------
 peleLM.do_spray_particles = 1
 particles.derive_plot_vars = 1
-# Dodecane and water
-particles.fuel_species = NC12H26 H2O
-particles.fuel_crit_temp = 658.2 647. # K (at Pc = 1.8170 MPa)
-particles.fuel_boil_temp = 489. 373. # K (at atmospheric conditions)
-particles.fuel_ref_temp = 298.15
-particles.fuel_latent = 3.589E5 2.44E6  # Latent heat at reference temperature
-particles.fuel_cp = 2207. 4183. # Cp at 298
-particles.fuel_rho = 669.43 996.
-particles.NC12H26_psat = 4.10549 1625.928 -92.839 1.E5
-particles.H2O_psat = 5.08354 1663. -45.622 1.E5
 
-particles.use_splash_model = false
+# Dodecane and water
+particles.fuel_ref_temp = 298.15
+particles.fuel_species = NC12H26 H2O
+particles.NC12H26_crit_temp = 658.2
+particles.NC12H26_boil_temp = 489. # K at 1 atm
+particles.NC12H26_latent = 3.589E5  # Latent heat at reference temperature
+particles.NC12H26_cp = 2207. # Cp at reference temperature
+# Use fit for liquid dynamic viscosity, mu = a + b / T + c / T^2 + d / T^3
+particles.NC12H26_mu = -0.0028611188933370677 3.9407652721369044 -1812.5486152106896 302158.7187559424
+# Use fit for liquid thermal conductivity, lambda = a + b T + c T^2 + d T^3
+particles.NC12H26_lambda = 0.20590484837579132 -0.00024391762758823387 9.633688833837597e-10 6.93350414269127e-11
+# Use fit for liquid density, rho = a + b T + c T^2 + d T^3 in kg / m^3
+particles.NC12H26_rho = 1779.9145710513212 -6.8484248835132435 0.015016559178741312 -1.2149370117669906e-05
+# Use fit for saturation pressure, p_sat = d 10^(a - (b / (T + c)))
+particles.NC12H26_psat = 4.10549 1625.928 -92.839 1.E5
+
+particles.H2O_crit_temp = 647. # K
+particles.H2O_boil_temp = 373. # K at 1 atm
+particles.H2O_latent = 2.44E6  # Latent heat at reference temperature
+particles.H2O_cp = 4183. # Cp at reference temperature
+# Use constant value for liquid density
+particles.H2O_rho = 996.
+particles.H2O_psat = 5.08354 1663. -45.622 1.E5
 
 particles.init_function = 1
 
@@ -136,7 +148,7 @@ particles.v             = 0
 particles.mom_transfer  = 1
 particles.mass_transfer = 1
 particles.cfl           = 1.
-particles.write_spray_ascii_files = 0
+particles.write_ascii_files = 0
 particles.parcel_size = 10.
 
 # amrex.regtest_reduction=1
