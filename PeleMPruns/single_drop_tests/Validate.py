@@ -3,6 +3,7 @@
 import os
 from CaseInfo import *
 from ExtractData import *
+import matplotlib.pyplot as plt
 
 case = Tonini_4_33()
 

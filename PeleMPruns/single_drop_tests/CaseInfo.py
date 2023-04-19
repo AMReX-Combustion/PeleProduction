@@ -63,11 +63,12 @@ class CaseInfo:
         if (abs(self.cell_num[0] / self.domain[0] - self.cell_num[1] / self.domain[1]) > 0.):
             error = "Uniform grid spacing required"
             raise ValueError(error)
-        def __str__():
-            return name
-        def set_end_time(self, time):
-            self.time = time * 1.02
-            self.plot_per = self.time / 100.
+    def __str__():
+        return name
+    def set_end_time(self, time):
+        self.time = time * 1.02
+        self.plot_per = self.time / 100.
+
 def Tonini_4_33():
     drop = Droplet(300., 2.E-3, ["NC8H18", "NC10H22"], [0.5, 0.5], Reyn = 110.)
     gas = GasPhase(1001., 101325.)
