@@ -1,0 +1,91 @@
+#----------------------DOMAIN DEFINITION------------------------
+geometry.is_periodic = 0 0 0
+geometry.coord_sys   = 0                  # 0 => cart, 1 => RZ
+geometry.prob_lo     = -1. -1.
+geometry.prob_hi     = 1. 1.
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# Interior, Inflow, Outflow, Symmetry,
+# SlipWallAdiab, NoSlipWallAdiab, # SlipWallIsotherm, NoSlipWallIsotherm
+peleLM.lo_bc = Inflow SlipWallAdiab
+peleLM.hi_bc = Outflow SlipWallAdiab
+
+#-------------------------AMR CONTROL----------------------------
+amr.n_cell = 32 32
+amr.v               = 0
+amr.max_level       = 0
+
+amr.blocking_factor = 8
+amr.max_grid_size   = 128
+
+#--------------------------- Problem -------------------------------
+# Gas phase parameters
+prob.P_mean = 101325.
+prob.T_gas = 999.
+prob.Y_O2 = 0.233
+prob.Y_N2 = 0.767
+prob.re_d = 110.
+
+#--------------------------- Injection -------------------------------
+# Droplet parameters
+prob.T_drop = 300.
+prob.Y_drop = 0.5 0.5
+prob.dia_drop = 2.E-3
+
+#-------------------------PeleLM CONTROL----------------------------
+peleLM.v = 0
+peleLM.incompressible = 0
+peleLM.sdc_iterMax = 1
+
+amr.plot_per = 0.03
+
+amr.dt_shrink = 0.4
+amr.max_step = 100000
+amr.stop_time = 2.8
+amr.cfl = 0.8
+amr.derive_plot_vars = avg_pressure mag_vort mass_fractions
+
+# --------------- INPUTS TO CHEMISTRY REACTOR ---------------
+peleLM.chem_integrator = "ReactorNull"
+
+#--------------------SPRAY PARTICLE DATA-----------------------
+peleLM.do_spray_particles = 1
+particles.derive_plot_vars = 0
+particles.init_function = 1
+particles.write_ascii_files = 1
+particles.v             = 0
+particles.mom_transfer  = 1
+particles.mass_transfer = 1
+particles.fixed_parts   = 1
+particles.cfl           = 1.
+particles.parcel_size   = 1.
+
+particles.fuel_species = NC8H18 NC10H22
+particles.fuel_ref_temp = 300.
+
+particles.NC8H18_crit_temp = 568.9
+particles.NC8H18_boil_temp = 398.7
+particles.NC8H18_latent = 3.6068E5
+particles.NC8H18_cp = 2209.7
+particles.NC8H18_psat = 4.04867 1355.126 -63.633 1.E5
+particles.NC8H18_rho = 2509.53 -13.3512 0.0330139 -2.8733e-05
+particles.NC8H18_mu = -0.000942448 1.108 -433.667 69296.4
+particles.NC8H18_lambda = 0.231032 -0.000419742 2.02203e-07 1.69185e-11
+
+particles.NC10H22_crit_temp = 617.8
+particles.NC10H22_boil_temp = 447.27
+particles.NC10H22_latent = 3.5899E5
+particles.NC10H22_cp = 2.1921E3
+particles.NC10H22_psat = 4.19352 1578.64 -70.4148 100000.
+particles.NC10H22_rho = 1449.27 -4.71611 0.0104471 -9.20554e-06
+particles.NC10H22_mu = -0.00144741 1.90989 -841.549 142013
+particles.NC10H22_lambda = 0.215146 -0.000293143 -5.1823e-08 2.3775e-10
+
+particles.NC7H16_crit_temp = 540.
+particles.NC7H16_boil_temp = 371.6
+particles.NC7H16_latent = 3.63E5
+particles.NC7H16_cp = 2.2483E3
+particles.NC7H16_psat = 4.09551 1306.88 -52.0473 100000.
+particles.NC7H16_rho = 3136.47 -18.8338 0.0484318 -4.31496e-05
+particles.NC7H16_mu = -0.000648146 0.736644 -278.628 45056.7
+particles.NC7H16_lambda = 0.311188 -0.00109145 2.18387e-06 -1.83431e-09

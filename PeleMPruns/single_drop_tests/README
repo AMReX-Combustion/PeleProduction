@@ -1,0 +1,13 @@
+To run this case, set the desired compile flags in GNUmakefile. Then run ./build.sh
+
+There are multiple cases to choose from. In Validate.py, set
+case = CaseName()
+to run the case of interest. The options are
+Tonini_4_33() - Corresponds to figure 4.33 in Tonini thesis, see documentation for full reference
+Daif() - Corresponds to the experimental results by 
+Abramzon()
+RungeMix()
+RungeDec()
+RungeHep()
+Here is a list of the reference case files and their corresponding literature citation
+Runge_1998 - "Low-temperature vaporization of JP-4 and JP-8 fuel droplets" Runge, T. and Teske, M. and C. E. Polymeropoulos, Atomization and Sprays, Vol. 8 pp. 25 - 44, 1998
