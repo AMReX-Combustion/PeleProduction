@@ -30,27 +30,41 @@ class GasPhase:
         else:
             self.vel = vel
 class CaseInfo:
-    def __init__(self, name, droplet: Droplet, gas: GasPhase, xyunits, domain = None, cell_num = None):
+    def __init__(self, name, droplet: Droplet, gas: GasPhase, xyunits, domain = None, cell_num = None, reftype = None):
         self.name = name
         self.droplet = droplet
         self.gas = gas
+        # If reference is experimental or computational results
+        if (reftype is None):
+            self.reftype = "exp"
+        else:
+            self.reftype = "comp"
         if (xyunits[0] == "s/mm2"):
             self.xconv = 1. / (self.droplet.dia * 1.E3)**2
+            self.xlabel = "$t/d_0^2$ [s/mm$^2$]"
         elif (xyunits[0] == "ms"):
             self.xconv = 1.E3
+            self.xlabel = "$t$ [ms]"
         elif (xyunits[0] == "runge"):
             # This is nu_gas / r_0**2 * 1E-2
             self.xconv = 1.3465E-7 * (self.droplet.dia / 2.)**-2
+            self.xlabel = "$t \nu / r_0^2 10^{-2}$"
         else:
             self.xconv = 1.
+            self.xlabel = "$t$ [s]"
         if ("2" in xyunits[1]):
             self.yexp = 2.
         else:
             self.yexp = 1.
         if ("dd0" in xyunits[1]):
             self.yconv = 1. / self.droplet.dia
+            if (self.yexp == 2):
+                self.ylabel = "$(d/d_0)^2$"
+            else:
+                self.ylabel = "$d/d_0$"
         elif(xyunits[1] == "r2_mm"):
             self.yconv = 1.E3 * 0.5
+            self.ylabel = "$r^2$ [mm$^2$]"
 
         if (domain is None):
             self.domain = [2., 2.]
@@ -72,7 +86,7 @@ class CaseInfo:
 def Tonini_4_33():
     drop = Droplet(300., 2.E-3, ["NC8H18", "NC10H22"], [0.5, 0.5], Reyn = 110.)
     gas = GasPhase(1001., 101325.)
-    case = CaseInfo("Tonini_4_33", drop, gas, xyunits = ["s/mm2", "dd02"])
+    case = CaseInfo("Tonini_4_33", drop, gas, xyunits = ["s/mm2", "dd02"], reftype = "comp")
     return case
 def Daif():
     drop = Droplet(294., 1.334E-3, ["NC7H16", "NC10H22"], [0.667, 0.333])
@@ -82,7 +96,7 @@ def Daif():
 def Abramzon():
     drop = Droplet(300., 1.E-4, ["NC10H22", "NC8H18"], vel = 15.)
     gas = GasPhase(1500., 1013250.)
-    case = CaseInfo("Abramzon", drop, gas, domain = [0.08, 0.005], cell_num = [256, 16], xyunits = ["ms", "dd0"])
+    case = CaseInfo("Abramzon", drop, gas, domain = [0.08, 0.005], cell_num = [256, 16], xyunits = ["ms", "dd0"], reftype="comp")
     return case
 def RungeMix():
     drop = Droplet(272., 550.E-6, ["NC7H16", "NC10H22"], [0.5, 0.5])

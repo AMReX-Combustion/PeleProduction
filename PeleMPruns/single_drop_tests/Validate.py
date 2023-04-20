@@ -34,10 +34,11 @@ pele_vals = ExtractData(case, outfile)
 numplots = 2
 if (refyvals is not None):
     numplots += 1
-plotnames = ["Diameter", "Temperature", "Mass fraction"]
+ylabels = [case.ylabel, "$T$ [K]", "$Y_f$"]
 fig, axs = plt.subplots(numplots)
+fig.tight_layout()
 for i in range(numplots):
-    axs[i].set_title(plotnames[i])
+    axs[i].set_ylabel(ylabels[i])
     axs[i].plot(pele_vals[:,0], pele_vals[:,i+1], label="Pele", color='red')
     if (i == 0):
         refarr = refdvals
@@ -46,7 +47,11 @@ for i in range(numplots):
     elif (i == 2):
         refarr = refyvals
     if (refarr is not None):
-        axs[i].scatter(refarr[:,0], refarr[:,1], label="Ref", color='black', s = 4.)
+        if (case.reftype == "exp"):
+            axs[i].scatter(refarr[:,0], refarr[:,1], label="Ref", color='black', s = 4.)
+        else:
+            axs[i].plot(refarr[:,0], refarr[:,1], label="Ref", color='black')
+axs[-1].set_xlabel(case.xlabel)
 plt.legend()
 plt.savefig(case.name + "/results.png")
 plt.show()
