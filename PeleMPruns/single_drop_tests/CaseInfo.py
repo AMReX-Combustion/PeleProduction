@@ -121,8 +121,8 @@ def CreateInputParams(case):
     prob_params += "geometry.prob_hi = {:g} {:g} ".format(dom_hi[0], dom_hi[1])
     prob_params += "amr.plot_file = {}/plt ".format(case.name)
     prob_params += "amr.n_cell = {:d} {:d} ".format(case.cell_num[0], case.cell_num[1])
-    prob_params += "amr.plot_per = {:.1g} ".format(case.plot_per)
-    prob_params += "amr.stop_time = {:.1g} ".format(case.time)
+    prob_params += "amr.plot_per = {:g} ".format(case.plot_per)
+    prob_params += "amr.stop_time = {:g} ".format(case.time)
     prob_params += "prob.P_mean = {:g} ".format(case.gas.P)
     prob_params += "prob.T_gas = {:g} ".format(case.gas.T)
     fixed_part = True
