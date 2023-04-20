@@ -36,7 +36,6 @@ if (refyvals is not None):
     numplots += 1
 ylabels = [case.ylabel, "$T$ [K]", "$Y_f$"]
 fig, axs = plt.subplots(numplots)
-fig.tight_layout()
 for i in range(numplots):
     axs[i].set_ylabel(ylabels[i])
     axs[i].plot(pele_vals[:,0], pele_vals[:,i+1], label="Pele", color='red')
