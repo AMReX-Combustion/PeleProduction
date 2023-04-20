@@ -115,7 +115,7 @@ def CreateInputParams(case):
     if (case.droplet.Reyn > 0.):
         prob_params += "prob.re_d = {:g} ".format(case.droplet.Reyn)
     elif (case.gas.vel > 0.):
-        prob_params += "prob.vel = {:g} ".format(case.gas.vel)
+        prob_params += "prob.vel_gas = {:g} ".format(case.gas.vel)
     elif (case.droplet.vel > 0.):
         prob_params += "prob.vel_drop = {:g} 0. 0. ".format(case.droplet.vel)
         prob_params += "prob.loc_drop = {:g} 0. 0. ".format(-case.domain[0] * 0.4)
