@@ -120,6 +120,7 @@ def CreateInputParams(case):
         prob_params += "prob.vel_drop = {:g} 0. 0. ".format(case.droplet.vel)
         prob_params += "prob.loc_drop = {:g} 0. 0. ".format(-case.domain[0] * 0.4)
         fixed_part = False
+    prob_params += "prob.T_drop = {:g} ".format(case.droplet.T)
     prob_params += "prob.dia_drop = {:g} ".format(case.droplet.dia)
     prob_params += "prob.Y_drop = {:g} {:g} ".format(case.droplet.Y[0], case.droplet.Y[1])
     prob_params += "particles.fuel_species = " + case.droplet.fuel_names[0] + " " + case.droplet.fuel_names[1] + " "
