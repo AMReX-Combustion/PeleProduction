@@ -77,7 +77,7 @@ def Tonini_4_33():
 def Daif():
     drop = Droplet(294., 1.334E-3, ["NC7H16", "NC10H22"], [0.667, 0.333])
     gas = GasPhase(348., 101325., vel = 3.10)
-    case = CaseInfo("Diaf", drop, gas, xyunits = ["s", "r2_mm"])
+    case = CaseInfo("Daif", drop, gas, xyunits = ["s", "r2_mm"])
     return case
 def Abramzon():
     drop = Droplet(300., 1.E-4, ["NC10H22", "NC8H18"], vel = 15.)
