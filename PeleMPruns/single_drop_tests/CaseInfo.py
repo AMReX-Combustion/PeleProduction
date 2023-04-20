@@ -50,7 +50,7 @@ class CaseInfo:
         if ("dd0" in xyunits[1]):
             self.yconv = 1. / self.droplet.dia
         elif(xyunits[1] == "r2_mm"):
-            self.yconv = 1.E3
+            self.yconv = 1.E3 * 0.5
 
         if (domain is None):
             self.domain = [2., 2.]
