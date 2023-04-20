@@ -18,7 +18,7 @@ PeleLM::readProbParm()
   pp.get("T_drop", PeleLM::prob_parm->T_drop);
   std::vector<amrex::Real> vel_drop(AMREX_SPACEDIM, 0.);
   pp.queryarr("vel_drop", vel_drop);
-  if (Reyn > 0. && pp.contains("vel_drop")) {
+  if (Reyn > 0. && std::abs(vel_drop[0]) > 0.) {
     amrex::Abort("Cannot specify droplet velocity and Reynolds number");
   }
   std::vector<amrex::Real> loc_drop(AMREX_SPACEDIM, 0.);
