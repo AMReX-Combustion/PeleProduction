@@ -81,7 +81,7 @@ def Daif():
     return case
 def Abramzon():
     drop = Droplet(300., 1.E-4, ["NC10H22", "NC8H18"], vel = 15.)
-    gas = GasePhase(1500., 1013250.)
+    gas = GasPhase(1500., 1013250.)
     case = CaseInfo("Abramzon", drop, gas, domain = [0.08, 0.005], cell_num = [256, 16], xyunits = ["ms", "dd0"])
     return case
 def RungeMix():
