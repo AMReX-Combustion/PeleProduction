@@ -24,7 +24,6 @@ prob.P_mean = 101325.
 prob.T_gas = 999.
 prob.Y_O2 = 0.233
 prob.Y_N2 = 0.767
-prob.re_d = 110.
 
 #--------------------------- Injection -------------------------------
 # Droplet parameters
