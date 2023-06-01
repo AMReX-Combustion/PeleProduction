@@ -50,7 +50,6 @@ peleLM.chem_integrator = "ReactorNull"
 #--------------------SPRAY PARTICLE DATA-----------------------
 peleLM.do_spray_particles = 1
 particles.derive_plot_vars = 0
-particles.init_function = 1
 particles.write_ascii_files = 1
 particles.v             = 0
 particles.mom_transfer  = 1

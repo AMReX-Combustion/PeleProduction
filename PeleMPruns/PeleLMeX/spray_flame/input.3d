@@ -144,8 +144,6 @@ particles.H2O_psat = 5.08354 1663. -45.622 1.E5
 
 particles.use_splash_model = false
 
-particles.init_function = 1
-
 particles.v             = 0
 particles.mom_transfer  = 1
 particles.mass_transfer = 1
